@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KidSearch Detective - เกมสายลับสืบค้นและประเมินข้อมูล</title>
+
+    <!-- Google Fonts & Font Awesome CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #2b579a;
+            --primary-dark: #1e3d6b;
+            --accent: #00a86b;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --ticker-bg: #223344;
+            --ticker-text: #00ffcc;
+            --btn-skip: #e11d48;
+            --btn-hint: #d97706;
+            --btn-shield: #2563eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Sarabun', 'Chakra Petch', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 980px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 24px;
+            position: relative;
+        }
+
+        .game-header {
+            border-bottom: 2px solid #e1e8ed;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .game-title h1 {
+            font-size: 1.6rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .game-title p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .score-board {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .stat-box {
+            background: #eef3f7;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-weight: bold;
+            color: var(--primary-dark);
+            font-size: 0.95rem;
+            border: 1px solid #cbd5e1;
+        }
+
+        .small-sound-btn {
+            background: #475569;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .mission-panel {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .search-panel {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .mission-box h3 {
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mission-desc {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #334155;
+            background: #ffffff;
+            padding: 14px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 15px;
+            min-height: 110px;
+        }
+
+        .tips-box {
+            font-size: 0.85rem;
+            color: #64748b;
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .game-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .game-btn {
+            width: 100%;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+        }
+
+        .game-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.15);
+        }
+
+        .btn-game-next { background-color: var(--accent); }
+        .btn-game-skip { background-color: var(--btn-skip); }
+        .btn-game-hint { background-color: var(--btn-hint); }
+        .btn-game-shield { background-color: var(--btn-shield); }
+
+        .game-btn:disabled, .btn-search:disabled, .search-input:disabled {
+            background-color: #cbd5e1 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        .search-engine-title {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #4285F4;
+            margin-bottom: 15px;
+            letter-spacing: -1px;
+        }
+        .search-engine-title span:nth-child(2) { color: #EA4335; }
+        .search-engine-title span:nth-child(3) { color: #FBBC05; }
+        .search-engine-title span:nth-child(4) { color: #4285F4; }
+        .search-engine-title span:nth-child(5) { color: #34A853; }
+        .search-engine-title span:nth-child(6) { color: #EA4335; }
+
+        .search-bar-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 1rem;
+            border: 2px solid #cbd5e1;
+            border-radius: 24px;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: #4285F4;
+            box-shadow: 0 0 8px rgba(66,133,244,0.2);
+        }
+
+        .btn-search {
+            background: #4285F4;
+            color: white;
+            border: none;
+            padding: 0 24px;
+            font-size: 1rem;
+            border-radius: 24px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-search:hover:not(:disabled) { background: #357ae8; }
+
+        .operator-tags {
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .operator-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+
+        .tag {
+            background: #e2e8f0;
+            color: #334155;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .tag:hover { background: #cbd5e1; color: black; }
+
+        .results-container {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 12px;
+            min-height: 250px;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .results-header {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        .result-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            background: #fff;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .result-card:hover {
+            border-color: #4285F4;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .result-url {
+            font-size: 0.8rem;
+            color: #202124;
+            margin-bottom: 4px;
+            word-break: break-all;
+        }
+
+        .result-title {
+            font-size: 1.05rem;
+            color: #1a0dab;
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .result-snippet {
+            font-size: 0.88rem;
+            color: #4d5156;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .btn-select-result {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-select-result:hover {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .no-results {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 30px 0;
+            font-size: 0.95rem;
+        }
+
+        .status-ticker {
+            width: 100%;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            background: var(--ticker-bg);
+            color: var(--ticker-text);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            margin-top: 20px;
+            line-height: 1.4;
+            box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+            border-left: 4px solid #00ffcc;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ปุ่มกลับหน้าหลัก (รองรับทั้งเปิดใน Apps Script และเปิดตรงบน GitHub Pages) -->
+<button onclick="navigateHome()" style="position: fixed; top: 12px; left: 12px; background: linear-gradient(135deg, #ff416c, #8a2387); color: #ffffff; padding: 8px 18px; border-radius: 50px; border: none; font-size: 14px; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 65, 108, 0.35); z-index: 9999; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.25s ease;">
+    🏠 หน้าหลัก
+</button>
+
+<div class="game-container">
+    <div class="game-header">
+        <div class="game-title">
+            <h1>🕵️‍♂️ KidSearch Detective Infinite</h1>
+            <p>ฝึกค้นหาและประเมินความน่าเชื่อถือของข้อมูลเสมือนจริง</p> 
+        </div>
+        <div class="score-board">
+            <div class="stat-box">⭐ คะแนน: <span id="player-score">0</span></div>
+            <div class="stat-box">🔥 คอมโบต่อเนื่อง: <span id="player-streak">0</span></div> 
+            <button class="small-sound-btn" id="btn-toggle-sound" onclick="toggleSound()">🔊 เปิด</button>
+            <button onclick="toggleFullScreen()" class="small-sound-btn" style="background:#0f172a; border: 1px solid rgba(236,72,153,0.4);" id="fsBtn">
+                <i class="fa-solid fa-expand text-pink-300" id="fsIcon"></i>
+                <span id="fsText">เต็มจอ</span>
+            </button>
+            <div id="shield-indicator" class="stat-box" style="display:none; background:#dbeafe; color:#1e40af; border-color:#bfdbfe;">🛡️ โล่ทำงานอยู่!</div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="mission-panel">
+            <div class="mission-box">
+                <h3>🎯 ใบสั่งงานระบบสุ่มภารกิจ</h3>
+                <div class="mission-desc" id="mission-text">
+                    กำลังสร้างภารกิจใหม่...
+                </div>
+                
+                <div class="tips-box" id="tips-container">
+                    <strong>💡 คำใบ้จากศูนย์บัญชาการ:</strong>
+                    <span id="mission-tip">...</span>
+                </div>
+            </div>
+
+            <div class="game-controls">
+                <button class="game-btn btn-game-next" id="btn-next-mission" onclick="generateNewMission()" style="display:none;">ผ่านด่านแล้ว! รับภารกิจต่อไป 🔁</button>
+                <button class="game-btn btn-game-hint" id="btn-use-hint" onclick="revealHint()">💡 ขอคำใบ้ระบบ (-2 คะแนน)</button>
+                <button class="game-btn btn-game-shield" id="btn-use-shield" onclick="activateShield()">🛡️ เปิดโล่กันคอมโบหลุด (ใช้ได้ 1 ครั้ง)</button>
+                <button class="game-btn btn-game-skip" id="btn-skip-mission" onclick="skipMission()">🔄 ข้ามภารกิจนี้ (ล้างคอมโบเป็น 0)</button>
+            </div>
+        </div>
+
+        <div class="search-panel">
+            <div class="search-engine-title">
+                <span>K</span><span>r</span><span>u</span><span>M</span><span>i</span><span>n</span><span>d</span> Search
+            </div>
+            
+            <div class="search-bar-container">
+                <input type="text" class="search-input" id="search-input" placeholder="พิมพ์คีย์เวิร์ด หรือกดตัวช่วยเสริมด้านล่าง..." onkeydown="if(event.key==='Enter') executeSearch()">
+                <button class="btn-search" id="btn-search-submit" onclick="executeSearch()">ค้นหา</button>
+            </div>
+
+            <div class="operator-tags">
+                <span class="operator-label">🛠️ ตัวช่วยเสริม:</span>
+                <span class="tag" onclick="insertOperator('\"\"')">" " (ค้นหาตรงตัว)</span>
+                <span class="tag" onclick="insertOperator('site:go.th')">site:go.th (เว็บรัฐบาล)</span>
+                <span class="tag" onclick="insertOperator('site:ac.th')">site:ac.th (เว็บการศึกษา)</span>
+                <span class="tag" onclick="insertOperator('filetype:pdf')">filetype:pdf (ไฟล์ PDF)</span>
+                <span class="tag" onclick="insertOperator('filetype:ppt')">filetype:ppt (ไฟล์สไลด์)</span>
+            </div>
+
+            <div class="results-container" id="results-area">
+                <div class="no-results">🌐 ป้อนคำค้นหาและคัดกรองตัวช่วยให้ถูกต้องเพื่อดึงผลการค้นหาครับ</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-ticker" id="status-ticker-box">
+        🤖 ยินดีต้อนรับ! อ่านภารกิจ พิมพ์คัดกรอง แล้วสังเกต URL และเนื้อหาเพื่อเลือกผลลัพธ์ที่ดีที่สุดครับ!
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // คลังข้อมูลภารกิจการเรียนรู้ (Learning Topics)
+    // ==========================================
+    const learningTopics = [
+        { display: "การป้องกันการกลั่นแกล้งบนโลกไซเบอร์ (Cyberbullying)", keys: ["cyberbullying", "กลั่นแกล้ง", "บูลลี่", "ภัยไซเบอร์"] },
+        { display: "วิธีตั้งรหัสผ่านให้ปลอดภัย (Strong Password)", keys: ["รหัสผ่าน", "password", "ความปลอดภัย", "แฮกเกอร์"] },
+        { display: "การคิดเชิงคำนวณ (Computational Thinking)", keys: ["การคิดเชิงคำนวณ", "computational thinking", "อัลกอริทึม", "algorithm"] },
+        { display: "รอยเท้าดิจิทัล (Digital Footprint)", keys: ["รอยเท้าดิจิทัล", "digital footprint", "ความเป็นส่วนตัว", "privacy"] },
+        { display: "การตรวจสอบข่าวปลอมและ AI ปลอมแปลง (Fake News)", keys: ["ข่าวปลอม", "fake news", "deepfake", "ข้อมูลเท็จ"] },
+        { display: "ภัยคุกคามฟิชชิ่ง (Phishing Scam)", keys: ["ฟิชชิ่ง", "phishing", "หลอกลวง", "มิจฉาชีพ"] },
+        { display: "มลพิษทางอากาศฝุ่น PM 2.5", keys: ["pm 2.5", "ฝุ่น", "มลพิษ", "อากาศ"] },
+        { display: "ภาวะโลกร้อนและการเปลี่ยนแปลงสภาพภูมิอากาศ", keys: ["โลกร้อน", "climate change", "สภาพภูมิอากาศ", "เรือนกระจก"] },
+        { display: "การคัดแยกขยะเพื่อสิ่งแวดล้อม", keys: ["คัดแยกขยะ", "รีไซเคิล", "recycle", "ขยะ"] },
+        { display: "อาหารหลัก 5 หมู่และโภชนาการสำหรับเด็ก", keys: ["อาหารหลัก 5 หมู่", "โภชนาการ", "สารอาหาร", "สุขภาพ"] }
+    ];
+
+    // ==========================================
+    // ระบบ Helper บันทึกข้อมูล
+    // ==========================================
+    function getActiveUserScore() {
+        try {
+            const user = JSON.parse(localStorage.getItem('kuanniang_active_user') || '{}');
+            return Number(user.score !== undefined ? user.score : (user.xp || 0));
+        } catch(e) { return 0; }
+    }
+
+    function saveUserScore(newScore) {
+        try {
+            let user = JSON.parse(localStorage.getItem('kuanniang_active_user') || '{}');
+            user.score = newScore;
+            user.xp = newScore;
+            localStorage.setItem('kuanniang_active_user', JSON.stringify(user));
+        } catch(e) { console.warn("Save score failed:", e); }
+    }
+
+    // ฟังก์ชันกลับหน้าหลัก
+    function navigateHome() {
+        if (window.parent && window.parent !== window) {
+            // สั่งปิด Modal ในหน้า Apps Script
+            window.parent.postMessage({ type: 'CLOSE_GAME_MODAL' }, '*');
+        } else {
+            // กรณีเปิดเล่นบน GitHub Pages โดยตรง
+            window.location.href = './index.html';
+        }
+    }
+
+    // ==========================================
+    // ตัวแปรและสถานะเกม
+    // ==========================================
+    let score = 0;
+    let streak = 0;
+    let currentMission = {};
+    let isShieldActive = false;
+    let canUseShieldThisRound = true;
+    let isMissionSolved = false;
+    let currentCandidates = [];
+
+    function loadInitialScore() {
+        try {
+            score = getActiveUserScore();
+            document.getElementById('player-score').innerText = score;
+        } catch (e) {
+            console.error("ดึงคะแนนเดิมไม่สำเร็จ:", e);
+        }
+    }
+
+    function updateScoreSilently(addedPoints) {
+        try {
+            const currentScore = getActiveUserScore();
+            const newTotalScore = Math.max(0, currentScore + Number(addedPoints || 0));
+            saveUserScore(newTotalScore);
+            score = newTotalScore;
+            document.getElementById('player-score').innerText = score;
+
+            // ส่งคะแนนกลับไปยังหน้าหลัก Apps Script (Tab 9) ผ่าน PostMessage
+            if (addedPoints > 0 && window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'GAME_SCORE_UPDATE',
+                    score: addedPoints,
+                    gameId: 'game1',
+                    gameTitle: 'นักสืบไซเบอร์ (KidSearch Detective)'
+                }, '*');
+            }
+        } catch (e) {
+            console.error("บันทึกคะแนนผิดพลาด:", e);
+        }
+    }
+
+    // ==========================================
+    // ระบบเสียง (Web Audio API)
+    // ==========================================
+    let isMuted = false;
+    let bgmInterval = null;
+
+    function toggleSound() {
+        isMuted = !isMuted;
+        const btn = document.getElementById('btn-toggle-sound');
+        if (btn) {
+            if (isMuted) {
+                btn.innerHTML = '🔇 เสียง: ปิด';
+                btn.style.backgroundColor = '#94a3b8';
+                stopBGM();
+            } else {
+                btn.innerHTML = '🔊 เสียง: เปิด';
+                btn.style.backgroundColor = '#475569';
+                startBGM();
+            }
+        }
+    }
+
+    function playAudioTone(type) {
+        if (isMuted) return;
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(783.99, ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.3);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(130, ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.25);
+            } else if (type === 'shield') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(350, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.2);
+            }
+        } catch (e) {}
+    }
+
+    function startBGM() {
+        if (isMuted || bgmInterval) return;
+        const notes = [261.63, 329.63, 392.00, 523.25];
+        let noteIndex = 0;
+
+        bgmInterval = setInterval(() => {
+            if (isMuted) return;
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(notes[noteIndex % notes.length], ctx.currentTime);
+                gain.gain.setValueAtTime(0.02, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+                
+                osc.start();
+                osc.stop(ctx.currentTime + 0.8);
+                noteIndex++;
+            } catch(e) {}
+        }, 1000);
+    }
+
+    function stopBGM() {
+        if (bgmInterval) {
+            clearInterval(bgmInterval);
+            bgmInterval = null;
+        }
+    }
+
+    // ==========================================
+    // ระบบคำสั่งค้นหา (Operators)
+    // ==========================================
+    const searchOperators = [
+        {
+            id: 'gov',
+            desc: 'จาก <u>เว็บไซต์ของหน่วยงานราชการไทยเท่านั้น</u> เพื่อป้องกันข้อมูลเท็จ',
+            tip: 'สังเกตชื่อเว็บไซต์ที่ลงท้ายด้วย <strong>.go.th</strong>',
+            tag: 'site:go.th'
+        },
+        {
+            id: 'edu',
+            desc: 'จาก <u>เว็บไซต์ของสถานศึกษาหรือมหาวิทยาลัย</u> เพื่อใช้อ้างอิงทางวิชาการ',
+            tip: 'สังเกตชื่อเว็บไซต์ที่ลงท้ายด้วย <strong>.ac.th</strong>',
+            tag: 'site:ac.th'
+        },
+        {
+            id: 'exact',
+            desc: 'แบบ <u>เจาะจงคำตรงตัวเป๊ะๆ (Exact Match)</u> เพื่อไม่ให้คำอื่นแยกกันหรือตัดทอน',
+            tip: 'ใส่ <strong>เครื่องหมายคำพูด "..."</strong> ครอบคีย์เวิร์ดหลักเอาไว้',
+            tag: '""'
+        },
+        {
+            id: 'pdf',
+            desc: 'ที่เป็น <u>ไฟล์เอกสารรายงานประเภท PDF เท่านั้น</u> เพื่อดาวน์โหลดมาพิมพ์แจกเพื่อน',
+            tip: 'สังเกตชื่อลิงก์หรือหัวข้อที่มีคำว่า <strong>.pdf</strong> หรือ <strong>[PDF]</strong>',
+            tag: 'filetype:pdf'
+        },
+        {
+            id: 'ppt',
+            desc: 'ที่เป็น <u>ไฟล์สไลด์นำเสนอประเภท PPT หรือ PPTX เท่านั้น</u> สำหรับใช้เปิดรายงานหน้าห้อง',
+            tip: 'สังเกตชื่อลิงก์หรือหัวข้อที่มีคำว่า <strong>.ppt</strong> หรือ <strong>[PPT]</strong>',
+            tag: 'filetype:ppt'
+        }
+    ];
+
+    function validateStrictOperator(query, requiredOpId, topicKeys) {
+        const qLower = query.toLowerCase();
+
+        const hasGov = qLower.includes('site:go.th');
+        const hasEdu = qLower.includes('site:ac.th');
+        const hasPdf = qLower.includes('filetype:pdf');
+        const hasPpt = qLower.includes('filetype:ppt') || qLower.includes('filetype:pptx');
+
+        let hasExact = false;
+        const quoteRegex = /"([^"]+)"/g;
+        let match;
+        while ((match = quoteRegex.exec(query)) !== null) {
+            const inside = match[1].toLowerCase().trim();
+            if (topicKeys.some(k => inside.includes(k.toLowerCase()))) {
+                hasExact = true;
+                break;
+            }
+        }
+
+        let count = 0;
+        if (hasGov) count++;
+        if (hasEdu) count++;
+        if (hasPdf) count++;
+        if (hasPpt) count++;
+        if (hasExact) count++;
+
+        if (count !== 1) return false;
+
+        if (requiredOpId === 'gov') return hasGov;
+        if (requiredOpId === 'edu') return hasEdu;
+        if (requiredOpId === 'pdf') return hasPdf;
+        if (requiredOpId === 'ppt') return hasPpt;
+        if (requiredOpId === 'exact') return hasExact;
+
+        return false;
+    }
+
+    function generateNewMission() {
+        isMissionSolved = false;
+        currentCandidates = [];
+        
+        const randomTopic = learningTopics[Math.floor(Math.random() * learningTopics.length)];
+        const randomOp = searchOperators[Math.floor(Math.random() * searchOperators.length)];
+        
+        currentMission = {
+            topic: randomTopic,
+            operator: randomOp
+        };
+
+        document.getElementById('mission-text').innerHTML = `ศูนย์บัญชาการสั่งการ: จงช่วยค้นหาเนื้อหาเกี่ยวกับ <strong>"${randomTopic.display}"</strong> โดยสืบค้น${randomOp.desc}`;
+        document.getElementById('mission-tip').innerHTML = randomOp.tip;
+        
+        const searchInput = document.getElementById('search-input');
+        const btnSearch = document.getElementById('btn-search-submit');
+        
+        searchInput.value = "";
+        searchInput.disabled = false;
+        btnSearch.disabled = false;
+        
+        document.getElementById('results-area').innerHTML = `<div class="no-results">🌐 ป้อนคำค้นหาและคัดกรองตัวช่วยให้ถูกต้องเพื่อดึงผลการค้นหาครับ</div>`;
+        document.getElementById('tips-container').style.display = 'none';
+        
+        document.getElementById('btn-next-mission').style.display = 'none';
+        document.getElementById('btn-use-hint').disabled = false;
+        document.getElementById('btn-skip-mission').style.display = 'block';
+        
+        canUseShieldThisRound = true;
+        document.getElementById('btn-use-shield').disabled = false;
+
+        updateTicker("🎯 ภารกิจใหม่ถูกสร้างแล้ว! พิมพ์คำค้นหาและสังเกตเลือกเว็บให้ตรงตามภารกิจนะครับ!", "#00ffcc");
+    }
+
+    function skipMission() {
+        streak = 0;
+        document.getElementById('player-streak').innerText = streak;
+        isShieldActive = false;
+        document.getElementById('shield-indicator').style.display = 'none';
+        playAudioTone('error');
+        
+        updateTicker("🔄 คุณกดข้ามภารกิจ! แต้มคอมโบต่อเนื่องถูกล้างเป็น 0 เริ่มสะสมใหม่นะ!", "#ff9900");
+        generateNewMission();
+    }
+
+    function revealHint() {
+        if (score >= 2) {
+            updateScoreSilently(-2);
+            document.getElementById('tips-container').style.display = 'block';
+            document.getElementById('btn-use-hint').disabled = true;
+            playAudioTone('shield');
+            updateTicker("💡 เปิดระบบคำใบ้สำเร็จ! หักคะแนนสะสม -2 คะแนน ลองอ่านกรอบสีเหลืองดูครับ", "#f59e0b");
+        } else {
+            playAudioTone('error');
+            updateTicker("❌ คะแนนสะสมไม่เพียงพอ! ต้องมีอย่างน้อย 2 คะแนนเพื่อแลกคำใบ้", "#ff4d4d");
+        }
+    }
+
+    function activateShield() {
+        if (!canUseShieldThisRound) return;
+        
+        isShieldActive = true;
+        canUseShieldThisRound = false;
+        document.getElementById('btn-use-shield').disabled = true;
+        document.getElementById('shield-indicator').style.display = 'inline-block';
+        playAudioTone('shield');
+        updateTicker("🛡️ โล่พลังงานทำงาน! หากเลือกผลการค้นหาผิดหรือพิมพ์ผิดครั้งต่อไป คอมโบจะไม่หลุด!", "#3b82f6");
+    }
+
+    function insertOperator(operator) {
+        if (isMissionSolved) return;
+        
+        const input = document.getElementById('search-input');
+        if (operator === '\"\"') {
+            input.value = `"${input.value}"`;
+        } else {
+            input.value = input.value ? `${input.value} ${operator}` : operator;
+        }
+        input.focus();
+    }
+
+    function updateTicker(text, color) {
+        const ticker = document.getElementById('status-ticker-box');
+        ticker.innerText = text;
+        ticker.style.color = color;
+    }
+
+    function getCleanedKeyword(query) {
+        return query.replace(/site:[^\s]+/gi, '').replace(/filetype:[^\s]+/gi, '').replace(/"/g, '').trim() || "สิ่งที่ค้นหา";
+    }
+
+    function executeSearch() {
+        if (isMissionSolved) {
+            updateTicker("⚠️ คุณผ่านภารกิจนี้ไปแล้ว! กรุณากดปุ่ม 'รับภารกิจต่อไป' เพื่อทำด่านใหม่ครับ", "#f59e0b");
+            return;
+        }
+
+        const query = document.getElementById('search-input').value.trim();
+        if (!query) {
+            playAudioTone('error');
+            updateTicker("⚠️ นักเรียนต้องพิมพ์คำค้นหาก่อนนะครับ!", "#ff4d4d");
+            return;
+        }
+
+        const cleanUserKeyword = getCleanedKeyword(query);
+        
+        let keywordMatched = false;
+        for (let key of currentMission.topic.keys) {
+            if (query.toLowerCase().includes(key.toLowerCase())) {
+                keywordMatched = true;
+                break;
+            }
+        }
+
+        let operatorMatched = validateStrictOperator(query, currentMission.operator.id, currentMission.topic.keys);
+        const resultsArea = document.getElementById('results-area');
+
+        if (keywordMatched && operatorMatched) {
+            resultsArea.innerHTML = renderEvaluativeResults(query, cleanUserKeyword);
+            updateTicker("🔍 ค้นพบผลลัพธ์แล้ว! สังเกตชื่อเว็บ (URL) และเนื้อหา แล้วเลือกคลิกข้อมูลที่ถูกต้องที่สุด!", "#00ffcc");
+        } else {
+            playAudioTone('error');
+            handleWrongAttempt(keywordMatched, operatorMatched);
+            const statusType = (keywordMatched && !operatorMatched) ? 'WRONG_OPERATOR' : 'WRONG_KEYWORD';
+            resultsArea.innerHTML = generateErrorResult(statusType, query, cleanUserKeyword);
+        }
+    }
+
+    function handleWrongAttempt(keywordMatched, operatorMatched) {
+        if (isShieldActive) {
+            isShieldActive = false;
+            document.getElementById('shield-indicator').style.display = 'none';
+            updateTicker("🛡️ โล่แตก! แต่ช่วยป้องกันคอมโบไม่ให้ถูกล้างเป็น 0 ลองแก้ไขใหม่เร็ว!", "#3b82f6");
+        } else {
+            streak = 0;
+            document.getElementById('player-streak').innerText = streak;
+            if (keywordMatched && !operatorMatched) {
+                updateTicker(`⚠️ คีย์เวิร์ดถูก! แต่เลือกตัวช่วยคัดกรองไม่ตรงเงื่อนไข หรือใส่สเปมตัวช่วยซ้ำซ้อนเกินไป`, "#ff4d4d");
+            } else {
+                updateTicker(`❌ คำค้นหาผิดหัวข้อ! ระบบไม่ต้องการเรื่องนี้ กรุณาอ่านใบสั่งงานใหม่`, "#ff4d4d");
+            }
+        }
+    }
+
+    function renderEvaluativeResults(rawQuery, cleanKey) {
+        const topicName = currentMission.topic.display;
+        const opId = currentMission.operator.id;
+
+        let goodItem = {};
+        if (opId === 'gov') {
+            goodItem = {
+                title: `รายงานสถิติและข้อมูลทางการ เรื่อง ${topicName}`,
+                url: `https://www.knowledge.go.th/official/${cleanKey}`,
+                snippet: `ศูนย์ข้อมูลกลางภาครัฐ เผยแพร่เอกสารสรุปข้อเท็จจริงเกี่ยวกับ ${topicName} ตรวจสอบอย่างเป็นทางการแล้ว...`,
+                isGood: true,
+                reason: "ถูกต้อง! เว็บไซต์ลงท้ายด้วย .go.th เป็นหน่วยงานราชการ ข้อมูลอ้างอิงได้ปลอดภัยที่สุด"
+            };
+        } else if (opId === 'edu') {
+            goodItem = {
+                title: `งานวิจัยและบทความวิชาการ: ${topicName}`,
+                url: `https://research.university.ac.th/article/${cleanKey}`,
+                snippet: `งานวิจัยจากอาจารย์ประจำคณะวิทยาศาสตร์และเทคโนโลยี ศึกษาโครงสร้างของ ${topicName} พร้อมเอกสารอ้างอิง...`,
+                isGood: true,
+                reason: "ถูกต้อง! เว็บไซต์ลงท้ายด้วย .ac.th เป็นสถาบันการศึกษา มีงานวิจัยรองรับ น่าเชื่อถือสูง"
+            };
+        } else if (opId === 'pdf') {
+            goodItem = {
+                title: `[PDF] รายงานสรุปฉบับสมบูรณ์ เรื่อง ${topicName}.pdf`,
+                url: `https://www.download-center.go.th/files/${cleanKey}.pdf`,
+                snippet: `ดาวน์โหลดไฟล์ PDF เอกสารฉบับเต็ม บรรจุเนื้อหา รูปประกอบ และตารางสรุปของ ${topicName} สำหรับพิมพ์รายงาน...`,
+                isGood: true,
+                reason: "ถูกต้อง! เป็นไฟล์ PDF ตรงตามคำสั่งคัดกรอง filetype:pdf และมาจากแหล่งอ้างอิงที่ปลอดภัย"
+            };
+        } else if (opId === 'ppt') {
+            goodItem = {
+                title: `[PPT] สไลด์บรรยายนำเสนอประกอบการเรียน: ${topicName}.ppt`,
+                url: `https://e-learning.ac.th/presentation/${cleanKey}.ppt`,
+                snippet: `ชุดสไลด์สื่อการเรียนการสอนสรุปความรู้เรื่อง ${topicName} จำนวน 15 หน้า พร้อมเปิดนำเสนอหน้าชั้นเรียน...`,
+                isGood: true,
+                reason: "ถูกต้อง! เป็นไฟล์สื่อสไลด์ PPT ตรงตามคำสั่ง filetype:ppt เหมาะสำหรับนำไปเสนอหน้าห้อง"
+            };
+        } else {
+            goodItem = {
+                title: `สารานุกรมดิจิทัลเจาะลึกเฉพาะทาง: "${topicName}"`,
+                url: `https://www.encyclopedia-center.org/${cleanKey}`,
+                snippet: `เนื้อหาค้นหาแบบตรงตัวเป๊ะๆ บรรจุรายละเอียดทั้งหมดที่เกี่ยวข้องกับ "${topicName}" โดยไม่มีเนื้อหาอื่นปน...`,
+                isGood: true,
+                reason: "ถูกต้อง! ใช้เครื่องหมาย \"...\" ค้นตรงตัว ได้เนื้อหาเจาะจงและมาจากสารานุกรมที่เชื่อถือได้"
+            };
+        }
+
+        const badClickbait = {
+            title: `แชร์ด่วน! ความจริงสุดช็อกของ ${topicName} ที่ไม่มีใครเคยบอกคุณ!?`,
+            url: `https://free-news-daily-99.blogspot.com/post-viral`,
+            snippet: `อ่านด่วนก่อนโดนลบ! เผยความลับอันตรายของ ${topicName} ปฏิบัติตามนี้ทันทีไม่ต้องฟังหมอหรือผู้เชี่ยวชาญ...`,
+            isGood: false,
+            reason: "❌ ข้อมูลนี้ไม่น่าเชื่อถือ! มาจากบล็อกฟรี (.blogspot) พาดหัวข่าวเกินจริง (Clickbait) ไม่มีแหล่งอ้างอิง"
+        };
+
+        const badAdTrap = {
+            title: `รับแก้ปัญหา ${topicName} ด่วนที่สุด โอนเงินรับทางแก้ทันที`,
+            url: `https://www.fast-service-online.xyz/promo`,
+            snippet: `โปรโมชันพิเศษสัปดาห์นี้! บริการช่วยเหลือทางออนไลน์เกี่ยวกับ ${topicName} กดแอดไลน์รับสิทธิ์ฟรี...`,
+            isGood: false,
+            reason: "❌ ข้อมูลนี้ไม่ปลอดภัย! เป็นโฆษณาแฝงและมาจากเว็บเสี่ยงหลอกลวง (.xyz) ห้ามคลิกหรือโอนเงินเด็ดขาด"
+        };
+
+        currentCandidates = [goodItem, badClickbait, badAdTrap].sort(() => Math.random() - 0.5);
+
+        let html = `<div class="results-header">วิเคราะห์ผลการค้นหา ${currentCandidates.length} รายการ แล้วคลิกเลือกข้อมูลที่ปลอดภัยและตรงภารกิจที่สุด:</div>`;
+        
+        currentCandidates.forEach((item, index) => {
+            html += `
+                <div class="result-card">
+                    <div class="result-url">${item.url}</div>
+                    <span class="result-title">${item.title}</span>
+                    <div class="result-snippet">${item.snippet}</div>
+                    <button class="btn-select-result" onclick="selectResult(${index})">📌 เลือกใช้ข้อมูลนี้</button>
+                </div>
+            `;
+        });
+
+        return html;
+    }
+
+    function selectResult(index) {
+        if (isMissionSolved) return;
+        const item = currentCandidates[index];
+        if (!item) return;
+
+        if (item.isGood) {
+            isMissionSolved = true;
+            // คำนวณคะแนนโบนัสตามคอมโบ
+            const earnedPoints = 1 + (streak * 2);
+            streak++;
+            document.getElementById('player-streak').innerText = streak;
+
+            updateScoreSilently(earnedPoints);
+
+            document.getElementById('search-input').disabled = true;
+            document.getElementById('btn-search-submit').disabled = true;
+
+            playAudioTone('success');
+            updateTicker(`🎉 สุดยอดสายลับ! ${item.reason} (รับโบนัสคอมโบ x${streak})`, "#55ff55");
+
+            document.getElementById('results-area').innerHTML = `
+                <div style="background:#d1fae5; border:1px solid #10b981; padding:20px; border-radius:12px; color:#065f46;">
+                    <h4 style="font-size:1.1rem; margin-bottom:8px;">✅ วิเคราะห์ถูกต้อง!</h4>
+                    <p style="font-size:0.95rem; line-height:1.5;">${item.reason}</p>
+                </div>
+            `;
+
+            document.getElementById('btn-next-mission').style.display = 'block';
+            document.getElementById('btn-skip-mission').style.display = 'none';
+            document.getElementById('btn-use-hint').disabled = true;
+            document.getElementById('btn-use-shield').disabled = true;
+            
+            isShieldActive = false;
+            document.getElementById('shield-indicator').style.display = 'none';
+        } else {
+            playAudioTone('error');
+            if (isShieldActive) {
+                isShieldActive = false;
+                document.getElementById('shield-indicator').style.display = 'none';
+                updateTicker(`🛡️ โล่ช่วยชีวิต! คุณหลงไปเลือกเว็บไม่ปลอดภัย แต่โล่กันไม่ให้คอมโบหลุด! ${item.reason}`, "#3b82f6");
+            } else {
+                streak = 0;
+                document.getElementById('player-streak').innerText = streak;
+                updateTicker(`${item.reason} แต้มคอมโบถูกล้างเป็น 0! ลองอ่านและเลือกรายการใหม่อีกครั้ง`, "#ff4d4d");
+            }
+        }
+    }
+
+    function generateErrorResult(status, rawQuery, cleanKey) {
+        const topicName = currentMission.topic.display;
+        if (status === 'WRONG_OPERATOR') {
+            return `
+                <div class="result-card" style="border-color:#fca5a5; background:#fff5f5;">
+                    <div class="result-url">https://www.click-bait-blog.com</div>
+                    <span class="result-title" style="color:#b91c1c;">⚠️ ไม่พบผลลัพธ์ที่ตรงตามเงื่อนไขคัดกรอง</span>
+                    <div class="result-snippet">คุณไม่ได้ใส่ตัวช่วยคัดกรอง หรือใส่ตัวช่วยซ้ำซ้อนผิดประเภท ทำให้เจอแต่เว็บขยะที่ไม่ปลอดภัยเกี่ยวกับเรื่อง <b>${topicName}</b>...</div>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="result-card" style="border-color:#fca5a5; background:#fff5f5;">
+                    <div class="result-url">https://www.unrelated-site.com</div>
+                    <span class="result-title" style="color:#b91c1c;">❌ ผลการค้นหาไม่ตรงกับใบสั่งงาน</span>
+                    <div class="result-snippet">สิ่งที่พิมพ์ค้นหาคือ <b>"${cleanKey}"</b> ซึ่งไม่ตรงกับเป้าหมายที่ต้องการคือ <b>"${topicName}"</b> กรุณาอ่านโจทย์ใหม่...</div>
+                </div>
+            `;
+        }
+    }
+
+    // ==========================================
+    // ระบบเต็มจอ (FullScreen)
+    // ==========================================
+    function toggleFullScreen() {
+        const icon = document.getElementById('fsIcon');
+        const text = document.getElementById('fsText');
+
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().then(() => {
+                if (icon) icon.className = 'fa-solid fa-compress text-amber-300';
+                if (text) text.innerText = 'ย่อจอ';
+            }).catch(err => {
+                console.warn(`เปิดเต็มจอไม่ได้: ${err.message}`);
+            });
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen().then(() => {
+                    if (icon) icon.className = 'fa-solid fa-expand text-pink-300';
+                    if (text) text.innerText = 'เต็มจอ';
+                });
+            }
+        }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+        const icon = document.getElementById('fsIcon');
+        const text = document.getElementById('fsText');
+        if (!document.fullscreenElement && icon && text) {
+            icon.className = 'fa-solid fa-expand text-pink-300';
+            text.innerText = 'เต็มจอ';
+        }
+    });
+
+    // เริ่มต้นระบบเมื่อโหลดหน้าเสร็จ
+    document.addEventListener('DOMContentLoaded', function() {
+        loadInitialScore();
+        generateNewMission();
+    });
+</script>
+
+</body>
+</html>
