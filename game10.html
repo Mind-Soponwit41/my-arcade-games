@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowchart Simulator Pro - Clean Light Edition</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Chakra Petch', system-ui, -apple-system, sans-serif; 
+            background-color: #f8fafc; 
+            color: #0f172a; 
+            user-select: none; 
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .code-font { font-family: 'JetBrains Mono', Consolas, monospace; }
+
+        /* พื้นที่ทำงานหลัก Workspace & Canvas */
+        #workspace-wrapper {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+        }
+        #workspace {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            position: relative;
+            background-color: #ffffff;
+            background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+            background-size: 20px 20px;
+        }
+        #canvas-container {
+            position: relative;
+            width: 3200px;
+            height: 3200px;
+            transform-origin: 0 0;
+            transition: transform 0.12s ease-out;
+            pointer-events: none; /* ปล่อยให้คลิกทะลุช่องว่างของกระดาน */
+        }
+
+        /* กล่องบล็อกผังงาน (แก้ไขให้รับการคลิกและลากได้สมบูรณ์) */
+        .node-container { 
+            position: absolute; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 20; 
+            transition: box-shadow 0.2s ease; 
+            touch-action: none;
+            cursor: move;
+            pointer-events: auto !important; /* บังคับให้รับเมาส์และการสัมผัส */
+        }
+        .node-text { 
+            position: absolute; 
+            z-index: 30; 
+            color: #ffffff; 
+            font-weight: 700; 
+            font-size: 13px; 
+            text-align: center; 
+            width: 82%; 
+            pointer-events: none; 
+            word-break: break-word; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* จุดเชื่อมต่อสายผังงาน (Port Handles) */
+        .port-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #ffffff;
+            border: 2px solid #0284c7;
+            border-radius: 50%;
+            cursor: crosshair;
+            z-index: 40;
+            pointer-events: auto !important;
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        .port-top { top: 0; left: 50%; transform: translate(-50%, -50%); }
+        .port-bottom { bottom: 0; left: 50%; transform: translate(-50%, 50%); }
+        .port-left { top: 50%; left: 0; transform: translate(-50%, -50%); }
+        .port-right { top: 50%; right: 0; transform: translate(50%, -50%); }
+
+        .port-top:hover { transform: translate(-50%, -50%) scale(1.4); background: #0284c7; }
+        .port-bottom:hover { transform: translate(-50%, 50%) scale(1.4); background: #0284c7; }
+        .port-left:hover { transform: translate(-50%, -50%) scale(1.4); background: #0284c7; }
+        .port-right:hover { transform: translate(50%, -50%) scale(1.4); background: #0284c7; }
+
+        /* ปุ่มลบบล็อก */
+        .delete-btn {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #ef4444;
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1.5px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+            z-index: 50;
+            pointer-events: auto !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .delete-btn:hover { background: #dc2626; transform: scale(1.1); }
+
+        /* เส้นเชื่อมโยงและจุดดัดเส้น */
+        .hit-path { cursor: pointer; pointer-events: stroke !important; }
+        .hit-path:hover { stroke: rgba(245, 158, 11, 0.4); stroke-width: 14; }
+        
+        .line-group .line-handle { 
+            opacity: 0; 
+            transition: opacity 0.2s ease; 
+            cursor: grab; 
+            pointer-events: auto !important;
+            touch-action: none;
+        }
+        .line-group:hover .line-handle,
+        .line-group.is-selected .line-handle { 
+            opacity: 1; 
+        }
+        .line-handle:active { 
+            cursor: grabbing; 
+            transform: scale(1.3); 
+        }
+
+        /* เอฟเฟกต์เรืองแสงขณะรันสเต็ป */
+        .node-glow {
+            filter: drop-shadow(0 0 10px #f59e0b) drop-shadow(0 0 16px #ef4444);
+            transform: scale(1.04);
+            z-index: 50 !important;
+        }
+        
+        .node-warning-badge {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            background-color: #ef4444;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: bold;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+            z-index: 60;
+            border: 2px solid #ffffff;
+        }
+
+        /* กล่องซูมลอยตัวล็อกติดจอ */
+        .floating-zoom {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #cbd5e1;
+            padding: 6px 10px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(6px);
+        }
+
+        /* คลาสตกแต่งปุ่มพื้นฐาน */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: #2563eb; color: #ffffff; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-success { background: #10b981; color: #ffffff; }
+        .btn-success:hover { background: #059669; }
+        .btn-warning { background: #f59e0b; color: #ffffff; }
+        .btn-warning:hover { background: #d97706; }
+        .btn-danger { background: #ef4444; color: #ffffff; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-slate { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
+        .btn-slate:hover { background: #e2e8f0; color: #0f172a; }
+    </style>
+</head>
+<body>
+
+    <!-- 🌟 TOP MAIN HEADER BAR -->
+    <header style="background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 30; gap: 10px; flex-wrap: wrap;">
+        
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="background: #2563eb; color: #fff; width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold;">
+                ❖
+            </div>
+            <div>
+                <h1 style="font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.2; display: flex; align-items: center; gap: 6px;">
+                    Flowchart Simulator Pro
+                    <span style="font-size: 10px; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 6px; font-weight: 700;">Clean Light v7.0</span>
+                </h1>
+                <p style="font-size: 11px; color: #64748b;">จำลองการทำงานและตรวจสอบตรรกะผังงาน สสวท.</p>
+            </div>
+        </div>
+
+        <div id="mode-banner" style="display: none; background: #eff6ff; border: 1px solid #3b82f6; color: #1d4ed8; padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;">
+            ⚡ <span id="banner-text">โหมดเชื่อมสาย...</span>
+        </div>
+
+        <!-- แถบควบคุมการรันจำลอง -->
+        <div style="display: flex; align-items: center; gap: 6px; background: #f8fafc; padding: 4px 8px; border-radius: 10px; border: 1px solid #e2e8f0;">
+            <button onclick="runProgram('NORMAL')" class="btn btn-success" title="รันจนจบขั้นตอนทันที">
+                ▶ รันปกติ
+            </button>
+            <button onclick="runProgram('AUTO_STEP')" class="btn btn-warning" title="รันอัตโนมัติทีละขั้น">
+                ⏭ ออโต้สเต็ป
+            </button>
+            <button onclick="stepNext()" id="btn-step-next" class="btn btn-primary" style="opacity: 0.5; pointer-events: none;" title="คลิกเพื่อเลื่อนทีละสเต็ป">
+                ⏯ ถัดไป
+            </button>
+            <button onclick="pauseOrResumeExecution()" id="btn-pause" class="btn btn-slate" title="พักชั่วคราว / เล่นต่อ">
+                ⏸
+            </button>
+            <button onclick="stopExecution()" class="btn btn-danger" title="หยุดทำงาน">
+                ⏹
+            </button>
+
+            <div style="display: flex; align-items: center; gap: 4px; border-left: 1px solid #cbd5e1; padding-left: 8px; margin-left: 4px; font-size: 11px; color: #475569;">
+                <span>⏱</span>
+                <input type="range" id="speed-slider" min="200" max="2000" step="100" value="800" onchange="updateExecutionSpeed(this.value)" style="width: 60px; cursor: pointer;">
+            </div>
+        </div>
+
+        <!-- เครื่องมือช่วยผังงาน -->
+        <div style="display: flex; align-items: center; gap: 6px;">
+            <button onclick="autoArrangeWorkspace()" class="btn btn-slate" title="จัดเรียงผังงานอัตโนมัติ">
+                🧹 จัดแนว
+            </button>
+            <button onclick="openCodeModal()" class="btn btn-slate" style="color: #2563eb; border-color: #93c5fd;" title="แปลงผังงานเป็น Python & รหัสเทียม">
+                💻 โค้ดจริง
+            </button>
+            <button onclick="toggleSFX()" id="btn-sfx" class="btn btn-slate" title="เปิด/ปิด เสียง">
+                🔊
+            </button>
+
+            <div style="display: flex; background: #f1f5f9; padding: 2px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                <button onclick="saveToFile()" class="btn btn-slate" style="padding: 4px 8px;" title="บันทึกไฟล์ .json">
+                    💾 บันทึก
+                </button>
+                <button onclick="triggerFileInput()" class="btn btn-slate" style="padding: 4px 8px;" title="เปิดไฟล์ .json เดิม">
+                    📂 เปิดไฟล์
+                </button>
+                <input type="file" id="file-input" accept=".json" onchange="loadFromFile(event)" style="display: none;">
+                <button onclick="exportToPNG()" class="btn btn-slate" style="padding: 4px 8px;" title="ส่งออกเป็นภาพ PNG">
+                    🖼 ภาพ
+                </button>
+            </div>
+
+            <button onclick="resetWorkspace()" class="btn btn-slate" style="color: #ef4444; border-color: #fca5a5;" title="ล้างกระดานใหม่ทั้งหมด">
+                🔄 ล้าง
+            </button>
+        </div>
+    </header>
+
+    <!-- 🎯 SUB-HEADER: แถบโจทย์ท้าทาย -->
+    <div style="background: #f1f5f9; border-bottom: 1px solid #e2e8f0; padding: 6px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-weight: 700; color: #d97706;">🏆 โจทย์ท้าทาย:</span>
+            <select id="challenge-selector" onchange="loadChallenge(this.value)" style="background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; padding: 3px 8px; border-radius: 6px; font-weight: 600; cursor: pointer; outline: none; font-size: 12px;">
+                <option value="0">🎨 ผังงานอิสระ (Sandbox Mode)</option>
+                <option value="1">🎯 โจทย์ 1: คำนวณพื้นที่สี่เหลี่ยม (W × H)</option>
+                <option value="2">🎯 โจทย์ 2: ตรวจสอบคะแนนสอบ (>= 50 ผ่าน)</option>
+                <option value="3">🎯 โจทย์ 3: บวกเลขสะสม 1 ถึง N (Loop)</option>
+            </select>
+            <span id="challenge-desc" style="color: #64748b; font-size: 11px;">สร้างผังงานอิสระตามจินตนาการ</span>
+        </div>
+        <div style="color: #64748b; font-size: 11px;">
+            💡 <b>ดับเบิลคลิก</b> ที่บล็อกเพื่อแก้ไขข้อความ | คลิกที่ <b>จุดกลมรอบบล็อก</b> เพื่อลากเส้นเชื่อม
+        </div>
+    </div>
+
+    <!-- MAIN BODY CONTAINER -->
+    <div style="flex: 1; display: flex; overflow: hidden;">
+        
+        <!-- SIDEBAR LEFT: TOOLBOX & VALIDATION -->
+        <aside style="width: 270px; background: #ffffff; border-right: 1px solid #e2e8f0; padding: 12px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; z-index: 20;">
+            <h2 style="font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase;">
+                สัญลักษณ์ผังงาน สสวท.
+            </h2>
+            
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <button onclick="addBlock('start')" class="btn" style="background: #10b981; color: white; border-radius: 20px; justify-content: flex-start; padding: 7px 12px;">
+                    🟢 เริ่มต้น / สิ้นสุด (Terminator)
+                </button>
+                <button onclick="addBlock('process')" class="btn" style="background: #2563eb; color: white; border-radius: 6px; justify-content: flex-start; padding: 7px 12px;">
+                    🟦 กระบวนการคำนวณ (Process)
+                </button>
+                <button onclick="addBlock('input')" class="btn" style="background: #7c3aed; color: white; border-radius: 6px; justify-content: flex-start; padding: 7px 12px;">
+                    ▱ รับค่า / แสดงผลทั่วไป (Data I/O)
+                </button>
+                <button onclick="addBlock('display')" class="btn" style="background: #db2777; color: white; border-radius: 6px; justify-content: flex-start; padding: 7px 12px;">
+                    📺 แสดงผลหน้าจอ (Display)
+                </button>
+                <button onclick="addBlock('manual_input')" class="btn" style="background: #0d9488; color: white; border-radius: 6px; justify-content: flex-start; padding: 7px 12px;">
+                    ⌨️ รับค่าคีย์บอร์ด (Manual Input)
+                </button>
+                <button onclick="addBlock('decision')" class="btn" style="background: #d97706; color: white; border-radius: 6px; justify-content: flex-start; padding: 7px 12px;">
+                    🔶 เงื่อนไขตัดสินใจ (Decision)
+                </button>
+                <button onclick="addBlock('connector')" class="btn" style="background: #ea580c; color: white; border-radius: 20px; justify-content: flex-start; padding: 7px 12px;">
+                    ⚪ จุดเชื่อมต่อ (Connector)
+                </button>
+            </div>
+
+            <!-- กล่องตรวจทานกฎผังงาน -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; font-size: 11px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-weight: 700; color: #0284c7;">
+                    <span>✓ ตรวจทานกฎผังงาน</span>
+                    <span id="validation-count" style="background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-size: 10px;">0 ข้อผิดพลาด</span>
+                </div>
+                <div id="validation-list" style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto;">
+                    <div style="color: #16a34a; font-weight: 600;">✓ ลำดับและกฎเส้นถูกต้องสมบูรณ์</div>
+                </div>
+            </div>
+
+            <!-- กล่องตั้งค่าเส้นเชื่อมที่เลือก -->
+            <div id="line-control-box" style="display: none; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 10px; font-size: 11px;">
+                <p style="font-weight: 700; color: #b45309; margin-bottom: 6px;">⚙️ ตั้งค่าเส้นเชื่อมโยงที่เลือก</p>
+                <div style="margin-bottom: 8px;">
+                    <label style="display: block; color: #78350f; font-weight: 600; margin-bottom: 2px;">ประเภทเงื่อนไขของเส้นนี้:</label>
+                    <select id="line-label-selector" onchange="updateLineLabel(this.value)" style="width: 100%; background: #ffffff; border: 1px solid #d97706; padding: 4px; border-radius: 6px; font-size: 11px; font-weight: 600;">
+                        <option value="">เส้นทั่วไป (Normal Route)</option>
+                        <option value="ใช่">ใช่ (Yes / True)</option>
+                        <option value="ไม่ใช่">ไม่ใช่ (No / False)</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    <button onclick="resetLineRouting()" class="btn btn-slate" style="flex: 1; padding: 4px; font-size: 10px;">🔄 รีเซ็ตดัดเส้น</button>
+                    <button onclick="deleteSelectedConnection()" class="btn btn-danger" style="flex: 1; padding: 4px; font-size: 10px;">🗑️ ลบเส้น</button>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #e2e8f0;">
+            
+            <!-- หน่วยความจำตัวแปร RAM -->
+            <div>
+                <h3 style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>📊 ตรวจสอบตัวแปร (RAM)</span>
+                    <button onclick="addNewCustomVariable()" style="background: none; border: none; color: #2563eb; cursor: pointer; font-size: 12px; font-weight: bold;" title="เพิ่มตัวแปรใหม่">+เพิ่ม</button>
+                </h3>
+                <div id="variables-list" style="display: flex; flex-direction: column; gap: 4px; background: #f8fafc; padding: 6px; border-radius: 8px; border: 1px solid #e2e8f0;"></div>
+            </div>
+        </aside>
+
+        <!-- MAIN WORKSPACE VIEWPORT -->
+        <div id="workspace-wrapper">
+            <main id="workspace">
+                <div id="canvas-container">
+                    <svg id="arrow-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none;"></svg>
+                </div>
+            </main>
+
+            <!-- 🔍 ปุ่มควบคุมการซูม (ลอยตัวนิ่งติดจอ ไม่เลื่อนหนีเวลา Scroll) -->
+            <div class="floating-zoom">
+                <button onclick="zoomOut()" class="btn btn-slate" style="padding: 4px 8px; font-size: 13px; font-weight: bold;" title="ซูมออก (-)">
+                    −
+                </button>
+                <span id="txt-zoom-level" onclick="resetZoom()" style="font-family: monospace; font-weight: 700; color: #0284c7; width: 44px; text-align: center; cursor: pointer;" title="คลิกเพื่อรีเซ็ต 100%">
+                    100%
+                </span>
+                <button onclick="zoomIn()" class="btn btn-slate" style="padding: 4px 8px; font-size: 13px; font-weight: bold;" title="ซูมเข้า (+)">
+                    +
+                </button>
+                <div style="width: 1px; height: 16px; background: #cbd5e1; margin: 0 2px;"></div>
+                <button onclick="resetZoom()" class="btn btn-slate" style="padding: 4px 6px; font-size: 11px; font-weight: 600;" title="รีเซ็ตเป็น 100%">
+                    รีเซ็ต
+                </button>
+            </div>
+        </div>
+
+        <!-- SIDEBAR RIGHT: MONITOR & DEBUG TRACER -->
+        <aside style="width: 300px; background: #ffffff; border-left: 1px solid #e2e8f0; display: flex; flex-direction: column; z-index: 20;">
+            <div style="flex: 1; display: flex; flex-direction: column; border-bottom: 1px solid #e2e8f0; padding: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h2 style="font-size: 11px; font-weight: 700; color: #16a34a; text-transform: uppercase;">
+                        🖥️ หน้าจอแสดงผล (Monitor)
+                    </h2>
+                    <button onclick="clearMonitor()" style="font-size: 10px; color: #64748b; background: none; border: none; cursor: pointer;">
+                        ล้างจอ
+                    </button>
+                </div>
+                <div id="monitor-screen" class="code-font" style="flex: 1; background: #0f172a; color: #34d399; border-radius: 8px; padding: 10px; font-size: 12px; overflow-y: auto; white-space: pre-wrap; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);">
+[ระบบพร้อมทำงาน...]
+                </div>
+            </div>
+
+            <div style="flex: 1; display: flex; flex-direction: column; padding: 12px; background: #f8fafc;">
+                <h2 style="font-size: 11px; font-weight: 700; color: #0284c7; text-transform: uppercase; margin-bottom: 8px;">
+                    🔎 สถานะการทำงาน Tracer Debug
+                </h2>
+                <div id="debug-screen" class="code-font" style="flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; font-size: 11px; color: #334155; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">
+                    <div style="color: #94a3b8;">> รอการกดรันโปรแกรม...</div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- CODE GENERATOR MODAL -->
+    <div id="code-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; padding: 16px;">
+        <div style="background: #ffffff; border-radius: 14px; width: 100%; max-width: 650px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden;">
+            <div style="padding: 12px 16px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
+                <h3 style="font-size: 13px; font-weight: 700; color: #0f172a;">💻 แปลงผังงานเป็นโค้ดจริง (Code Generator)</h3>
+                <button onclick="closeCodeModal()" style="border: none; background: none; font-size: 16px; cursor: pointer; color: #64748b;">✕</button>
+            </div>
+            <div style="padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #d97706;">🐍 ภาษา Python:</span>
+                        <button onclick="copyCode('python-code-text')" class="btn btn-slate" style="padding: 2px 8px; font-size: 10px;">คัดลอก Python</button>
+                    </div>
+                    <pre id="python-code-text" class="code-font" style="background: #0f172a; color: #38bdf8; padding: 10px; border-radius: 8px; font-size: 11px; overflow-x: auto; user-select: text;"></pre>
+                </div>
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #0284c7;">📄 รหัสเทียม (Pseudocode):</span>
+                        <button onclick="copyCode('pseudo-code-text')" class="btn btn-slate" style="padding: 2px 8px; font-size: 10px;">คัดลอก Pseudocode</button>
+                    </div>
+                    <pre id="pseudo-code-text" class="code-font" style="background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; font-size: 11px; overflow-x: auto; user-select: text;"></pre>
+                </div>
+            </div>
+            <div style="padding: 10px 16px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end;">
+                <button onclick="closeCodeModal()" class="btn btn-slate">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC ENGINE -->
+    <script>
+        let blockCount = 0;
+        let connections = [];
+        let sourceBlockId = null;
+        let sourcePortName = null;
+        let selectedConnectionIndex = null; 
+        let draggingHandleIndex = null;
+        let sfxMuted = false;
+        let audioCtx = null;
+        let zoomLevel = 1.0;
+
+        let execState = {
+            active: false, paused: false, mode: 'NORMAL', currentBlock: null, stepCount: 0, maxSteps: 100, delayMs: 800, timer: null, activeChallengeId: 0
+        };
+
+        let variables = [
+            { name: 'X', value: 0 }, { name: 'Y', value: 0 }, { name: 'A', value: 0 }, { name: 'B', value: 0 },
+            { name: 'W', value: 0 }, { name: 'H', value: 0 }, { name: 'Score', value: 0 }, { name: 'N', value: 0 }
+        ];
+
+        const challenges = {
+            0: { title: "ผังงานอิสระ (Sandbox Mode)", desc: "สร้างผังงานอิสระตามจินตนาการของคุณ", inputs: {}, check: null },
+            1: { title: "คำนวณพื้นที่สี่เหลี่ยม (W × H)", desc: "รับค่า W และ H จากคีย์บอร์ด คำนวณ Area = W * H แล้วแสดงผล Area", inputs: { W: 8, H: 5 }, check: (out) => out.includes("40") },
+            2: { title: "ตรวจสอบคะแนนสอบ (>= 50 ผ่าน)", desc: "รับค่า Score ตรวจสอบหาก Score >= 50 ให้แสดง 'PASS' หากไม่ใช่ให้แสดง 'FAIL'", inputs: { Score: 75 }, check: (out) => out.toUpperCase().includes("PASS") },
+            3: { title: "บวกเลขสะสม 1 ถึง N (Loop)", desc: "รับค่า N เพิ่มค่า X จาก 1 ถึง N และสะสมผลบวกไว้ที่ Y แล้วแสดงผล Y", inputs: { N: 5 }, check: (out) => out.includes("15") }
+        };
+
+        function setZoom(level) {
+            zoomLevel = Math.max(0.4, Math.min(2.0, Math.round(level * 10) / 10));
+            const canvasContainer = document.getElementById('canvas-container');
+            if (canvasContainer) {
+                canvasContainer.style.transform = `scale(${zoomLevel})`;
+            }
+            const txtZoom = document.getElementById('txt-zoom-level');
+            if (txtZoom) txtZoom.innerText = `${Math.round(zoomLevel * 100)}%`;
+        }
+
+        function zoomIn() { playSound('click'); setZoom(zoomLevel + 0.1); }
+        function zoomOut() { playSound('click'); setZoom(zoomLevel - 0.1); }
+        function resetZoom() { playSound('click'); setZoom(1.0); }
+
+        function playSound(type) {
+            if (sfxMuted) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    osc.frequency.setValueAtTime(450, now); gain.gain.setValueAtTime(0.06, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04); osc.start(now); osc.stop(now + 0.04);
+                } else if (type === 'step') {
+                    osc.frequency.setValueAtTime(600, now); gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06); osc.start(now); osc.stop(now + 0.06);
+                } else if (type === 'connect') {
+                    osc.frequency.setValueAtTime(320, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                    gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1); osc.start(now); osc.stop(now + 0.1);
+                } else if (type === 'error') {
+                    osc.frequency.setValueAtTime(200, now); gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15); osc.start(now); osc.stop(now + 0.15);
+                } else if (type === 'win') {
+                    [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(freq, now + idx * 0.08); g.gain.setValueAtTime(0.1, now + idx * 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.2); o.start(now + idx * 0.08); o.stop(now + idx * 0.08 + 0.2);
+                    });
+                }
+            } catch(e) {}
+        }
+
+        function toggleSFX() {
+            sfxMuted = !sfxMuted;
+            document.getElementById('btn-sfx').innerText = sfxMuted ? '🔇' : '🔊';
+        }
+
+        function updateVariableUI() {
+            const container = document.getElementById('variables-list');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            variables.forEach((v, index) => {
+                container.innerHTML += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 11px;">
+                        <button onclick="renameVariable(${index})" style="background: none; border: none; font-weight: 700; color: #d97706; cursor: pointer;" title="คลิกเพื่อแก้ชื่อ">
+                            ✏️ ${v.name}
+                        </button>
+                        <span class="code-font" style="font-weight: 700; color: #16a34a; background: #dcfce7; padding: 1px 6px; border-radius: 4px;">${v.value}</span>
+                    </div>
+                `;
+            });
+            saveWorkspaceToLocalStorage();
+        }
+
+        function renameVariable(index) {
+            const oldName = variables[index].name;
+            let newName = prompt(`เปลี่ยนชื่อตัวแปร "${oldName}" เป็นชื่อใหม่:`, oldName);
+            if (newName && newName.trim() !== "") {
+                newName = newName.trim().replace(/[^a-zA-Z0-9_]/g, ''); 
+                if (newName === "") return;
+                variables[index].name = newName;
+                updateVariableUI();
+            }
+        }
+
+        function addNewCustomVariable() {
+            let varName = prompt("ตั้งชื่อตัวแปรใหม่ (เช่น Total, Count):");
+            if (varName && varName.trim() !== "") {
+                varName = varName.trim().replace(/[^a-zA-Z0-9_]/g, '');
+                if (!variables.some(v => v.name.toUpperCase() === varName.toUpperCase())) {
+                    variables.push({ name: varName, value: 0 });
+                    updateVariableUI();
+                } else {
+                    alert("มีตัวแปรชื่อนี้อยู่ในระบบแล้ว!");
+                }
+            }
+        }
+
+        // เพิ่มบล็อกผังงาน (ตั้งค่า Event และพอร์ตสมบูรณ์)
+        function addBlock(type, customX, customY, textVal) {
+            playSound('click');
+            blockCount++;
+            const id = `block-${blockCount}`;
+            const container = document.getElementById('canvas-container');
+            const block = document.createElement('div');
+            block.id = id;
+            block.className = `node-container`;
+            block.dataset.type = type;
+
+            if (type === 'connector') {
+                block.style.width = '50px'; block.style.height = '50px';
+            } else {
+                block.style.width = '160px'; block.style.height = '60px';
+            }
+
+            const workspaceEl = document.getElementById('workspace');
+            const currentScrollTop = (workspaceEl ? workspaceEl.scrollTop : 0) / zoomLevel;
+            const currentScrollLeft = (workspaceEl ? workspaceEl.scrollLeft : 0) / zoomLevel;
+
+            let rawX = customX ? customX : (180 + currentScrollLeft);
+            let rawY = customY ? customY : (80 + currentScrollTop + (blockCount * 30) % 160);
+            
+            block.style.left = `${Math.round(rawX / 20) * 20}px`;
+            block.style.top = `${Math.round(rawY / 20) * 20}px`;
+
+            let defaultText = textVal || '';
+            let svgShape = '';
+
+            if (!textVal) {
+                if (type === 'start') defaultText = blockCount === 1 ? 'เริ่มต้น' : 'สิ้นสุด';
+                else if (type === 'process') defaultText = 'Y = Y + 5';
+                else if (type === 'input') defaultText = 'พิมพ์ Y';
+                else if (type === 'display') defaultText = 'แสดงผล Y';
+                else if (type === 'manual_input') defaultText = 'รับค่า X';
+                else if (type === 'decision') defaultText = 'Y > 10';
+                else if (type === 'connector') defaultText = '1';
+            }
+
+            if (type === 'start') {
+                svgShape = `<svg viewBox="0 0 160 60" style="width:100%;height:100%;"><rect x="3" y="3" width="154" height="54" rx="27" fill="#10b981" stroke="#059669" stroke-width="2.5"/></svg>`;
+            } else if (type === 'process') {
+                svgShape = `<svg viewBox="0 0 160 60" style="width:100%;height:100%;"><rect x="3" y="3" width="154" height="54" rx="6" fill="#2563eb" stroke="#1d4ed8" stroke-width="2.5"/></svg>`;
+            } else if (type === 'input') {
+                svgShape = `<svg viewBox="0 0 160 60" style="width:100%;height:100%;"><polygon points="25,3 157,3 135,57 3,57" fill="#7c3aed" stroke="#6d28d9" stroke-width="2.5"/></svg>`;
+            } else if (type === 'display') {
+                svgShape = `<svg viewBox="0 0 160 60" style="width:100%;height:100%;"><path d="M 25 3 L 130 3 Q 157 30 130 57 L 25 57 L 3 30 Z" fill="#db2777" stroke="#be185d" stroke-width="2.5"/></svg>`;
+            } else if (type === 'manual_input') {
+                svgShape = `<svg viewBox="0 0 160 60" style="width:100%;height:100%;"><polygon points="3,16 157,3 157,57 3,57" fill="#0d9488" stroke="#0f766e" stroke-width="2.5"/></svg>`;
+            } else if (type === 'decision') {
+                svgShape = `<svg viewBox="0 0 160 60" style="width:100%;height:100%;"><polygon points="80,3 157,30 80,57 3,30" fill="#d97706" stroke="#b45309" stroke-width="2.5"/></svg>`;
+            } else if (type === 'connector') {
+                svgShape = `<svg viewBox="0 0 50 50" style="width:100%;height:100%;"><circle cx="25" cy="25" r="22" fill="#ea580c" stroke="#c2410c" stroke-width="2.5"/></svg>`;
+            }
+
+            block.innerHTML = `
+                ${svgShape}
+                <div class="node-text" id="text-${id}">${defaultText}</div>
+                <button onclick="removeBlock('${id}', event)" class="delete-btn" title="ลบบล็อก">✕</button>
+                <div onclick="handlePortClick('${id}', 'top', event)" class="port-handle port-top" title="พอร์ตบน"></div>
+                <div onclick="handlePortClick('${id}', 'bottom', event)" class="port-handle port-bottom" title="พอร์ตล่าง"></div>
+                <div onclick="handlePortClick('${id}', 'left', event)" class="port-handle port-left" title="พอร์ตซ้าย"></div>
+                <div onclick="handlePortClick('${id}', 'right', event)" class="port-handle port-right" title="พอร์ตขวา"></div>
+                <div style="position: absolute; left: -22px; top: 0; font-size: 9px; color: #94a3b8; pointer-events: none;">ID:${blockCount}</div>
+            `;
+
+            // ดับเบิลคลิกเพื่อแก้ไขข้อความ
+            block.addEventListener('dblclick', (e) => { 
+                e.stopPropagation(); 
+                editBlockText(id); 
+            });
+
+            container.appendChild(block);
+            makeElementDraggable(block);
+            drawConnections();
+            validateWorkspace();
+            saveWorkspaceToLocalStorage();
+        }
+
+        function removeBlock(id, event) {
+            if(event) event.stopPropagation();
+            playSound('click');
+            const el = document.getElementById(id);
+            if(el) el.remove();
+            connections = connections.filter(c => c.from !== id && c.to !== id);
+            if (selectedConnectionIndex !== null) cancelLineSelection();
+            drawConnections(); validateWorkspace(); saveWorkspaceToLocalStorage();
+        }
+
+        function editBlockText(id) {
+            const textElement = document.getElementById(`text-${id}`);
+            const newText = prompt("แก้ไขข้อความกระบวนการ/ตัวแปร:", textElement.innerText);
+            if (newText !== null && newText.trim() !== "") {
+                textElement.innerText = newText.trim();
+                drawConnections(); validateWorkspace(); saveWorkspaceToLocalStorage();
+            }
+        }
+
+        // เชื่อมต่อเส้นผ่านพอร์ต
+        function handlePortClick(id, portName, event) {
+            event.stopPropagation();
+            
+            const block = document.getElementById(id);
+            const type = block.dataset.type;
+            const txt = document.getElementById(`text-${id}`).innerText.toUpperCase();
+            const isEndNode = (type === 'start') && (txt.includes('สิ้นสุด') || txt.includes('END'));
+
+            if (selectedConnectionIndex !== null) {
+                const conn = connections[selectedConnectionIndex];
+                if (conn.from === id && conn.fromPort === portName) { cancelLineSelection(); return; }
+                conn.to = id; conn.toPort = portName;
+                cancelLineSelection(); drawConnections(); validateWorkspace(); return;
+            }
+
+            if (!sourceBlockId) {
+                if (isEndNode) {
+                    playSound('error');
+                    alert("⚠️ ตามกฎผังงาน: บล็อก 'สิ้นสุด (END)' ห้ามมีเส้นลากออก!");
+                    return;
+                }
+
+                const existingOut = connections.filter(c => c.from === id);
+                if (type !== 'decision' && existingOut.length >= 1) {
+                    playSound('error');
+                    alert(`⚠️ บล็อก [${type.toUpperCase()}] สามารถมีเส้นลากออกได้เพียง 1 เส้น!`);
+                    return;
+                }
+                if (type === 'decision' && existingOut.length >= 2) {
+                    playSound('error');
+                    alert("⚠️ บล็อกเงื่อนไข (Decision) มีเส้นลากออกได้ไม่เกิน 2 เส้น (ใช่/ไม่ใช่)!");
+                    return;
+                }
+
+                sourceBlockId = id; sourcePortName = portName;
+                playSound('click');
+                showBanner(`ลากจาก ID:${id.split('-')[1]} (${portName}) ➡️ คลิกเลือกพอร์ตปลายทาง`);
+            } else {
+                if (sourceBlockId === id) { cancelConnection(); return; }
+                
+                const targetTxt = document.getElementById(`text-${id}`).innerText.toUpperCase();
+                if (type === 'start' && (targetTxt.includes('เริ่มต้น') || targetTxt.includes('START'))) {
+                    playSound('error');
+                    alert("⚠️ ตามกฎผังงาน: บล็อก 'เริ่มต้น (START)' ห้ามมีเส้นลากเข้ามา!");
+                    cancelConnection();
+                    return;
+                }
+
+                connections = connections.filter(c => !(c.from === sourceBlockId && c.fromPort === sourcePortName));
+                
+                let initialLabel = '';
+                const sourceType = document.getElementById(sourceBlockId).dataset.type;
+                if (sourceType === 'decision') {
+                    if (sourcePortName === 'bottom') initialLabel = 'ใช่';
+                    else if (sourcePortName === 'right') initialLabel = 'ไม่ใช่';
+                }
+
+                connections.push({ from: sourceBlockId, fromPort: sourcePortName, to: id, toPort: portName, label: initialLabel, customX: null, customY: null });
+                playSound('connect');
+                cancelConnection(); drawConnections(); validateWorkspace(); saveWorkspaceToLocalStorage();
+            }
+        }
+
+        function handleLineClick(index, event) {
+            event.stopPropagation(); cancelConnection(); 
+            selectedConnectionIndex = index; drawConnections();
+            const conn = connections[index];
+            const selector = document.getElementById('line-label-selector');
+            selector.value = conn.label || '';
+            document.getElementById('line-control-box').style.display = 'block';
+        }
+
+        function resetLineRouting() {
+            if (selectedConnectionIndex !== null) {
+                connections[selectedConnectionIndex].customX = null;
+                connections[selectedConnectionIndex].customY = null;
+                drawConnections(); saveWorkspaceToLocalStorage();
+            }
+        }
+
+        function updateLineLabel(value) {
+            if (selectedConnectionIndex !== null) {
+                connections[selectedConnectionIndex].label = value;
+                drawConnections(); saveWorkspaceToLocalStorage();
+            }
+        }
+
+        function deleteSelectedConnection() {
+            if (selectedConnectionIndex !== null) {
+                connections.splice(selectedConnectionIndex, 1);
+                cancelLineSelection(); drawConnections(); validateWorkspace(); saveWorkspaceToLocalStorage();
+            }
+        }
+
+        function cancelConnection() { sourceBlockId = null; sourcePortName = null; document.getElementById('mode-banner').style.display = 'none'; }
+        function cancelLineSelection() { selectedConnectionIndex = null; document.getElementById('line-control-box').style.display = 'none'; document.getElementById('mode-banner').style.display = 'none'; }
+        function showBanner(text) { document.getElementById('banner-text').innerText = text; document.getElementById('mode-banner').style.display = 'block'; }
+
+        function getPortCoordinates(blockId, portName) {
+            const el = document.getElementById(blockId);
+            if (!el) return { x: 0, y: 0 };
+            const left = parseFloat(el.style.left) || 0; const top = parseFloat(el.style.top) || 0;
+            const width = parseFloat(el.style.width) || 0; const height = parseFloat(el.style.height) || 0;
+            if (portName === 'top') return { x: left + width / 2, y: top };
+            if (portName === 'bottom') return { x: left + width / 2, y: top + height };
+            if (portName === 'left') return { x: left, y: top + height / 2 };
+            return { x: left + width, y: top + height / 2 };
+        }
+
+        function drawConnections() {
+            const canvas = document.getElementById('arrow-canvas');
+            if (!canvas) return;
+            canvas.innerHTML = `
+                <defs>
+                    <marker id="arrow-slate" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#334155"/></marker>
+                    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/></marker>
+                    <marker id="arrow-rose" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/></marker>
+                    <marker id="arrow-yellow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/></marker>
+                </defs>
+            `;
+
+            connections.forEach((conn, index) => {
+                const pt1 = getPortCoordinates(conn.from, conn.fromPort);
+                const pt2 = getPortCoordinates(conn.to, conn.toPort);
+                let x1 = pt1.x, y1 = pt1.y, x2 = pt2.x, y2 = pt2.y;
+                let p1 = conn.fromPort, p2 = conn.toPort;
+                const isSelected = (index === selectedConnectionIndex);
+                
+                let strokeColor = "#334155", markerId = "arrow-slate";
+                if (conn.label === 'ใช่' || conn.label === 'Yes') { strokeColor = "#059669"; markerId = "arrow-emerald"; }
+                if (conn.label === 'ไม่ใช่' || conn.label === 'No') { strokeColor = "#dc2626"; markerId = "arrow-rose"; }
+                if (isSelected) { strokeColor = "#d97706"; markerId = "arrow-yellow"; }
+
+                let startX = x1, startY = y1, endX = x2, endY = y2;
+                if (p1 === 'top') startY -= 15;
+                if (p1 === 'bottom') startY += 15;
+                if (p1 === 'left') startX -= 15;
+                if (p1 === 'right') startX += 15;
+
+                if (p2 === 'top') endY -= 15;
+                if (p2 === 'bottom') endY += 15;
+                if (p2 === 'left') endX -= 15;
+                if (p2 === 'right') endX += 15;
+
+                let midX = conn.customX !== null ? conn.customX : (startX + endX) / 2;
+                let midY = conn.customY !== null ? conn.customY : (startY + endY) / 2;
+
+                let pathD = "";
+                if (conn.customX !== null || conn.customY !== null) {
+                    pathD = `M ${x1} ${y1} L ${startX} ${startY} L ${midX} ${startY} L ${midX} ${midY} L ${midX} ${endY} L ${endX} ${endY} L ${x2} ${y2}`;
+                } else {
+                    if ((p1 === 'bottom' && p2 === 'top') || (p1 === 'top' && p2 === 'bottom')) {
+                        let centerY = startY + (endY - startY) / 2;
+                        pathD = `M ${x1} ${y1} L ${startX} ${startY} L ${startX} ${centerY} L ${endX} ${centerY} L ${endX} ${endY} L ${x2} ${y2}`;
+                    } else {
+                        let centerX = startX + (endX - startX) / 2;
+                        pathD = `M ${x1} ${y1} L ${startX} ${startY} L ${centerX} ${startY} L ${centerX} ${endY} L ${endX} ${endY} L ${x2} ${y2}`;
+                    }
+                }
+
+                const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                g.setAttribute("class", `line-group ${isSelected ? 'is-selected' : ''}`);
+
+                const hitPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                hitPath.setAttribute("d", pathD); 
+                hitPath.setAttribute("stroke", "transparent");
+                hitPath.setAttribute("stroke-width", "14"); 
+                hitPath.setAttribute("fill", "none");
+                hitPath.setAttribute("class", "hit-path");
+                hitPath.onclick = (e) => handleLineClick(index, e);
+                g.appendChild(hitPath);
+
+                const visualPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                visualPath.setAttribute("d", pathD); 
+                visualPath.setAttribute("stroke", strokeColor);
+                visualPath.setAttribute("stroke-width", isSelected ? "3.5" : "2.5");
+                visualPath.setAttribute("fill", "none"); 
+                visualPath.setAttribute("marker-end", `url(#${markerId})`);
+                visualPath.style.pointerEvents = "none";
+                g.appendChild(visualPath);
+
+                if (conn.label) {
+                    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    text.setAttribute("x", midX + 6); text.setAttribute("y", midY - 6);
+                    text.setAttribute("fill", conn.label === 'ใช่' || conn.label === 'Yes' ? '#059669' : '#dc2626');
+                    text.setAttribute("font-size", "12px"); text.setAttribute("font-weight", "bold");
+                    text.style.pointerEvents = "none";
+                    text.textContent = conn.label;
+                    g.appendChild(text);
+                }
+
+                const handleCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                handleCircle.setAttribute("cx", midX); handleCircle.setAttribute("cy", midY);
+                handleCircle.setAttribute("r", "7"); 
+                handleCircle.setAttribute("fill", isSelected ? "#d97706" : "#2563eb");
+                handleCircle.setAttribute("stroke", "#FFFFFF"); 
+                handleCircle.setAttribute("stroke-width", "2");
+                handleCircle.setAttribute("class", "line-handle");
+                
+                handleCircle.onpointerdown = (e) => startDragHandle(index, e);
+                g.appendChild(handleCircle);
+
+                canvas.appendChild(g);
+            });
+        }
+
+        // การดัดเส้นเชื่อมโยง (Pointer Capture)
+        function startDragHandle(index, e) {
+            e.stopPropagation();
+            draggingHandleIndex = index;
+
+            const onPointerMove = (ev) => {
+                if (draggingHandleIndex === null) return;
+                const canvas = document.getElementById('arrow-canvas');
+                const rect = canvas.getBoundingClientRect();
+                
+                connections[draggingHandleIndex].customX = (ev.clientX - rect.left) / zoomLevel;
+                connections[draggingHandleIndex].customY = (ev.clientY - rect.top) / zoomLevel;
+                drawConnections();
+            };
+
+            const onPointerUp = () => {
+                draggingHandleIndex = null;
+                window.removeEventListener('pointermove', onPointerMove);
+                window.removeEventListener('pointerup', onPointerUp);
+                saveWorkspaceToLocalStorage();
+            };
+
+            window.addEventListener('pointermove', onPointerMove);
+            window.addEventListener('pointerup', onPointerUp);
+        }
+
+        // ระบบลากบล็อกผังงาน (Pointer Capture ลื่นไหล ไม่หลุดมือ)
+        function makeElementDraggable(elmnt) {
+            let isDragging = false;
+            let startX = 0, startY = 0;
+            let origLeft = 0, origTop = 0;
+
+            elmnt.addEventListener('pointerdown', (e) => {
+                // ข้ามหากคลิกโดนปุ่มลบ หรือจุดเชื่อมต่อ Port
+                if (e.target.closest('button') || e.target.classList.contains('port-handle')) return;
+                if (e.button !== 0 && e.pointerType === 'mouse') return;
+
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                origLeft = parseFloat(elmnt.style.left) || 0;
+                origTop = parseFloat(elmnt.style.top) || 0;
+
+                elmnt.setPointerCapture(e.pointerId);
+            });
+
+            elmnt.addEventListener('pointermove', (e) => {
+                if (!isDragging) return;
+                const dx = (e.clientX - startX) / zoomLevel;
+                const dy = (e.clientY - startY) / zoomLevel;
+                elmnt.style.left = (origLeft + dx) + "px";
+                elmnt.style.top = (origTop + dy) + "px";
+                drawConnections();
+            });
+
+            const endDrag = (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                try { elmnt.releasePointerCapture(e.pointerId); } catch(err) {}
+                
+                // Snap เข้า Grid ช่องละ 20px
+                elmnt.style.left = `${Math.round((parseFloat(elmnt.style.left) || 0) / 20) * 20}px`;
+                elmnt.style.top = `${Math.round((parseFloat(elmnt.style.top) || 0) / 20) * 20}px`;
+                drawConnections();
+                saveWorkspaceToLocalStorage();
+            };
+
+            elmnt.addEventListener('pointerup', endDrag);
+            elmnt.addEventListener('pointercancel', endDrag);
+        }
+
+        function autoArrangeWorkspace() {
+            playSound('click');
+            const blocks = Array.from(document.querySelectorAll('#canvas-container > .node-container'));
+            if (blocks.length === 0) return;
+
+            const startBlock = blocks.find(b => {
+                let txt = document.getElementById(`text-${b.id}`)?.innerText.toUpperCase() || '';
+                return b.dataset.type === 'start' && (txt.includes('เริ่มต้น') || txt.includes('START'));
+            });
+
+            if (!startBlock) { alert("ไม่พบบล็อกจุดเริ่มต้น (START) ในการจัดลำดับ"); return; }
+
+            let visited = new Set();
+            let levels = {};
+
+            function assignLevel(blockId, depth) {
+                if (visited.has(blockId)) return;
+                visited.add(blockId);
+                if (!levels[depth]) levels[depth] = [];
+                levels[depth].push(blockId);
+
+                let nextConns = connections.filter(c => c.from === blockId);
+                nextConns.forEach(c => assignLevel(c.to, depth + 1));
+            }
+
+            assignLevel(startBlock.id, 0);
+
+            Object.keys(levels).forEach(depth => {
+                let nodeIds = levels[depth];
+                let rowY = 80 + Number(depth) * 110;
+                let totalWidth = nodeIds.length * 200;
+                let startX = 400 - (totalWidth / 2);
+
+                nodeIds.forEach((id, idx) => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.style.top = `${rowY}px`;
+                        el.style.left = `${startX + idx * 220}px`;
+                    }
+                });
+            });
+
+            connections.forEach(c => { c.customX = null; c.customY = null; });
+            drawConnections(); saveWorkspaceToLocalStorage();
+            logDebug('🧹 จัดระเบียบผังงานอัตโนมัติเรียบร้อยแล้ว', 'success');
+        }
+
+        function validateWorkspace() {
+            const listEl = document.getElementById('validation-list');
+            const countEl = document.getElementById('validation-count');
+            if(!listEl) return;
+
+            document.querySelectorAll('.node-warning-badge').forEach(el => el.remove());
+
+            const blocks = Array.from(document.querySelectorAll('#canvas-container > .node-container'));
+            let warnings = [];
+
+            blocks.forEach(b => {
+                const id = b.id;
+                const type = b.dataset.type;
+                const text = document.getElementById(`text-${id}`)?.innerText.trim() || '';
+                const textUpper = text.toUpperCase();
+                const outConns = connections.filter(c => c.from === id);
+                const inConns = connections.filter(c => c.to === id);
+
+                const isStartNode = (type === 'start') && (textUpper.includes('เริ่มต้น') || textUpper.includes('START'));
+                const isEndNode = (type === 'start') && (textUpper.includes('สิ้นสุด') || textUpper.includes('END'));
+
+                if (isStartNode) {
+                    if (inConns.length > 0) warnings.push({ msg: `บล็อกเริ่มต้น ID:${id.split('-')[1]} ห้ามมีสายลากเข้า`, blockId: id });
+                    if (outConns.length === 0) warnings.push({ msg: `บล็อกเริ่มต้น ID:${id.split('-')[1]} ต้องมีสายลากออก 1 เส้น`, blockId: id });
+                    if (outConns.length > 1) warnings.push({ msg: `บล็อกเริ่มต้น ID:${id.split('-')[1]} มีสายออกเกิน 1 เส้น`, blockId: id });
+                } 
+                else if (isEndNode) {
+                    if (outConns.length > 0) warnings.push({ msg: `บล็อกสิ้นสุด ID:${id.split('-')[1]} ห้ามมีสายลากออก`, blockId: id });
+                    if (inConns.length === 0) warnings.push({ msg: `บล็อกสิ้นสุด ID:${id.split('-')[1]} ยังไม่มีสายลากเข้า`, blockId: id });
+                } 
+                else if (type === 'decision') {
+                    if (inConns.length === 0) warnings.push({ msg: `บล็อกตัดสินใจ ID:${id.split('-')[1]} ยังไม่มีสายลากเข้า`, blockId: id });
+                    if (outConns.length < 2) warnings.push({ msg: `บล็อกตัดสินใจ ID:${id.split('-')[1]} ต้องมีสายออก 2 ทาง (ใช่/ไม่ใช่)`, blockId: id });
+                    if (outConns.length > 2) warnings.push({ msg: `บล็อกตัดสินใจ ID:${id.split('-')[1]} มีสายออกเกิน 2 ทาง`, blockId: id });
+                    
+                    const hasYes = outConns.some(c => c.label === 'ใช่' || c.label === 'Yes');
+                    const hasNo = outConns.some(c => c.label === 'ไม่ใช่' || c.label === 'No');
+                    if (outConns.length === 2 && (!hasYes || !hasNo)) {
+                        warnings.push({ msg: `บล็อกตัดสินใจ ID:${id.split('-')[1]} ต้องระบุเส้น "ใช่" และ "ไม่ใช่" ให้ครบ`, blockId: id });
+                    }
+                } 
+                else if (type === 'connector') {
+                    if (inConns.length < 2) warnings.push({ msg: `จุดเชื่อมต่อ ID:${id.split('-')[1]} ควรมีสายเข้าอย่างน้อย 2 เส้น`, blockId: id });
+                    if (outConns.length === 0) warnings.push({ msg: `จุดเชื่อมต่อ ID:${id.split('-')[1]} ต้องมีสายออก 1 เส้น`, blockId: id });
+                    if (outConns.length > 1) warnings.push({ msg: `จุดเชื่อมต่อ ID:${id.split('-')[1]} มีสายออกเกิน 1 เส้น`, blockId: id });
+                } 
+                else {
+                    if (inConns.length === 0) warnings.push({ msg: `บล็อก ID:${id.split('-')[1]} ยังไม่มีสายลากเข้า`, blockId: id });
+                    if (outConns.length === 0) warnings.push({ msg: `บล็อก ID:${id.split('-')[1]} ต้องมีสายลากออก 1 เส้น`, blockId: id });
+                    if (outConns.length > 1) warnings.push({ msg: `บล็อก ID:${id.split('-')[1]} มีสายออกเกิน 1 เส้น`, blockId: id });
+                }
+            });
+
+            warnings.forEach(w => {
+                if (w.blockId) {
+                    const el = document.getElementById(w.blockId);
+                    if (el && !el.querySelector('.node-warning-badge')) {
+                        const badge = document.createElement('div');
+                        badge.className = 'node-warning-badge';
+                        badge.innerText = '!'; badge.title = w.msg;
+                        el.appendChild(badge);
+                    }
+                }
+            });
+
+            if (warnings.length === 0) {
+                countEl.innerText = "0 ข้อผิดพลาด";
+                countEl.style.background = "#dcfce7";
+                countEl.style.color = "#15803d";
+                listEl.innerHTML = `<div style="color: #16a34a; font-weight: 600;">✓ ลำดับและกฎเส้นถูกต้องสมบูรณ์</div>`;
+            } else {
+                countEl.innerText = `${warnings.length} ข้อผิดพลาด`;
+                countEl.style.background = "#fee2e2";
+                countEl.style.color = "#b91c1c";
+                listEl.innerHTML = warnings.map(w => `<div style="color: #b91c1c; cursor: pointer; text-decoration: underline;" onclick="focusBlock('${w.blockId}')">• ${w.msg}</div>`).join('');
+            }
+        }
+
+        function focusBlock(blockId) {
+            if(!blockId) return;
+            const el = document.getElementById(blockId);
+            if(el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                el.classList.add('node-glow');
+                setTimeout(() => el.classList.remove('node-glow'), 1500);
+            }
+        }
+
+        function logDebug(msg, type = 'info') {
+            const screen = document.getElementById('debug-screen');
+            if(!screen) return;
+            let color = '#334155';
+            if (type === 'success') color = '#15803d';
+            if (type === 'error') color = '#b91c1c';
+            if (type === 'process') color = '#0284c7';
+            if (type === 'flow') color = '#d97706';
+            screen.innerHTML += `<div style="color: ${color}; font-weight: ${type==='error'||type==='success'?'700':'400'};">> ${msg}</div>`;
+            screen.scrollTop = screen.scrollHeight;
+        }
+
+        function printToMonitor(text) {
+            const screen = document.getElementById('monitor-screen');
+            if(screen.innerText.includes('ระบบพร้อม') || screen.innerText.includes('System ready')) screen.innerText = '';
+            screen.innerText += text + '\n'; screen.scrollTop = screen.scrollHeight;
+        }
+
+        function clearMonitor() { document.getElementById('monitor-screen').innerText = '[ระบบพร้อมทำงาน...]'; }
+
+        function resetWorkspace() {
+            stopExecution();
+            document.getElementById('canvas-container').innerHTML = '<svg id="arrow-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none;"></svg>';
+            clearMonitor();
+            document.getElementById('debug-screen').innerHTML = `<div style="color: #94a3b8;">> รอการกดรันโปรแกรม...</div>`;
+            blockCount = 0; connections = [];
+            variables = [{ name: 'X', value: 0 }, { name: 'Y', value: 0 }, { name: 'A', value: 0 }, { name: 'B', value: 0 }, { name: 'W', value: 0 }, { name: 'H', value: 0 }, { name: 'Score', value: 0 }, { name: 'N', value: 0 }];
+            cancelConnection(); cancelLineSelection(); updateVariableUI(); validateWorkspace(); resetZoom();
+            localStorage.removeItem('flowchart_v7_clean');
+        }
+
+        function evaluateSandboxExpression(expressionStr) {
+            let safeStr = expressionStr.replace(/×/g, '*').replace(/÷/g, '/');
+            let contextBody = "";
+            variables.forEach(v => { contextBody += `let ${v.name} = ${v.value};\n`; });
+            contextBody += `return (${safeStr});`;
+            return Function(contextBody)();
+        }
+
+        function clearBlockHighlights() { document.querySelectorAll('.node-container').forEach(el => el.classList.remove('node-glow')); }
+        function updateExecutionSpeed(val) { execState.delayMs = Number(val); }
+
+        function runProgram(mode = 'NORMAL') {
+            stopExecution(); clearMonitor();
+            logDebug(`=== 🚀 เริ่มต้นทำงาน (โหมด: ${mode}) ===`, 'success');
+
+            const blocks = Array.from(document.querySelectorAll('#canvas-container > .node-container'));
+            let startBlock = blocks.find(b => {
+                let innerTxt = document.getElementById(`text-${b.id}`).innerText.toUpperCase();
+                return b.dataset.type === 'start' && (innerTxt.includes('เริ่มต้น') || innerTxt.includes('START'));
+            });
+
+            if (!startBlock) {
+                logDebug('❌ ข้อผิดพลาด: ไม่พบบล็อก "เริ่มต้น / START" บนกระดาน!', 'error');
+                printToMonitor('Error: ไม่พบจุดเริ่มต้นผังงาน');
+                return;
+            }
+
+            execState.active = true; execState.paused = false; execState.mode = mode; execState.currentBlock = startBlock; execState.stepCount = 0;
+            document.getElementById('btn-step-next').style.opacity = '1';
+            document.getElementById('btn-step-next').style.pointerEvents = 'auto';
+
+            if (mode === 'NORMAL') {
+                while (execState.active && execState.currentBlock && execState.stepCount < execState.maxSteps) {
+                    executeOneStep();
+                }
+                finishExecution();
+            } else if (mode === 'AUTO_STEP') {
+                scheduleAutoStep();
+            } else if (mode === 'MANUAL_STEP') {
+                executeOneStep();
+            }
+        }
+
+        function scheduleAutoStep() {
+            if (!execState.active || execState.paused) return;
+            execState.timer = setTimeout(() => {
+                if (execState.currentBlock && execState.stepCount < execState.maxSteps) {
+                    executeOneStep();
+                    scheduleAutoStep();
+                } else {
+                    finishExecution();
+                }
+            }, execState.delayMs);
+        }
+
+        function stepNext() {
+            if (!execState.active) {
+                runProgram('MANUAL_STEP');
+            } else {
+                if (execState.currentBlock && execState.stepCount < execState.maxSteps) {
+                    executeOneStep();
+                    if (!execState.currentBlock) finishExecution();
+                } else {
+                    finishExecution();
+                }
+            }
+        }
+
+        function pauseOrResumeExecution() {
+            if (!execState.active) return;
+            execState.paused = !execState.paused;
+            const btn = document.getElementById('btn-pause');
+            if (execState.paused) {
+                btn.innerText = '▶';
+                clearTimeout(execState.timer);
+            } else {
+                btn.innerText = '⏸';
+                if (execState.mode === 'AUTO_STEP') scheduleAutoStep();
+            }
+        }
+
+        function stopExecution() {
+            clearTimeout(execState.timer);
+            clearBlockHighlights();
+            execState.active = false; execState.paused = false; execState.currentBlock = null;
+            document.getElementById('btn-step-next').style.opacity = '0.5';
+            document.getElementById('btn-step-next').style.pointerEvents = 'none';
+            const btn = document.getElementById('btn-pause');
+            if(btn) btn.innerText = '⏸';
+        }
+
+        function executeOneStep() {
+            if (!execState.currentBlock) return;
+
+            execState.stepCount++;
+            clearBlockHighlights();
+            playSound('step');
+
+            const current = execState.currentBlock;
+            const id = current.id;
+            const type = current.dataset.type;
+            let text = document.getElementById(`text-${id}`).innerText.trim();
+
+            current.classList.add('node-glow');
+            logDebug(`📍 [สเต็ป ${execState.stepCount}] ID:${id.split('-')[1]} [${type.toUpperCase()}]: "${text}"`, 'process');
+
+            if (type === 'process') {
+                if (text.includes('=')) {
+                    let parts = text.split('=');
+                    let targetName = parts[0].trim();
+                    let exprStr = parts[1].trim();
+
+                    let targetVar = variables.find(v => v.name.toUpperCase() === targetName.toUpperCase());
+                    if (!targetVar && targetName.match(/^[a-zA-Z0-9_]+$/)) {
+                        targetVar = { name: targetName, value: 0 };
+                        variables.push(targetVar);
+                    }
+                    if (targetVar) {
+                        let oldVal = targetVar.value;
+                        try {
+                            let newVal = evaluateSandboxExpression(exprStr);
+                            targetVar.value = Number(newVal) || 0;
+                            updateVariableUI();
+                            logDebug(`   📊 RAM: ${targetVar.name} = ${targetVar.value} (เดิม ${oldVal})`, 'success');
+                        } catch(err) {
+                            logDebug(`   ❌ คำนวณสมการผิดพลาด: ${exprStr}`, 'error');
+                        }
+                    }
+                }
+            } 
+            else if (type === 'display') {
+                let textUpper = text.toUpperCase();
+                const outputKws = ['แสดงผล', 'OUTPUT', 'แสดง', 'พิมพ์', 'โชว์', 'PRINT', 'SHOW'];
+                let matchedOutput = outputKws.find(kw => textUpper.startsWith(kw.toUpperCase()));
+                let exprPart = matchedOutput ? text.substring(matchedOutput.length).trim() : text;
+                
+                let outVal;
+                try { outVal = evaluateSandboxExpression(exprPart); } catch(e) { outVal = exprPart; }
+                printToMonitor(`ผลลัพธ์: ${outVal}`);
+            }
+            else if (type === 'manual_input' || type === 'input') {
+                let textUpper = text.toUpperCase();
+                const inputKws = ['รับค่า', 'INPUT', 'อ่านค่า', 'นำเข้า', 'READ', 'GET'];
+                const outputKws = ['แสดงผล', 'OUTPUT', 'แสดง', 'พิมพ์', 'โชว์', 'PRINT', 'SHOW'];
+                
+                let matchedInput = inputKws.find(kw => textUpper.startsWith(kw.toUpperCase()));
+                let matchedOutput = outputKws.find(kw => textUpper.startsWith(kw.toUpperCase()));
+
+                if (matchedInput || type === 'manual_input') {
+                    let targetName = matchedInput ? text.substring(matchedInput.length).trim() : text;
+                    targetName = targetName.replace(/[:=]/g, '').trim();
+
+                    let targetVar = variables.find(v => v.name.toUpperCase() === targetName.toUpperCase());
+                    if (!targetVar && targetName.match(/^[a-zA-Z0-9_]+$/)) {
+                        targetVar = { name: targetName, value: 0 };
+                        variables.push(targetVar);
+                    }
+
+                    if (targetVar) {
+                        let presetVal = challenges[execState.activeChallengeId]?.inputs[targetVar.name];
+                        let userVal = presetVal !== undefined ? presetVal : prompt(`[ป้อนค่าอินพุต] ป้อนข้อมูลให้ตัวแปร "${targetVar.name}":`, targetVar.value || "0");
+                        targetVar.value = Number(userVal) || 0;
+                        updateVariableUI();
+                        logDebug(`   📥 รับค่าลงตัวแปร ${targetVar.name} = ${targetVar.value}`, 'success');
+                    }
+                } else if (matchedOutput) {
+                    let exprPart = text.substring(matchedOutput.length).trim();
+                    let outVal;
+                    try { outVal = evaluateSandboxExpression(exprPart); } catch(e) { outVal = exprPart; }
+                    printToMonitor(`ผลลัพธ์: ${outVal}`);
+                }
+            }
+
+            let nextRoutes = connections.filter(c => c.from === id);
+            let targetBlockId = null;
+
+            if (type === 'decision') {
+                let conditionResult = false;
+                try { conditionResult = evaluateSandboxExpression(text); } catch(e) { conditionResult = false; }
+                
+                let matchLabel = conditionResult ? 'ใช่' : 'ไม่ใช่';
+                let correctRoute = nextRoutes.find(r => r.label === matchLabel || r.label === (conditionResult ? 'Yes' : 'No'));
+                if (correctRoute) targetBlockId = correctRoute.to;
+            } else {
+                if (nextRoutes.length > 0) targetBlockId = nextRoutes[0].to;
+            }
+
+            if (targetBlockId) {
+                execState.currentBlock = document.getElementById(targetBlockId);
+            } else {
+                execState.currentBlock = null;
+            }
+        }
+
+        function finishExecution() {
+            stopExecution();
+            logDebug('=== ✅ การประมวลผลเสร็จสิ้นสมบูรณ์ ===', 'success');
+            
+            if (execState.activeChallengeId > 0) {
+                const ch = challenges[execState.activeChallengeId];
+                const monText = document.getElementById('monitor-screen').innerText;
+
+                if (ch.check && ch.check(monText)) {
+                    playSound('win');
+                    alert("🎉 ยอดเยี่ยมมาก! คุณแก้โจทย์ผังงานข้อนี้ได้ถูกต้องสมบูรณ์!");
+                }
+            }
+        }
+
+        function loadChallenge(id) {
+            execState.activeChallengeId = Number(id);
+            const ch = challenges[execState.activeChallengeId];
+            document.getElementById('challenge-desc').innerText = ch.desc;
+        }
+
+        function openCodeModal() {
+            playSound('click');
+            const blocks = Array.from(document.querySelectorAll('#canvas-container > .node-container'));
+            if (blocks.length === 0) { alert("ไม่มีผังงานบนกระดาน!"); return; }
+
+            let pyLines = ["# Code generated by Flowchart Simulator Pro\n"];
+            let pseudoLines = ["// Pseudocode generated by Flowchart Simulator Pro\n"];
+
+            blocks.forEach(b => {
+                const type = b.dataset.type;
+                const text = document.getElementById(`text-${b.id}`).innerText.trim();
+
+                if (type === 'start') {
+                    if (text.includes('เริ่มต้น') || text.includes('START')) {
+                        pyLines.push("# --- START PROGRAM ---"); pseudoLines.push("เริ่มต้น (START)");
+                    } else {
+                        pyLines.push("# --- END PROGRAM ---"); pseudoLines.push("สิ้นสุด (END)");
+                    }
+                } else if (type === 'process') {
+                    pyLines.push(text); pseudoLines.push(`  คำนวณ ${text}`);
+                } else if (type === 'display') {
+                    let cleanText = text.replace(/แสดงผล|SHOW|PRINT|โชว์/gi, '').trim();
+                    pyLines.push(`print(${cleanText})`); pseudoLines.push(`  แสดงผล ${cleanText}`);
+                } else if (type === 'manual_input' || type === 'input') {
+                    let cleanText = text.replace(/รับค่า|INPUT|READ/gi, '').trim();
+                    pyLines.push(`${cleanText} = float(input("Enter ${cleanText}: "))`); pseudoLines.push(`  รับค่า ${cleanText}`);
+                } else if (type === 'decision') {
+                    pyLines.push(`if ${text}:`); pyLines.push(`    # True branch logic...`);
+                    pyLines.push(`else:`); pyLines.push(`    # False branch logic...`);
+                    pseudoLines.push(`  ถ้า ${text} แล้ว`);
+                }
+            });
+
+            document.getElementById('python-code-text').innerText = pyLines.join('\n');
+            document.getElementById('pseudo-code-text').innerText = pseudoLines.join('\n');
+            document.getElementById('code-modal').style.display = 'flex';
+        }
+
+        function closeCodeModal() { document.getElementById('code-modal').style.display = 'none'; }
+
+        function copyCode(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text);
+            alert("คัดลอกโค้ดลง Clipboard เรียบร้อยแล้ว!");
+        }
+
+        function saveToFile() {
+            playSound('click');
+            const blocks = Array.from(document.querySelectorAll('#canvas-container > .node-container')).map(b => ({
+                id: b.id, type: b.dataset.type, left: parseFloat(b.style.left), top: parseFloat(b.style.top), text: document.getElementById(`text-${b.id}`).innerText
+            }));
+
+            const data = {
+                version: "7.0_clean",
+                blocks: blocks,
+                connections: connections,
+                variables: variables
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = `flowchart_${Date.now()}.json`; a.click();
+        }
+
+        function triggerFileInput() { document.getElementById('file-input').click(); }
+
+        function loadFromFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    resetWorkspace();
+                    data.blocks.forEach(b => addBlock(b.type, b.left, b.top, b.text));
+                    connections = data.connections || [];
+                    if (data.variables) variables = data.variables;
+                    updateVariableUI(); drawConnections(); validateWorkspace();
+                } catch(err) { alert('ไฟล์ JSON ไม่ถูกต้อง!'); }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportToPNG() {
+            playSound('click');
+            const blocks = Array.from(document.querySelectorAll('#canvas-container > .node-container'));
+            if (blocks.length === 0) { alert('ไม่มีผังงานบนกระดานให้ส่งออก!'); return; }
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 1920; canvas.height = 1080;
+
+            ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "#cbd5e1";
+            for (let x = 0; x < canvas.width; x += 20) {
+                for (let y = 0; y < canvas.height; y += 20) { ctx.fillRect(x, y, 1.5, 1.5); }
+            }
+
+            connections.forEach(conn => {
+                const pt1 = getPortCoordinates(conn.from, conn.fromPort);
+                const pt2 = getPortCoordinates(conn.to, conn.toPort);
+                ctx.beginPath(); ctx.moveTo(pt1.x, pt1.y); ctx.lineTo(pt2.x, pt2.y);
+                ctx.strokeStyle = conn.label ? (conn.label==='ใช่'?"#059669":"#dc2626") : "#334155"; 
+                ctx.lineWidth = 3; ctx.stroke();
+            });
+
+            blocks.forEach(b => {
+                const left = parseFloat(b.style.left); const top = parseFloat(b.style.top);
+                const width = parseFloat(b.style.width); const height = parseFloat(b.style.height);
+                const text = document.getElementById(`text-${b.id}`).innerText;
+                const type = b.dataset.type;
+
+                let fill = "#2563eb";
+                if(type==='start') fill = "#10b981";
+                if(type==='input') fill = "#7c3aed";
+                if(type==='display') fill = "#db2777";
+                if(type==='manual_input') fill = "#0d9488";
+                if(type==='decision') fill = "#d97706";
+                if(type==='connector') fill = "#ea580c";
+
+                ctx.fillStyle = fill;
+                ctx.fillRect(left, top, width, height);
+                ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.strokeRect(left, top, width, height);
+
+                ctx.fillStyle = "#ffffff"; ctx.font = "bold 13px sans-serif";
+                ctx.textAlign = "center"; ctx.fillText(text, left + width / 2, top + height / 2 + 5);
+            });
+
+            const link = document.createElement('a');
+            link.download = `flowchart_${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png'); link.click();
+        }
+
+        function saveWorkspaceToLocalStorage() {
+            const blocks = Array.from(document.querySelectorAll('#canvas-container > .node-container')).map(b => ({
+                id: b.id, type: b.dataset.type, left: parseFloat(b.style.left), top: parseFloat(b.style.top), text: document.getElementById(`text-${b.id}`).innerText
+            }));
+
+            const data = { blocks: blocks, connections: connections, variables: variables };
+            localStorage.setItem('flowchart_v7_clean', JSON.stringify(data));
+        }
+
+        function loadWorkspaceFromLocalStorage() {
+            const saved = localStorage.getItem('flowchart_v7_clean');
+            if (!saved) return;
+            try {
+                const data = JSON.parse(saved);
+                data.blocks.forEach(b => addBlock(b.type, b.left, b.top, b.text));
+                connections = data.connections || [];
+                if (data.variables) variables = data.variables;
+                updateVariableUI(); drawConnections(); validateWorkspace();
+            } catch(e) {}
+        }
+
+        document.getElementById('workspace').onclick = (e) => { 
+            if (e.target.id === 'workspace' || e.target.id === 'arrow-canvas' || e.target.id === 'canvas-container') { 
+                cancelConnection(); cancelLineSelection(); drawConnections(); 
+            } 
+        };
+
+        document.getElementById('workspace').addEventListener('wheel', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                if (e.deltaY < 0) zoomIn();
+                else zoomOut();
+            }
+        }, { passive: false });
+
+        window.onload = () => { updateVariableUI(); loadWorkspaceFromLocalStorage(); };
+    </script>
+</body>
+</html>
