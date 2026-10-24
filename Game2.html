@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Cyber Logic - High Performance Edition</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700;800&family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome 6.5.2 (CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- JS Libraries (CDN) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Sarabun', 'Chakra Petch', sans-serif;
+            background: radial-gradient(circle at 50% 0%, #e0f2fe 0%, #f8fafc 50%, #f1f5f9 100%);
+            color: #0f172a;
+            user-select: none;
+        }
+
+        .heading-font { font-family: 'Chakra Petch', sans-serif; }
+
+        .cyber-panel {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(14px);
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05);
+        }
+
+        /* ตารางซูโดกุสี่เหลี่ยมจัตุรัสสมบูรณ์ */
+        #sudokuBoard {
+            display: grid;
+            box-sizing: border-box;
+            background-color: #0f172a;
+            border: 3px solid #0f172a;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
+        }
+
+        .sudoku-cell {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ffffff;
+            cursor: pointer;
+            box-sizing: border-box;
+            transition: background-color 0.12s ease;
+        }
+        .sudoku-cell.selected {
+            background-color: #bae6fd !important;
+            color: #0284c7 !important;
+            box-shadow: inset 0 0 0 3px #0284c7;
+            z-index: 5;
+        }
+        .sudoku-cell.highlighted {
+            background-color: #f0f9ff;
+        }
+        .sudoku-cell.same-number {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            font-weight: 800;
+        }
+        .sudoku-cell.scan-error {
+            background-color: #fecdd3 !important;
+            color: #e11d48 !important;
+            animation: pulse-red 1.2s infinite;
+        }
+        .sudoku-cell.error {
+            background-color: #ffe4e6 !important;
+            color: #e11d48 !important;
+            animation: shake 0.3s;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { background-color: #fecdd3; }
+            50% { background-color: #fda4af; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-3px); }
+            75% { transform: translateX(3px); }
+        }
+
+        .swal2-popup {
+            font-family: 'Chakra Petch', 'Sarabun', sans-serif !important;
+            border-radius: 1.5rem !important;
+            background: #ffffff !important;
+            border: 2px solid #0284c7 !important;
+            box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.2) !important;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col p-2 sm:p-2.5">
+
+    <!-- 1. แถบควบคุมบนสุด (Header Stats & Actions) -->
+    <header class="cyber-panel rounded-2xl px-3 py-1.5 flex items-center justify-between gap-2 shrink-0 border-t-4 border-t-sky-500 z-20">
+        
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-500 to-purple-600 flex items-center justify-center text-white text-base font-black shadow-md shadow-sky-500/25">
+                <i class="fa-solid fa-microchip"></i>
+            </div>
+            <div>
+                <h1 class="text-sm sm:text-base font-black heading-font text-slate-900 leading-none">
+                    Sudoku Cyber Logic
+                </h1>
+                <span class="text-[10px] text-slate-500">ระบบฝึกตรรกะประมวลผลความเร็วสูง</span>
+            </div>
+        </div>
+
+        <!-- ตัววัดสถานะ: เวลา, หลอดจับผิด, โล่ และช่องที่เหลือ -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+            <div class="bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-xl flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                <i class="fa-regular fa-clock text-sky-600"></i>
+                <span id="gameTimer" class="heading-font">00:00</span>
+            </div>
+
+            <!-- โล่ป้องกันไฟร์วอลล์ -->
+            <div id="shieldIndicator" class="bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-xl flex items-center gap-1.5 text-xs font-bold text-slate-400" title="โล่ป้องกันข้อผิดพลาด">
+                <i class="fa-solid fa-shield-halved" id="shieldIcon"></i>
+                <span id="shieldText">โล่: ไม่มี</span>
+            </div>
+
+            <!-- ระดับการตรวจจับ -->
+            <div class="bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-xl flex items-center gap-1.5 text-xs font-bold text-rose-800" title="ผิดได้ไม่เกินกำหนด">
+                <i class="fa-solid fa-triangle-exclamation text-rose-600"></i>
+                <span id="traceText">ตรวจจับ: 0/3</span>
+            </div>
+
+            <div class="bg-sky-50 border border-sky-200 px-2.5 py-1 rounded-xl flex items-center gap-1.5 text-xs font-bold text-sky-800 hidden sm:flex">
+                <i class="fa-solid fa-cube text-sky-600"></i>
+                <span id="cellsRemainingText">เหลือ 8 ช่อง</span>
+            </div>
+
+            <div class="flex items-center gap-1">
+                <button onclick="showRulesModal()" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-slate-200 flex items-center justify-center transition" title="คู่มือ">
+                    <i class="fa-solid fa-circle-question text-xs"></i>
+                </button>
+                <button onclick="AudioFX.toggleMute()" id="soundBtn" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-sky-50 text-slate-700 border border-slate-200 flex items-center justify-center transition" title="เสียง">
+                    <i class="fa-solid fa-volume-high text-xs" id="soundIcon"></i>
+                </button>
+                <button onclick="toggleFullScreen()" class="w-7 h-7 rounded-lg bg-gradient-to-r from-sky-500 to-indigo-600 text-white flex items-center justify-center shadow-xs transition" title="เต็มจอ">
+                    <i class="fa-solid fa-expand text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+    </header>
+
+    <!-- 2. แผงเลือกขนาดตาราง (4x4, 6x6, 9x9) และระดับ % -->
+    <div class="cyber-panel rounded-2xl p-2 my-1.5 flex flex-wrap items-center justify-between gap-2 shrink-0 border-l-4 border-l-sky-500">
+        
+        <!-- ขนาดตาราง -->
+        <div class="flex items-center gap-1.5">
+            <span class="text-[11px] font-black text-slate-600 uppercase flex items-center gap-1 mr-1">
+                <i class="fa-solid fa-table-cells text-sky-600"></i> ขนาดกระดาน:
+            </span>
+            <button onclick="setSize(4)" id="btnSize4" class="size-btn px-3 py-1 rounded-xl font-black text-xs transition border flex items-center gap-1.5 shadow-xs">
+                <span>4×4</span>
+                <span class="text-[9px] font-medium opacity-80">(ประถมต้น)</span>
+            </button>
+            <button onclick="setSize(6)" id="btnSize6" class="size-btn px-3 py-1 rounded-xl font-black text-xs transition border flex items-center gap-1.5 shadow-xs">
+                <span>6×6</span>
+                <span class="text-[9px] font-medium opacity-80">(ประถมปลาย)</span>
+            </button>
+            <button onclick="setSize(9)" id="btnSize9" class="size-btn px-3 py-1 rounded-xl font-black text-xs transition border flex items-center gap-1.5 shadow-xs">
+                <span>9×9</span>
+                <span class="text-[9px] font-medium opacity-80">(มัธยม)</span>
+            </button>
+        </div>
+
+        <!-- เปอร์เซ็นต์ตัวเลขเริ่มต้น -->
+        <div class="flex items-center gap-1.5">
+            <span class="text-[11px] font-black text-slate-600 uppercase flex items-center gap-1 mr-1">
+                <i class="fa-solid fa-gauge-high text-indigo-600"></i> ระดับตัวอย่าง (เปิดเผย):
+            </span>
+            <button onclick="setPercent(60)" id="btnPct60" class="pct-btn px-2.5 py-1 rounded-xl font-bold text-xs transition border flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>ง่าย 60%</span>
+            </button>
+            <button onclick="setPercent(40)" id="btnPct40" class="pct-btn px-2.5 py-1 rounded-xl font-bold text-xs transition border flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+                <span>ปานกลาง 40%</span>
+            </button>
+            <button onclick="setPercent(25)" id="btnPct25" class="pct-btn px-2.5 py-1 rounded-xl font-bold text-xs transition border flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span>ยาก 25%</span>
+            </button>
+            <button onclick="setPercent(15)" id="btnPct15" class="pct-btn px-2.5 py-1 rounded-xl font-bold text-xs transition border flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                <span>นรกแตก 15%</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- 3. พื้นที่เล่นเกมหลัก -->
+    <main class="flex-1 min-h-0 grid grid-cols-12 gap-2 relative z-10">
+
+        <!-- ฝั่งซ้าย: กระดานซูโดกุ กางเต็มพื้นที่สมบูรณ์ -->
+        <section class="col-span-12 lg:col-span-8 h-full flex items-center justify-center min-h-0 cyber-panel rounded-2xl p-2 relative overflow-hidden" id="boardWrapper">
+            <div id="gridContainer" class="w-full h-full flex items-center justify-center">
+                <!-- ตาราง #sudokuBoard -->
+            </div>
+        </section>
+
+        <!-- ฝั่งขวา: แผงสกิลไซเบอร์, แป้นพิมพ์พร้อมตัวนับ และคำสั่งเริ่มใหม่ -->
+        <aside class="col-span-12 lg:col-span-4 h-full flex flex-col justify-between gap-1.5 min-h-0 cyber-panel rounded-2xl p-2.5 border-l-4 border-l-indigo-500">
+            
+            <!-- สรุปข้อมูลกระดาน -->
+            <div class="bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-200 rounded-xl p-2 text-xs text-slate-700 flex justify-between items-center shrink-0">
+                <div>
+                    <span class="font-black text-sky-950 heading-font" id="currentSummaryTitle">กระดาน 4×4 • เปิดเผย 60%</span>
+                    <p class="text-[10px] text-slate-500" id="currentSummarySub">แสดงตัวอย่าง 10 จาก 16 ช่อง</p>
+                </div>
+                <span id="cluePercentBadge" class="bg-sky-500 text-white font-black text-[10px] px-2 py-0.5 rounded-full shadow-xs">
+                    60% CLUES
+                </span>
+            </div>
+
+            <!-- สกิลช่วยเหลือแฮกเกอร์ไซเบอร์ 4 รูปแบบ (ทดแทนระบบจดตัวเลข) -->
+            <div class="grid grid-cols-4 gap-1.5 shrink-0">
+                <button onclick="undoMove()" class="py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-300 transition active:scale-95 flex flex-col items-center justify-center gap-0.5" title="ย้อนกลับ">
+                    <i class="fa-solid fa-rotate-left text-xs text-slate-600"></i>
+                    <span class="text-[9px]">ย้อนกลับ</span>
+                </button>
+                <button onclick="eraseCurrentCell()" class="py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-300 transition active:scale-95 flex flex-col items-center justify-center gap-0.5" title="ลบช่อง">
+                    <i class="fa-solid fa-eraser text-xs text-rose-500"></i>
+                    <span class="text-[9px]">ลบช่อง</span>
+                </button>
+                <button onclick="activateShield()" id="shieldBtn" class="py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs border border-emerald-300 transition active:scale-95 flex flex-col items-center justify-center gap-0.5" title="เปิดเกราะป้องกันความผิดพลาด 1 ครั้ง">
+                    <i class="fa-solid fa-shield-virus text-xs text-emerald-600"></i>
+                    <span class="text-[9px]" id="shieldBtnText">กางโล่ (1)</span>
+                </button>
+                <button onclick="triggerQuantumReveal()" id="revealBtn" class="py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs border border-amber-300 transition active:scale-95 flex flex-col items-center justify-center gap-0.5" title="แฮกถอดรหัสเฉลยช่องนี้ทันที">
+                    <i class="fa-solid fa-bolt text-xs text-amber-600"></i>
+                    <span class="text-[9px]" id="revealBtnText">แฮก (2)</span>
+                </button>
+            </div>
+
+            <!-- แป้นตัวเลข Numpad พร้อมแถบนับจำนวนที่เหลือ (Number Tracker) -->
+            <div class="flex-1 flex flex-col justify-center my-0.5 min-h-0">
+                <div class="text-[9px] font-bold text-slate-400 uppercase mb-1 flex justify-between items-center">
+                    <span>แผงป้อนรหัส & ตัวนับช่องคงเหลือ</span>
+                    <span class="text-sky-600 font-bold">1 ถึง <span id="maxNumIndicator">4</span></span>
+                </div>
+                <div id="numpadContainer" class="grid gap-1.5 w-full">
+                    <!-- ปุ่มตัวเลขพร้อมแถบสถานะ -->
+                </div>
+            </div>
+
+            <!-- ปุ่มเรดาร์สแกนจุดผิด & ปุ่มสร้างโจทย์ใหม่ -->
+            <div class="space-y-1.5 shrink-0">
+                <button onclick="scanForErrors()" class="w-full py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-radar text-indigo-600"></i>
+                    <span>Cyber Radar ตรวจสแกนช่องที่ใส่ผิดทั้งกระดาน</span>
+                </button>
+
+                <button onclick="startNewGame()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-600 to-purple-600 hover:brightness-110 text-white font-black text-xs sm:text-sm shadow-md shadow-sky-500/20 transition active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span>สร้างโจทย์ใหม่ทันที (ลื่นไหล 100%) ⚡</span>
+                </button>
+            </div>
+
+        </aside>
+
+    </main>
+
+    <script>
+        // --- 1. Web Audio API Engine ---
+        const AudioFX = {
+            ctx: null,
+            enabled: true,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+            toggleMute() {
+                this.enabled = !this.enabled;
+                const icon = document.getElementById('soundIcon');
+                if (this.enabled) {
+                    icon.className = 'fa-solid fa-volume-high text-xs';
+                    this.playClick();
+                } else {
+                    icon.className = 'fa-solid fa-volume-xmark text-xs text-rose-500';
+                }
+            },
+            playBeep(freq, type, duration) {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type || 'sine';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.06, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e){}
+            },
+            playClick() { this.playBeep(900, 'sine', 0.04); },
+            playInput() { this.playBeep(650, 'triangle', 0.08); },
+            playErase() { this.playBeep(350, 'sine', 0.08); },
+            playError() { this.playBeep(220, 'sawtooth', 0.25); },
+            playShield() { this.playBeep(440, 'sine', 0.15); setTimeout(() => this.playBeep(880, 'sine', 0.2), 100); },
+            playReveal() { this.playBeep(587.33, 'triangle', 0.1); setTimeout(() => this.playBeep(880, 'triangle', 0.2), 100); },
+            playWin() {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, idx) => {
+                    setTimeout(() => this.playBeep(f, 'sine', 0.25), idx * 100);
+                });
+            }
+        };
+
+        function toggleFullScreen() {
+            AudioFX.playClick();
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        // --- 2. ตัวแปรระบบ ---
+        let selectedSize = 4;        // 4, 6, 9
+        let selectedPercent = 60;    // 60, 40, 25, 15
+
+        let N = 4, boxR = 2, boxC = 2;
+        let solutionBoard = [];
+        let puzzleBoard = [];
+        let userBoard = [];
+        let selectedCell = null;
+        let traceCount = 0;
+        let maxErrors = 3;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let moveHistory = [];
+
+        // สกิลเสริม
+        let shieldActive = false;
+        let shieldCharges = 1;
+        let revealCharges = 2;
+
+        function setSize(size) {
+            AudioFX.playClick();
+            selectedSize = size;
+            updateSelectorStyles();
+            startNewGame();
+        }
+
+        function setPercent(pct) {
+            AudioFX.playClick();
+            selectedPercent = pct;
+            updateSelectorStyles();
+            startNewGame();
+        }
+
+        function updateSelectorStyles() {
+            $('.size-btn').removeClass('bg-sky-600 text-white border-sky-600').addClass('bg-slate-100 text-slate-700 border-slate-200');
+            $(`#btnSize${selectedSize}`).removeClass('bg-slate-100 text-slate-700 border-slate-200').addClass('bg-sky-600 text-white border-sky-600');
+
+            $('.pct-btn').removeClass('bg-indigo-600 text-white border-indigo-600').addClass('bg-slate-100 text-slate-700 border-slate-200');
+            $(`#btnPct${selectedPercent}`).removeClass('bg-slate-100 text-slate-700 border-slate-200').addClass('bg-indigo-600 text-white border-indigo-600');
+        }
+
+        // --- 3. Instant Matrix Isomorphism Engine (แก้ปัญหาค้าง 100% เร็ว 0.5ms) ---
+        function generateInstantSudoku(n, br, bc, targetClues) {
+            // 1. สร้าง Base Sudoku ที่ถูกต้องตามคณิตศาสตร์ 100%
+            let base = Array.from({ length: n }, () => Array(n).fill(0));
+            for (let r = 0; r < n; r++) {
+                for (let c = 0; c < n; c++) {
+                    if (n === 9) {
+                        base[r][c] = (r * 3 + Math.floor(r / 3) + c) % 9 + 1;
+                    } else if (n === 6) {
+                        base[r][c] = (r * 3 + Math.floor(r / 2) + c) % 6 + 1;
+                    } else { // 4x4
+                        base[r][c] = (r * 2 + Math.floor(r / 2) + c) % 4 + 1;
+                    }
+                }
+            }
+
+            // 2. สุ่มจับคู่ตัวเลขใหม่ทั้งหมด (Symbol Relabeling)
+            let mapping = Array.from({ length: n }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
+            for (let r = 0; r < n; r++) {
+                for (let c = 0; c < n; c++) {
+                    base[r][c] = mapping[base[r][c] - 1];
+                }
+            }
+
+            // 3. สุ่มสลับแถวภายในกลุ่มบล็อกเดียวกัน (Row permutations within bands)
+            for (let b = 0; b < n; b += br) {
+                let rows = Array.from({ length: br }, (_, i) => b + i).sort(() => Math.random() - 0.5);
+                let copy = base.map(row => [...row]);
+                for (let i = 0; i < br; i++) {
+                    base[b + i] = copy[rows[i]];
+                }
+            }
+
+            // 4. สุ่มสลับคอลัมน์ภายในกลุ่มบล็อกเดียวกัน (Column permutations within stacks)
+            for (let b = 0; b < n; b += bc) {
+                let cols = Array.from({ length: bc }, (_, i) => b + i).sort(() => Math.random() - 0.5);
+                let copy = base.map(row => [...row]);
+                for (let r = 0; r < n; r++) {
+                    for (let i = 0; i < bc; i++) {
+                        base[r][b + i] = copy[r][cols[i]];
+                    }
+                }
+            }
+
+            const solution = base.map(row => [...row]);
+            const puzzle = base.map(row => [...row]);
+
+            // 5. สุ่มนำตัวเลขออกตามจำนวน % อย่างรวดเร็วโดยไม่ค้าง
+            const totalCells = n * n;
+            const removeCount = totalCells - targetClues;
+
+            let coords = [];
+            for (let r = 0; r < n; r++) {
+                for (let c = 0; c < n; c++) coords.push([r, c]);
+            }
+            coords.sort(() => Math.random() - 0.5);
+
+            for (let i = 0; i < removeCount; i++) {
+                const [r, c] = coords[i];
+                puzzle[r][c] = 0;
+            }
+
+            return { solution, puzzle, actualClues: targetClues };
+        }
+
+        // --- 4. ฟังก์ชันปรับขนาดกระดานให้เต็มความจุสูงสุดและเป็นสี่เหลี่ยมจัตุรัส ---
+        function fitSudokuBoard() {
+            const container = document.getElementById('gridContainer');
+            const board = document.getElementById('sudokuBoard');
+            if (!container || !board) return;
+
+            const padding = 16;
+            const availW = container.clientWidth - padding;
+            const availH = container.clientHeight - padding;
+            const optimalSize = Math.floor(Math.min(availW, availH));
+
+            if (optimalSize > 50) {
+                board.style.width = `${optimalSize}px`;
+                board.style.height = `${optimalSize}px`;
+                board.style.gridTemplateColumns = `repeat(${N}, 1fr)`;
+                board.style.gridTemplateRows = `repeat(${N}, 1fr)`;
+
+                const cellSize = optimalSize / N;
+                const fontSize = Math.floor(cellSize * 0.52);
+                $('.sudoku-cell').css('font-size', `${fontSize}px`);
+            }
+        }
+
+        window.addEventListener('resize', fitSudokuBoard);
+
+        // --- 5. เริ่มต้นสร้างรอบเกมใหม่ ---
+        function startNewGame() {
+            N = selectedSize;
+            if (N === 4) { boxR = 2; boxC = 2; }
+            else if (N === 6) { boxR = 2; boxC = 3; }
+            else { boxR = 3; boxC = 3; }
+
+            const totalCells = N * N;
+            let targetClues = Math.round(totalCells * (selectedPercent / 100));
+
+            traceCount = 0;
+            moveHistory = [];
+            selectedCell = null;
+            shieldActive = false;
+            shieldCharges = 1;
+            revealCharges = 2;
+            updateShieldDisplay();
+            updateRevealDisplay();
+            updateTraceDisplay();
+
+            const { solution, puzzle, actualClues } = generateInstantSudoku(N, boxR, boxC, targetClues);
+            solutionBoard = solution;
+            puzzleBoard = puzzle.map(r => [...r]);
+            userBoard = puzzle.map(r => [...r]);
+
+            const actualPercent = Math.round((actualClues / totalCells) * 100);
+            document.getElementById('currentSummaryTitle').innerText = `กระดาน ${N}×${N} • เปิดเผย ${selectedPercent}%`;
+            document.getElementById('currentSummarySub').innerText = `แสดงตัวอย่าง ${actualClues} จาก ${totalCells} ช่อง (${actualPercent}%)`;
+            document.getElementById('cluePercentBadge').innerText = `${selectedPercent}% CLUES`;
+            document.getElementById('maxNumIndicator').innerText = N;
+
+            renderGrid();
+            renderNumpad();
+            updateRemainingCount();
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerSeconds = 0;
+            document.getElementById('gameTimer').innerText = '00:00';
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+                const secs = String(timerSeconds % 60).padStart(2, '0');
+                document.getElementById('gameTimer').innerText = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function renderGrid() {
+            const container = document.getElementById('gridContainer');
+            container.innerHTML = '';
+
+            const table = document.createElement('div');
+            table.id = 'sudokuBoard';
+
+            for (let r = 0; r < N; r++) {
+                for (let c = 0; c < N; c++) {
+                    const cell = document.createElement('div');
+                    cell.id = `cell-${r}-${c}`;
+                    cell.dataset.r = r;
+                    cell.dataset.c = c;
+                    cell.className = 'sudoku-cell font-bold text-slate-800';
+
+                    let borderStyles = 'border-right: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;';
+                    if ((c + 1) % boxC === 0 && c + 1 !== N) {
+                        borderStyles += ' border-right: 3px solid #0f172a;';
+                    }
+                    if ((r + 1) % boxR === 0 && r + 1 !== N) {
+                        borderStyles += ' border-bottom: 3px solid #0f172a;';
+                    }
+                    cell.style.cssText = borderStyles;
+
+                    const isGiven = puzzleBoard[r][c] !== 0;
+                    if (isGiven) {
+                        cell.classList.add('bg-slate-100', 'text-slate-900', 'font-black');
+                        cell.innerText = puzzleBoard[r][c];
+                    }
+
+                    cell.onclick = () => selectCell(r, c);
+                    table.appendChild(cell);
+                }
+            }
+
+            container.appendChild(table);
+            fitSudokuBoard();
+        }
+
+        // เรนเดอร์แป้นพิมพ์ตัวเลข พร้อมแผงนับจำนวนตัวเลขที่เหลือ (Number Tracker)
+        function renderNumpad() {
+            const container = document.getElementById('numpadContainer');
+            container.innerHTML = '';
+            
+            const cols = N === 4 ? 'grid-cols-4' : (N === 6 ? 'grid-cols-6' : 'grid-cols-3 sm:grid-cols-9');
+            container.className = `grid ${cols} gap-1.5 w-full`;
+
+            for (let i = 1; i <= N; i++) {
+                // คำนวณจำนวนที่เหลือของเลขนี้
+                let placed = 0;
+                for (let r = 0; r < N; r++) {
+                    for (let c = 0; c < N; c++) {
+                        if (userBoard[r][c] === i) placed++;
+                    }
+                }
+                const left = N - placed;
+                const isComplete = left <= 0;
+
+                const btn = document.createElement('button');
+                btn.id = `numBtn-${i}`;
+                btn.className = `py-2 rounded-xl border shadow-xs transition active:scale-95 flex flex-col items-center justify-center ${
+                    isComplete 
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 opacity-80' 
+                    : 'bg-white hover:bg-sky-50 text-slate-800 border-slate-300'
+                }`;
+                btn.innerHTML = `
+                    <span class="font-black text-sm sm:text-base leading-none">${i}</span>
+                    <span class="text-[9px] mt-0.5 font-bold ${isComplete ? 'text-emerald-600' : 'text-slate-400'}">${isComplete ? 'ครบ ✓' : `เหลือ ${left}`}</span>
+                `;
+                btn.onclick = () => inputNumber(i);
+                container.appendChild(btn);
+            }
+        }
+
+        // --- 6. การเลือกช่องและการเน้นสี ---
+        function selectCell(r, c) {
+            AudioFX.playClick();
+            selectedCell = { r, c };
+
+            $('.sudoku-cell').removeClass('selected highlighted same-number scan-error');
+
+            const val = userBoard[r][c];
+            const startR = Math.floor(r / boxR) * boxR;
+            const startC = Math.floor(c / boxC) * boxC;
+
+            for (let i = 0; i < N; i++) {
+                for (let j = 0; j < N; j++) {
+                    const isSameRow = i === r;
+                    const isSameCol = j === c;
+                    const isSameBox = (i >= startR && i < startR + boxR) && (j >= startC && j < startC + boxC);
+
+                    if (isSameRow || isSameCol || isSameBox) {
+                        $(`#cell-${i}-${j}`).addClass('highlighted');
+                    }
+                    if (val !== 0 && userBoard[i][j] === val) {
+                        $(`#cell-${i}-${j}`).addClass('same-number');
+                    }
+                }
+            }
+
+            $(`#cell-${r}-${c}`).addClass('selected');
+        }
+
+        // --- 7. การป้อนข้อมูล ---
+        function inputNumber(num) {
+            if (!selectedCell) return;
+            const { r, c } = selectedCell;
+
+            if (puzzleBoard[r][c] !== 0) return; // ช่องโจทย์ล็อค
+
+            if (userBoard[r][c] === num) return;
+
+            if (num === solutionBoard[r][c]) {
+                // ใส่ถูกต้อง
+                AudioFX.playInput();
+                moveHistory.push({ r, c, prevVal: userBoard[r][c] });
+                userBoard[r][c] = num;
+                document.getElementById(`cell-${r}-${c}`).innerText = num;
+                selectCell(r, c);
+                updateRemainingCount();
+                renderNumpad();
+                checkVictory();
+            } else {
+                // ใส่ผิด
+                if (shieldActive) {
+                    // โล่ป้องกันดูดซับความผิดพลาด
+                    shieldActive = false;
+                    updateShieldDisplay();
+                    AudioFX.playShield();
+                    Swal.fire({
+                        title: '🛡️ เกราะป้องกันทำงาน!',
+                        text: 'ระบบดูดซับความผิดพลาดให้ 1 ครั้งโดยไม่เพิ่มระดับการตรวจจับ',
+                        icon: 'info',
+                        timer: 1200,
+                        showConfirmButton: false
+                    });
+                } else {
+                    AudioFX.playError();
+                    traceCount++;
+                    updateTraceDisplay();
+                    const $cell = $(`#cell-${r}-${c}`);
+                    $cell.addClass('error');
+                    setTimeout(() => $cell.removeClass('error'), 400);
+
+                    if (traceCount >= maxErrors) {
+                        triggerGameOver();
+                    }
+                }
+            }
+        }
+
+        function eraseCurrentCell() {
+            if (!selectedCell) return;
+            const { r, c } = selectedCell;
+            if (puzzleBoard[r][c] !== 0) return;
+
+            AudioFX.playErase();
+            moveHistory.push({ r, c, prevVal: userBoard[r][c] });
+            userBoard[r][c] = 0;
+            document.getElementById(`cell-${r}-${c}`).innerText = '';
+            selectCell(r, c);
+            updateRemainingCount();
+            renderNumpad();
+        }
+
+        function undoMove() {
+            if (moveHistory.length === 0) return;
+            AudioFX.playClick();
+            const last = moveHistory.pop();
+            userBoard[last.r][last.c] = last.prevVal;
+            document.getElementById(`cell-${last.r}-${last.c}`).innerText = last.prevVal === 0 ? '' : last.prevVal;
+            selectCell(last.r, last.c);
+            updateRemainingCount();
+            renderNumpad();
+        }
+
+        // --- 8. ระบบใหม่: สกิลไซเบอร์ช่วยเหลือ ---
+        // สกิล 1: กางโล่ป้องกัน (Firewall Shield)
+        function activateShield() {
+            if (shieldCharges <= 0) {
+                Swal.fire('พลังงานหมด', 'ใช้โควตากางโล่ครบแล้วสำหรับรอบนี้', 'warning');
+                return;
+            }
+            if (shieldActive) return;
+
+            AudioFX.playShield();
+            shieldActive = true;
+            shieldCharges--;
+            updateShieldDisplay();
+
+            Swal.fire({
+                title: '🛡️ กางโล่สำเร็จ!',
+                text: 'หากใส่เลขผิดครั้งถัดไป จะไม่เสียระดับการตรวจจับ (Trace)',
+                icon: 'success',
+                timer: 1100,
+                showConfirmButton: false
+            });
+        }
+
+        function updateShieldDisplay() {
+            const ind = document.getElementById('shieldIndicator');
+            const icon = document.getElementById('shieldIcon');
+            const text = document.getElementById('shieldText');
+            const btnText = document.getElementById('shieldBtnText');
+
+            if (shieldActive) {
+                ind.className = 'bg-emerald-50 border border-emerald-300 px-2.5 py-1 rounded-xl flex items-center gap-1.5 text-xs font-bold text-emerald-800 animate-pulse';
+                icon.className = 'fa-solid fa-shield-halved text-emerald-600';
+                text.innerText = 'โล่: พร้อมทำงาน';
+            } else {
+                ind.className = 'bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-xl flex items-center gap-1.5 text-xs font-bold text-slate-400';
+                icon.className = 'fa-solid fa-shield-halved text-slate-400';
+                text.innerText = 'โล่: ปิด';
+            }
+            btnText.innerText = `กางโล่ (${shieldCharges})`;
+        }
+
+        // สกิล 2: แฮกเฉลยช่องทันที (Quantum Reveal)
+        function triggerQuantumReveal() {
+            if (!selectedCell) {
+                Swal.fire('เลือกช่องก่อน', 'กรุณาคลิกเลือกช่องว่างที่ต้องการแฮกถอดรหัสครับ', 'info');
+                return;
+            }
+            const { r, c } = selectedCell;
+            if (puzzleBoard[r][c] !== 0 || userBoard[r][c] === solutionBoard[r][c]) {
+                Swal.fire('ช่องนี้เรียบร้อยแล้ว', 'เลือกช่องว่างอื่นที่ยังไม่ได้แก้รหัสนะครับ', 'info');
+                return;
+            }
+            if (revealCharges <= 0) {
+                Swal.fire('โควตาหมด', 'ใช้สิทธิ์แฮกถอดรหัสครบ 2 ครั้งแล้วสำหรับรอบนี้', 'warning');
+                return;
+            }
+
+            AudioFX.playReveal();
+            revealCharges--;
+            updateRevealDisplay();
+
+            const correctVal = solutionBoard[r][c];
+            userBoard[r][c] = correctVal;
+            document.getElementById(`cell-${r}-${c}`).innerText = correctVal;
+            selectCell(r, c);
+            updateRemainingCount();
+            renderNumpad();
+            checkVictory();
+        }
+
+        function updateRevealDisplay() {
+            document.getElementById('revealBtnText').innerText = `แฮก (${revealCharges})`;
+        }
+
+        // สกิล 3: เรดาร์สแกนจุดผิดทั่วกระดาน (Cyber Radar Scanner)
+        function scanForErrors() {
+            AudioFX.playClick();
+            let errorCount = 0;
+
+            for (let r = 0; r < N; r++) {
+                for (let c = 0; c < N; c++) {
+                    if (userBoard[r][c] !== 0 && userBoard[r][c] !== solutionBoard[r][c]) {
+                        $(`#cell-${r}-${c}`).addClass('scan-error');
+                        errorCount++;
+                    }
+                }
+            }
+
+            if (errorCount > 0) {
+                AudioFX.playError();
+                Swal.fire({
+                    title: '⚠️ ตรวจพบจุดผิด!',
+                    text: `เรดาร์ตรวจพบตัวเลขที่ใส่ผิดจำนวน ${errorCount} ช่อง (ไฮไลต์สีชมพูกะพริบ)`,
+                    icon: 'warning',
+                    confirmButtonText: 'รับทราบ',
+                    confirmButtonColor: '#e11d48'
+                });
+            } else {
+                AudioFX.playWin();
+                Swal.fire({
+                    title: '✅ ระบบปลอดภัย 100%',
+                    text: 'ตัวเลขทุกช่องที่คุณใส่ถูกต้องทั้งหมด ไม่มีข้อผิดพลาดครับ!',
+                    icon: 'success',
+                    timer: 1200,
+                    showConfirmButton: false
+                });
+            }
+        }
+
+        function updateTraceDisplay() {
+            document.getElementById('traceText').innerText = `ตรวจจับ: ${traceCount}/${maxErrors}`;
+        }
+
+        function updateRemainingCount() {
+            let empty = 0;
+            for (let r = 0; r < N; r++) {
+                for (let c = 0; c < N; c++) {
+                    if (userBoard[r][c] === 0) empty++;
+                }
+            }
+            document.getElementById('cellsRemainingText').innerText = `เหลือ ${empty} ช่อง`;
+        }
+
+        // --- 9. คีย์บอร์ดควบคุม ---
+        $(document).on('keydown', function(e) {
+            if (!selectedCell) return;
+            let { r, c } = selectedCell;
+
+            if (e.key === 'ArrowUp') { r = (r - 1 + N) % N; selectCell(r, c); e.preventDefault(); }
+            else if (e.key === 'ArrowDown') { r = (r + 1) % N; selectCell(r, c); e.preventDefault(); }
+            else if (e.key === 'ArrowLeft') { c = (c - 1 + N) % N; selectCell(r, c); e.preventDefault(); }
+            else if (e.key === 'ArrowRight') { c = (c + 1) % N; selectCell(r, c); e.preventDefault(); }
+            else if (e.key >= '1' && e.key <= String(N)) { inputNumber(parseInt(e.key, 10)); }
+            else if (e.key === 'Backspace' || e.key === 'Delete') { eraseCurrentCell(); }
+        });
+
+        // --- 10. ชนะเกม & จบเกม ---
+        function checkVictory() {
+            for (let r = 0; r < N; r++) {
+                for (let c = 0; c < N; c++) {
+                    if (userBoard[r][c] !== solutionBoard[r][c]) return;
+                }
+            }
+
+            clearInterval(timerInterval);
+            AudioFX.playWin();
+
+            try {
+                confetti({ particleCount: 160, spread: 80, origin: { y: 0.6 } });
+            } catch(e){}
+
+            const timeStr = document.getElementById('gameTimer').innerText;
+
+            Swal.fire({
+                title: '🎉 ถอดรหัสสำเร็จ 100%!',
+                html: `
+                    <div class="space-y-2 text-xs text-slate-700">
+                        <p class="text-sm font-bold text-sky-800">คุณแก้ปริศนาตรรกะได้สมบูรณ์แบบ!</p>
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                            <div class="flex justify-between"><span>ขนาดกระดาน:</span><b>${N}×${N} (เปิดเผย ${selectedPercent}%)</b></div>
+                            <div class="flex justify-between"><span>เวลาที่ใช้:</span><b class="text-sky-700">${timeStr} นาที</b></div>
+                            <div class="flex justify-between"><span>ข้อผิดพลาด:</span><b>${traceCount}/${maxErrors} ครั้ง</b></div>
+                        </div>
+                    </div>
+                `,
+                icon: 'success',
+                confirmButtonText: 'เล่นรอบใหม่ ⏩',
+                confirmButtonColor: '#0284c7'
+            }).then(() => {
+                startNewGame();
+            });
+        }
+
+        function triggerGameOver() {
+            clearInterval(timerInterval);
+            AudioFX.playError();
+            Swal.fire({
+                title: '🔒 ไฟร์วอลล์บล็อกระบบ!',
+                text: `คุณใส่เลขผิดครบ ${maxErrors} ครั้ง ระบบตัดการเชื่อมต่อเพื่อความปลอดภัย`,
+                icon: 'error',
+                confirmButtonText: 'ลองใหม่อีกครั้ง',
+                confirmButtonColor: '#e11d48'
+            }).then(() => {
+                startNewGame();
+            });
+        }
+
+        function showRulesModal() {
+            AudioFX.playClick();
+            Swal.fire({
+                title: '📖 กฎกติกา Sudoku Cyber Logic',
+                html: `
+                    <div class="text-xs text-left space-y-2 text-slate-700 leading-relaxed">
+                        <p class="font-bold text-sky-800">กติกาพื้นฐานของ Sudoku:</p>
+                        <div class="p-2 bg-sky-50 border border-sky-200 rounded-xl space-y-1">
+                            <div>• <b>แถวแนวนอน:</b> ต้องมีตัวเลขครบ 1 ถึง ${N} โดยไม่ซ้ำ</div>
+                            <div>• <b>คอลัมน์แนวตั้ง:</b> ต้องมีตัวเลขครบ 1 ถึง ${N} โดยไม่ซ้ำ</div>
+                            <div>• <b>กล่องย่อย:</b> ต้องมีตัวเลขครบโดยไม่ซ้ำ</div>
+                        </div>
+                        <p class="font-bold text-slate-800">สกิลเสริมไซเบอร์:</p>
+                        <ul class="list-disc pl-4 space-y-0.5 text-slate-600">
+                            <li><b>🛡️ กางโล่:</b> ป้องกันข้อผิดพลาด 1 ครั้ง</li>
+                            <li><b>⚡ แฮก:</b> ถอดรหัสเฉลยช่องที่เลือกทันที (2 ครั้ง)</li>
+                            <li><b>📡 เรดาร์สแกน:</b> ตรวจหาช่องที่ใส่ผิดทั้งกระดาน</li>
+                            <li><b>🔢 ตัวนับตัวเลข:</b> สังเกตตัวเลขที่ปุ่ม ถ้าครบแล้วจะขึ้นสีเขียว</li>
+                        </ul>
+                    </div>
+                `,
+                confirmButtonText: 'เข้าใจแล้ว',
+                confirmButtonColor: '#0284c7'
+            });
+        }
+
+        window.onload = function() {
+            updateSelectorStyles();
+            startNewGame();
+        };
+    </script>
+</body>
+</html>
