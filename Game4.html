@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Gatekeeper: OSINT Forensic Master (Endless Edition)</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;800&family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome 6.5.2 (CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- Leaflet.js Interactive OSINT Satellite Map (CDN) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- JS Libraries (CDN) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Sarabun', 'Chakra Petch', sans-serif;
+            background: radial-gradient(circle at 50% 0%, #e0f2fe 0%, #f8fafc 45%, #eff6ff 100%);
+            color: #0f172a;
+            user-select: none;
+        }
+
+        .heading-font { font-family: 'Chakra Petch', sans-serif; }
+        .mono-font { font-family: 'JetBrains Mono', monospace; }
+
+        .clean-panel {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(14px);
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+        }
+
+        /* ชิ้นส่วนเอกสารที่คลิกเซ็นเซอร์ได้ (เนียนเป็นธรรมชาติ ไม่ชี้นำ) */
+        .censor-token {
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 2px 6px;
+            transition: all 0.15s ease;
+            display: inline-block;
+            user-select: none;
+            border: 1px solid transparent;
+            position: relative;
+        }
+        .censor-token:hover {
+            background-color: rgba(186, 230, 253, 0.7) !important;
+            border-color: #38bdf8;
+        }
+        /* เมื่อคลิกเซ็นเซอร์ จะถมดำสนิท */
+        .censor-token.is-censored {
+            background-color: #0f172a !important;
+            color: transparent !important;
+            border-color: #0f172a !important;
+        }
+        .censor-token.is-censored::after {
+            content: '⬛ CENSOR';
+            position: absolute;
+            inset: 0;
+            background: #0f172a;
+            color: #38bdf8;
+            font-size: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+
+        .meter-bar-outer {
+            background: #e2e8f0;
+            border-radius: 9999px;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+        }
+        .meter-bar-inner {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.4s ease;
+        }
+
+        .emergency-active {
+            animation: emergencyPulse 1.4s infinite alternate;
+        }
+        @keyframes emergencyPulse {
+            0% { border-color: #f43f5e; box-shadow: 0 0 10px rgba(244, 63, 94, 0.25); }
+            100% { border-color: #e11d48; box-shadow: 0 0 20px rgba(225, 29, 72, 0.5); }
+        }
+
+        #osintMapWrapper {
+            height: 120px;
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #334155;
+            position: relative;
+            background: #0f172a;
+        }
+
+        .swal2-popup {
+            font-family: 'Chakra Petch', 'Sarabun', sans-serif !important;
+            border-radius: 1.5rem !important;
+            background: #ffffff !important;
+            border: 2px solid #0284c7 !important;
+            box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.25) !important;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col p-2 sm:p-2.5">
+
+    <!-- 1. แถบควบคุมสถานะด้านบน (Top Header) -->
+    <header class="clean-panel rounded-2xl px-3 py-1.5 flex items-center justify-between gap-2 shrink-0 border-t-4 border-t-sky-500 z-20">
+        
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-600 to-purple-600 flex items-center justify-center text-white text-base font-black shadow-md shadow-sky-500/25">
+                <i class="fa-solid fa-satellite-dish"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-1.5">
+                    <h1 class="text-sm sm:text-base font-black heading-font text-slate-900 leading-none">
+                        Post Gatekeeper: OSINT Master
+                    </h1>
+                    <span id="rankBadge" class="bg-gradient-to-r from-amber-400 to-orange-500 text-white font-black text-[9px] px-2 py-0.5 rounded-full uppercase shadow-xs">
+                        Junior DPO Lv.1
+                    </span>
+                </div>
+                <div class="text-[10px] text-slate-500 flex items-center gap-2">
+                    <span id="shiftTitleDisplay" class="font-bold text-sky-700">กะสุ่มที่ 1</span>
+                    <span class="text-slate-300">•</span>
+                    <span id="xpDisplay" class="text-indigo-600 font-bold mono-font">XP: 0 / 400</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ตัวชี้วัด 2 ด้าน, Data Coins, และปุ่มฟังก์ชัน -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+            
+            <div class="bg-amber-50 border border-amber-300 px-2.5 py-1 rounded-xl flex items-center gap-1.5 text-xs font-bold text-amber-900 shadow-xs">
+                <i class="fa-solid fa-coins text-amber-500 text-sm"></i>
+                <span id="coinDisplay" class="heading-font font-black text-sm text-amber-950">200</span>
+                <span class="text-[10px] text-amber-700">🪙</span>
+            </div>
+
+            <div class="bg-emerald-50 border border-emerald-300 px-2 py-0.5 rounded-xl w-24 sm:w-28 flex flex-col justify-center shadow-xs">
+                <div class="flex justify-between items-center text-[9px] font-bold">
+                    <span class="text-emerald-800">🛡️ ปลอดภัย</span>
+                    <span id="safetyDisplay" class="text-emerald-950 font-black">100%</span>
+                </div>
+                <div class="meter-bar-outer h-1 w-full mt-0.5">
+                    <div id="safetyMeter" class="meter-bar-inner bg-gradient-to-r from-emerald-500 to-teal-500" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <div class="bg-indigo-50 border border-indigo-300 px-2 py-0.5 rounded-xl w-24 sm:w-28 flex flex-col justify-center shadow-xs">
+                <div class="flex justify-between items-center text-[9px] font-bold">
+                    <span class="text-indigo-800">🌐 เสรีภาพ</span>
+                    <span id="satisfactionDisplay" class="text-indigo-950 font-black">100%</span>
+                </div>
+                <div class="meter-bar-outer h-1 w-full mt-0.5">
+                    <div id="satisfactionMeter" class="meter-bar-inner bg-gradient-to-r from-indigo-500 to-sky-500" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <button onclick="openShopModal()" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-105 text-white font-black text-xs flex items-center gap-1 shadow-sm transition active:scale-95">
+                <i class="fa-solid fa-store"></i>
+                <span class="hidden sm:inline">ร้านค้า</span>
+            </button>
+
+            <button onclick="showHowToPlayModal()" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-slate-200 flex items-center justify-center transition">
+                <i class="fa-solid fa-circle-question text-xs"></i>
+            </button>
+            <button onclick="AudioFX.toggleMute()" id="soundBtn" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-sky-50 text-slate-700 border border-slate-200 flex items-center justify-center transition">
+                <i class="fa-solid fa-volume-high text-xs" id="soundIcon"></i>
+            </button>
+            <button onclick="toggleFullScreen()" class="w-7 h-7 rounded-lg bg-gradient-to-r from-sky-500 to-indigo-600 text-white flex items-center justify-center shadow-xs transition">
+                <i class="fa-solid fa-expand text-xs"></i>
+            </button>
+        </div>
+
+    </header>
+
+    <!-- 2. แถบคำสั่งลับประจำกะสุ่ม (Directive Banner) -->
+    <div id="directiveBanner" class="bg-gradient-to-r from-sky-50 via-indigo-50 to-purple-50 border border-sky-200 rounded-xl px-3 py-1.5 my-1.5 flex items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2 text-xs truncate">
+            <span class="px-2 py-0.5 bg-sky-700 text-white font-black rounded-lg text-[10px] tracking-wide uppercase shrink-0">
+                ยุทธศาสตร์กะ
+            </span>
+            <span id="directiveText" class="font-bold text-slate-800 text-[11px] sm:text-xs truncate">
+                กำลังเชื่อมต่อศูนย์บัญชาการเพื่อดึงภารกิจสุ่ม...
+            </span>
+        </div>
+        <div class="text-[11px] font-bold text-sky-800 bg-white px-2.5 py-0.5 rounded-full border border-sky-200 shrink-0">
+            ความคืบหน้ากะ: <span id="shiftProgressText" class="text-indigo-600 font-black">1 / 5</span>
+        </div>
+    </div>
+
+    <!-- 3. พื้นที่สืบสวนและคัดกรองหลัก (Split Dashboard 100vh) -->
+    <main class="flex-1 min-h-0 grid grid-cols-12 gap-2 relative z-10">
+
+        <!-- ฝั่งซ้าย (7 ส่วน): หน้าจอโพสต์จำลองพร้อมภาพจริงและข้อความที่คลิกเซ็นเซอร์ได้โดยตรง -->
+        <section id="feedSection" class="col-span-12 lg:col-span-7 h-full flex flex-col justify-between min-h-0 clean-panel rounded-2xl p-3 relative overflow-hidden border-t-2 border-t-sky-400">
+            
+            <div class="flex items-center justify-between border-b border-slate-200 pb-1.5 shrink-0">
+                <div class="flex items-center gap-2">
+                    <span id="statusPulseDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="inspectionTitle" class="text-xs font-black heading-font text-slate-800 uppercase tracking-wide">
+                        Social Feed Audit (คลิกที่ข้อความ/ตัวเลขเพื่อเซ็นเซอร์)
+                    </span>
+                </div>
+                <!-- เวลานับถอยหลัง 75 วินาทีเต็ม -->
+                <div id="crisisTimerBadge" class="hidden items-center gap-1.5 text-xs font-black text-rose-600 bg-rose-50 border border-rose-300 px-3 py-0.5 rounded-full">
+                    <i class="fa-solid fa-clock text-rose-600"></i>
+                    <span>เวลาวิเคราะห์: <span id="crisisTimer" class="mono-font text-sm">75.0</span>s</span>
+                </div>
+                <span id="threatLevelBadge" class="bg-indigo-100 text-indigo-800 border border-indigo-200 text-[10px] font-black px-2 py-0.5 rounded-full">
+                    ระดับความเสี่ยง: สุ่มตรวจ
+                </span>
+            </div>
+
+            <!-- กล่องแสดงตัวอย่างโพสต์จำลอง -->
+            <div class="flex-1 min-h-0 my-1 flex flex-col justify-center max-w-lg mx-auto w-full">
+                <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-3 space-y-2 relative overflow-hidden">
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center text-xl shadow-inner" id="postAvatar">
+                                🧑‍🎓
+                            </div>
+                            <div>
+                                <h3 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight" id="postAuthor">ชื่อผู้ใช้งาน</h3>
+                                <div class="text-[10px] text-slate-500 flex items-center gap-1.5">
+                                    <span id="postRole">สถานะ</span>
+                                    <span>•</span>
+                                    <span id="postTime">เมื่อสักครู่</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span id="privacyTag" class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1">
+                            <i class="fa-solid fa-earth-americas text-slate-400"></i> สาธารณะ
+                        </span>
+                    </div>
+
+                    <!-- ข้อความสเตตัสที่สุ่มสร้างคำ -->
+                    <div id="postStatusBox" class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs sm:text-sm text-slate-800 leading-relaxed font-medium transition">
+                        <!-- Dynamic Text -->
+                    </div>
+
+                    <!-- พื้นที่ภาพถ่ายจริงพร้อมชิ้นส่วนข้อความธรรมชาติ (คลิกเซ็นเซอร์ได้ทันที ไม่ชี้นำ) -->
+                    <div id="interactiveArtifactBox" class="rounded-xl border border-slate-200 bg-slate-900/5 p-2 relative overflow-hidden">
+                        <!-- Injected Photo + Text Chips -->
+                    </div>
+
+                    <div class="flex justify-between items-center text-[10px] text-slate-500 pt-1 border-t border-slate-100">
+                        <span class="flex items-center gap-1 truncate max-w-[240px]">
+                            <i class="fa-solid fa-location-dot text-rose-500"></i>
+                            <span id="postLocationText">กำลังสแกนพิกัด...</span>
+                        </span>
+                        <div class="flex items-center gap-1.5">
+                            <span id="redactProgressIndicator" class="font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 shrink-0">
+                                คลิกจุดในภาพเพื่อเซ็นเซอร์
+                            </span>
+                            <button onclick="resetCensoring()" class="text-[10px] text-slate-400 hover:text-rose-600 underline font-medium">ล้างเซ็นเซอร์</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- แถบด่วนด้านล่าง -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1 flex items-center justify-between text-xs text-slate-600 shrink-0">
+                <span class="flex items-center gap-1.5 text-[11px]">
+                    <i class="fa-solid fa-toolbox text-indigo-600"></i>
+                    <span>อุปกรณ์พร้อมใช้:</span>
+                    <span id="quickInventoryText" class="font-bold text-slate-800">ไม่มี</span>
+                </span>
+                <span class="text-[10px] text-slate-500">💡 คลิกชิ้นส่วนข้อความ/รหัสเพื่อถมดำเซ็นเซอร์ (คลิกซ้ำเพื่อยกเลิก)</span>
+            </div>
+
+        </section>
+
+        <!-- ฝั่งขวา (5 ส่วน): แผงเครื่องมือ OSINT + แผนที่ดาวเทียม + แผงสั่งการ -->
+        <aside class="col-span-12 lg:col-span-5 h-full flex flex-col justify-between gap-1.5 min-h-0 clean-panel rounded-2xl p-2.5 border-l-4 border-l-indigo-500">
+            
+            <!-- เครื่องมือสืบสวนนิติวิทยาศาสตร์ 4 หมวด -->
+            <div class="space-y-1 shrink-0">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xs font-black heading-font text-slate-800 uppercase flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-secret text-indigo-600"></i>
+                        <span>Forensic Toolkit (เครื่องมือสืบสวน)</span>
+                    </h2>
+                    <span class="text-[9px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">4 โหมด</span>
+                </div>
+
+                <div class="grid grid-cols-4 gap-1">
+                    <button onclick="activateForensicTool('MAP')" id="btnToolMap" class="py-1.5 px-1 rounded-xl bg-slate-50 hover:bg-sky-50 border border-slate-300 text-slate-700 font-bold text-[10px] transition flex flex-col items-center justify-center gap-0.5">
+                        <i class="fa-solid fa-map-location-dot text-sky-600 text-xs"></i>
+                        <span>แผนที่ GPS</span>
+                    </button>
+                    <button onclick="activateForensicTool('CODE')" id="btnToolCode" class="py-1.5 px-1 rounded-xl bg-slate-50 hover:bg-sky-50 border border-slate-300 text-slate-700 font-bold text-[10px] transition flex flex-col items-center justify-center gap-0.5">
+                        <i class="fa-solid fa-qrcode text-purple-600 text-xs"></i>
+                        <span>ถอดรหัสบาร์</span>
+                    </button>
+                    <button onclick="activateForensicTool('PHISH')" id="btnToolPhish" class="py-1.5 px-1 rounded-xl bg-slate-50 hover:bg-sky-50 border border-slate-300 text-slate-700 font-bold text-[10px] transition flex flex-col items-center justify-center gap-0.5">
+                        <i class="fa-solid fa-link-slash text-amber-600 text-xs"></i>
+                        <span>ตรวจฟิชชิ่ง</span>
+                    </button>
+                    <button onclick="activateForensicTool('LEAK')" id="btnToolLeak" class="py-1.5 px-1 rounded-xl bg-slate-50 hover:bg-sky-50 border border-slate-300 text-slate-700 font-bold text-[10px] transition flex flex-col items-center justify-center gap-0.5">
+                        <i class="fa-solid fa-fingerprint text-rose-600 text-xs"></i>
+                        <span>ตรวจจุดรั่วไหล</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- คอนโซลสืบสวนพร้อมแผนที่ดาวเทียม Leaflet.js -->
+            <div class="flex-1 min-h-0 bg-slate-900 rounded-xl p-2 text-xs text-slate-200 font-mono flex flex-col justify-between border border-slate-800 shadow-inner">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-1 text-[10px] text-slate-400">
+                    <span class="flex items-center gap-1 text-emerald-400"><i class="fa-solid fa-terminal"></i> FORENSIC LOG</span>
+                    <span id="activeToolTitle" class="text-sky-300">แผนที่ดาวเทียม GPS</span>
+                </div>
+                
+                <div id="forensicConsoleBody" class="py-1 overflow-y-auto space-y-1 text-[11px] leading-relaxed text-slate-300">
+                    <div id="osintMapWrapper">
+                        <div id="osintMapContainer" class="w-full h-full"></div>
+                    </div>
+                    <div id="forensicTextLog" class="text-[10px] text-slate-400 mt-1 truncate">
+                        กำลังระบุพิกัดดาวเทียม...
+                    </div>
+                </div>
+
+                <div class="pt-1 border-t border-slate-800 text-[9px] text-slate-400 flex justify-between">
+                    <span>SECURITY STATUS: ACTIVE</span>
+                    <span id="forensicThreatSummary" class="text-amber-400 font-bold">พร้อมสแกน</span>
+                </div>
+            </div>
+
+            <!-- อุปกรณ์สนับสนุนด่วน -->
+            <div class="grid grid-cols-3 gap-1 shrink-0">
+                <button onclick="useQuantumRedactor()" id="btnQuantum" class="py-1 px-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-bold text-[10px] transition flex items-center justify-center gap-1 disabled:opacity-40">
+                    <i class="fa-solid fa-bolt text-amber-600"></i>
+                    <span>ช่วยเซ็นเซอร์ (<span id="countQuantum">0</span>)</span>
+                </button>
+                <button onclick="useFreezeCoffee()" id="btnCoffee" class="py-1 px-1 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-300 text-sky-900 font-bold text-[10px] transition flex items-center justify-center gap-1 disabled:opacity-40">
+                    <i class="fa-solid fa-mug-hot text-sky-600"></i>
+                    <span>เพิ่มเวลา +30วิ (<span id="countCoffee">0</span>)</span>
+                </button>
+                <button onclick="useLegalAdvisor()" id="btnLegal" class="py-1 px-1 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-300 text-purple-900 font-bold text-[10px] transition flex items-center justify-center gap-1 disabled:opacity-40">
+                    <i class="fa-solid fa-scale-balanced text-purple-600"></i>
+                    <span>ปรึกษา AI (<span id="countLegal">0</span>)</span>
+                </button>
+            </div>
+
+            <!-- แผงสั่งการ 2 แอ็กชันหลัก -->
+            <div class="space-y-1.5 shrink-0">
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="executeAction('BLOCK')" class="py-2.5 px-3 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 hover:brightness-110 text-white font-black text-xs sm:text-sm shadow-md shadow-rose-500/20 transition active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-ban text-sm"></i>
+                        <span>บล็อกโพสต์ (Block)</span>
+                    </button>
+
+                    <button onclick="executeAction('APPROVE')" class="py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:brightness-110 text-white font-black text-xs sm:text-sm shadow-md shadow-emerald-500/20 transition active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-circle-check text-sm"></i>
+                        <span>อนุมัติขึ้นฟีด (Safe)</span>
+                    </button>
+                </div>
+            </div>
+
+        </aside>
+
+    </main>
+
+    <script>
+        // --- 1. Audio Engine (Web Audio API) ---
+        const AudioFX = {
+            ctx: null,
+            enabled: true,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+            toggleMute() {
+                this.enabled = !this.enabled;
+                const icon = document.getElementById('soundIcon');
+                if (this.enabled) {
+                    icon.className = 'fa-solid fa-volume-high text-xs';
+                    this.playClick();
+                } else {
+                    icon.className = 'fa-solid fa-volume-xmark text-xs text-rose-500';
+                }
+            },
+            playBeep(freq, type, duration) {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type || 'sine';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e){}
+            },
+            playClick() { this.playBeep(850, 'sine', 0.05); },
+            playScan() { this.playBeep(987.77, 'triangle', 0.08); setTimeout(() => this.playBeep(1318.51, 'triangle', 0.12), 60); },
+            playRedact() { this.playBeep(440, 'square', 0.08); setTimeout(() => this.playBeep(659.25, 'square', 0.12), 70); },
+            playSuccess() { this.playBeep(523.25, 'triangle', 0.12); setTimeout(() => this.playBeep(783.99, 'triangle', 0.2), 90); },
+            playError() { this.playBeep(220, 'sawtooth', 0.25); },
+            playAlarm() { this.playBeep(400, 'sawtooth', 0.15); setTimeout(() => this.playBeep(300, 'sawtooth', 0.2), 100); },
+            playCoins() {
+                [659.25, 783.99, 987.77].forEach((f, idx) => {
+                    setTimeout(() => this.playBeep(f, 'sine', 0.15), idx * 80);
+                });
+            },
+            playVictory() {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, idx) => {
+                    setTimeout(() => this.playBeep(f, 'sine', 0.25), idx * 100);
+                });
+            }
+        };
+
+        function toggleFullScreen() {
+            AudioFX.playClick();
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        // --- 2. สายอาชีพ DPO & คำสั่งยุทธศาสตร์สุ่ม ---
+        const RANKS = [
+            { level: 1, name: "Junior DPO (เจ้าหน้าที่ฝึกหัด)", minXP: 0, mult: 1.0 },
+            { level: 2, name: "Forensic Investigator (นักสืบไซเบอร์)", minXP: 400, mult: 1.25 },
+            { level: 3, name: "Data Privacy Officer (ผู้เชี่ยวชาญ PDPA)", minXP: 1000, mult: 1.5 },
+            { level: 4, name: "Chief Cyber Auditor (หัวหน้าตรวจสอบข้อมูล)", minXP: 2000, mult: 1.85 },
+            { level: 5, name: "Legendary Cyber Sentinel (ผู้พิทักษ์ตำนาน)", minXP: 3200, mult: 2.3 }
+        ];
+
+        const DIRECTIVE_POOL = [
+            { title: "ปฏิบัติการคุ้มครองข้อมูลการจัดส่ง: สแกนตรวจป้ายพัสดุ เบอร์โทร และบาร์โค้ด", focus: "PARCEL", bonus: 70 },
+            { title: "ยุทธการสกัด Phishing & Scam: ตรวจจับโดเมนแปลกปลอมที่หลอกขโมยรหัสผ่าน", focus: "PHISHING", bonus: 85 },
+            { title: "ภารกิจคุ้มครองสิทธิเที่ยวบิน: สแกนรหัสการจอง PNR และบอร์ดดิ้งพาส ห้ามหลุดเด็ดขาด", focus: "BOARDING_PASS", bonus: 100 },
+            { title: "ตรวจสอบความปลอดภัยในสถานศึกษา: คุ้มครองเกรดเฉลี่ย ข้อมูลการสอบ และรหัสผ่าน Wi-Fi", focus: "DESK_WORKSPACE", bonus: 80 },
+            { title: "ส่งเสริมรอยเท้าดิจิทัลสีขาว: อนุมัติโพสต์แบ่งปันความรู้ สรุปบทเรียน และจิตอาสา", focus: "POSITIVE", bonus: 110 }
+        ];
+
+        const VISUAL_ASSETS = {
+            DESK_WORKSPACE: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80",
+            PARCEL: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=600&q=80",
+            STUDY_NOTES: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=600&q=80",
+            CODING_SCRATCH: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
+            BOARDING_PASS: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=600&q=80",
+            COMMUNITY_VOLUNTEER: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=600&q=80",
+            BANK_TRANSACTION: "https://images.unsplash.com/photo-1556742049-0a67e557224f?auto=format&fit=crop&w=600&q=80"
+        };
+
+        const PERSONAS = [
+            { name: "น้องบาส ม.2", role: "นักเรียนสายเกม", avatar: "🧑‍💻" },
+            { name: "แพรวา ป.6", role: "แฟนคลับศิลปิน", avatar: "👧" },
+            { name: "ออโต้ ม.3", role: "สตรีมเมอร์เยาวชน", avatar: "🎮" },
+            { name: "ครูมายด์ สอนไอที", role: "คุณครูโรงเรียนวัดควนเนียง", avatar: "👨‍🏫" },
+            { name: "มายด์ ม.5", role: "นักเรียนสายวิทย์", avatar: "👩‍🔬" },
+            { name: "พี่วิน มอเตอร์ไซค์", role: "ไรเดอร์ส่งของ", avatar: "🛵" },
+            { name: "ป้าแมว ขนมหวาน", role: "แม่ค้าประจำชุมชน", avatar: "🥞" },
+            { name: "เต้ย ป.5", role: "นักกีฬาโรงเรียน", avatar: "⚽" }
+        ];
+
+        const LOCATIONS_POOL = [
+            { name: "บ้านพักอาศัยส่วนบุคคล (ซอยร่วมมิตร)", lat: 7.0084, lon: 100.4767, label: "บ้านพักส่วนตัว (Songkhla)" },
+            { name: "โรงเรียนวัดควนเนียง จ.สงขลา", lat: 7.0125, lon: 100.4812, label: "โรงเรียนวัดควนเนียง" },
+            { name: "ท่าอากาศยานสุวรรณภูมิ (อาคารผู้โดยสารขาออก)", lat: 13.6900, lon: 100.7501, label: "สนามบินสุวรรณภูมิ" },
+            { name: "ห้องสมุดประชาชนเทศบาล", lat: 7.0050, lon: 100.4720, label: "ห้องสมุดประชาชน (สถานที่สาธารณะ)" },
+            { name: "ย่านการค้าเทศบาลนครหาดใหญ่", lat: 7.0089, lon: 100.4760, label: "ย่านธุรกิจการค้า" },
+            { name: "เซิร์ฟเวอร์ต่างประเทศที่ไม่ระบุตัวตน", lat: 1.3521, lon: 103.8198, label: "Untrusted Hosting (ต่างประเทศ)" }
+        ];
+
+        // แม่แบบสุ่มสร้างโจทย์ไม่รู้จบ
+        const SCENARIO_ARCHETYPES = [
+            {
+                type: "PARCEL",
+                category: "Delivery Package PII",
+                threatLevel: "ระดับ 2 (Shipping Data)",
+                imageKey: "PARCEL",
+                texts: [
+                    "ของที่สั่งมาส่งแล้ววว กล่องใหญ่มาก ข้างในจะเป็นอะไรมาลุ้นกัน 📦✨",
+                    "พัสดุส่งไวมากก แกะกล่องรีวิวให้เพื่อนๆ ดูในไลฟ์คืนนี้เลยน้า 🤖🛍️",
+                    "ได้รับโมเดลใหม่แล้วจ้า กล่องสวยไม่มีรอยบุบ ใครอยากได้พิกัดร้านทักมา 📦🎁"
+                ],
+                correctAction: "REDACT_APPROVE",
+                criticalTargetIds: ["parcel_phone", "parcel_code"],
+                codeDecrypted: "SHIPPING-BARCODE: 89401948201 | RECIPIENT-TEL: 089-123-4567 | ADDR: 99/42 ซ.8",
+                phishingReport: "ไม่มีลิงก์เว็บแนบในโพสต์นี้",
+                piiReport: "ตรวจพบข้อมูลระบุตัวตน: เบอร์โทรศัพท์ และ ป้ายบาร์โค้ดพัสดุสำหรับติดตามของ",
+                butterflyGood: "✨ ปลอดภัย 100%: แกะกล่องอย่างสบายใจ ไม่มีมิจฉาชีพโทรมาหลอกเก็บเงินปลายทาง เพราะเบอร์โทรและโค้ดถูกเซ็นเซอร์!",
+                butterflyBad: "💥 เกิดเหตุร้าย: แก๊งคอลเซ็นเตอร์นำเบอร์โทรจากกล่องพัสดุไปโทรหลอกคนในบ้านให้จ่ายเงินค่าพัสดุปลอม สูญเงิน 2,500 บาท!"
+            },
+            {
+                type: "BANK_SLIP",
+                category: "Financial PII",
+                threatLevel: "ระดับ 2 (Banking Slip)",
+                imageKey: "BANK_TRANSACTION",
+                texts: [
+                    "ลูกค้าใจดีมาก ทิปพิเศษเพิ่มให้ 300 บาท โอนไวสุดๆ ขออนุญาตโชว์สลิปเป็นกำลังใจครับ 💸❤️",
+                    "ได้รับเงินค่าขนมพิเศษจากคุณลุงแล้ว โอนผ่านพร้อมเพย์รวดเร็วทันใจมากก 📱✨",
+                    "ขายของชิ้นแรกสำเร็จแล้วจ้า ลูกค้าโอนเงินเรียบร้อย ดีใจจนต้องแคปสลิปโชว์ 💸🎉"
+                ],
+                correctAction: "REDACT_APPROVE",
+                criticalTargetIds: ["slip_balance", "slip_qr"],
+                codeDecrypted: "QR-PROMPTPAY: 00020101021229370016A000000677010111 | ACC: 481-9-02918-2",
+                phishingReport: "ไม่มีลิงก์เว็บในเคสนี้",
+                piiReport: "ข้อมูลทางการเงิน: เลขบัญชีธนาคาร, ยอดเงินคงเหลือในบัญชี และ QR Code สำหรับสแกนตรวจสอบสลิป",
+                butterflyGood: "✨ ปลอดภัยหายห่วง: ได้รับกำลังใจเต็มเปี่ยม และยอดเงินคงเหลือในบัญชีถูกปิดเป็นความลับทางการเงิน!",
+                butterflyBad: "💥 1 สัปดาห์ถัดมา: มิจฉาชีพนำ QR สลิปและเลขบัญชีไปสร้างสลิปปลอมสวมรอยหลอกซื้อสินค้าในร้านค้าชุมชน!"
+            },
+            {
+                type: "BOARDING_PASS",
+                category: "Airline PNR Threat",
+                threatLevel: "ระดับ 3 (PNR Airline Hazard)",
+                imageKey: "BOARDING_PASS",
+                texts: [
+                    "บ๊ายบายเมืองไทยย เจอกันซิดนีย์ 2 สัปดาห์ ตื่นเต้นกับการเดินทางคนเดียวครั้งแรก ✈️🇦🇺",
+                    "ในที่สุดก็ได้บินไปเที่ยวญี่ปุ่นแล้ววว ถ่ายตั๋วเครื่องบินเป็นที่ระลึกก่อนขึ้นเครื่อง ✈️🗻",
+                    "ออกเดินทางสู่การผจญภัยครั้งใหม่ เจอกันลอนดอนน้าทุกคนน ✈️🇬🇧"
+                ],
+                correctAction: "BLOCK", // ตั๋วเครื่องบินมี PNR อันตราย ต้องบล็อก
+                criticalTargetIds: [],
+                codeDecrypted: "BARCODE: BCBP PASSENGER/M TG475 BKK-SYD | PNR: K9X2Q | ETKT: 217482019482",
+                phishingReport: "ไม่มีลิงก์ฟิชชิ่ง",
+                piiReport: "ความลับขั้นสูง: รหัสการจอง PNR 6 หลัก สามารถล็อกอินเข้าจัดการตั๋วและดูเลขพาสปอร์ตได้",
+                butterflyGood: "✨ การเดินทางราบรื่น: รหัสการจองไม่รั่วไหล เดินทางถึงปลายทางและเดินทางกลับอย่างปลอดภัยไร้กังวล!",
+                butterflyBad: "💥 วิกฤตเที่ยวบิน: มีคนนำรหัส PNR บนรูป ไปล็อกอินเข้าระบบสายการบินและกดยกเลิกเที่ยวบินขากลับเพื่อกลั่นแกล้ง!"
+            },
+            {
+                type: "DESK_WORKSPACE",
+                category: "Workspace Leaks",
+                threatLevel: "ระดับ 3 (Multi-Point Leaks)",
+                imageKey: "DESK_WORKSPACE",
+                texts: [
+                    "เคลียร์การบ้านเสร็จแล้วว คืนนี้ใครว่างเข้า Discord มาคุยกันน้า 💻☕",
+                    "จัดโต๊ะคอมใหม่พร้อมลุยโปรเจกต์เขียนโค้ด Scratch ส่งครูมายด์แล้วครับ 🖥️🎮",
+                    "อ่านหนังสือเตรียมสอบกลางภาคคืนนี้ สู้ๆ นะทุกคนนน 📚✨"
+                ],
+                correctAction: "REDACT_APPROVE",
+                criticalTargetIds: ["desk_wifi", "desk_grades"],
+                codeDecrypted: "ไม่มีบาร์โค้ดในภาพนี้",
+                phishingReport: "ลิงก์ปกติ: discord.gg/student-room-study",
+                piiReport: "ตรวจพบข้อมูลลับ: โพสต์อิทรหัสผ่าน Wi-Fi และเอกสารคะแนนสอบของเพื่อนติดอยู่ในฉากหลังโต๊ะหนังสือ!",
+                butterflyGood: "✨ ปลอดภัย 100%: รหัส Wi-Fi และคะแนนสอบของเพื่อนไม่รั่วไหลสู่โลกออนไลน์ ป้องกันการถูกสวมรอย!",
+                butterflyBad: "💥 ผลสะท้อนในอนาคต: เพื่อนร่วมห้องถูกมิจฉาชีพโทรไปหลอกว่าสอบตกต้องจ่ายเงินค่าแก้เกรด เพราะข้อมูลคะแนนบนโต๊ะหลุดไป!"
+            },
+            {
+                type: "PHISHING",
+                category: "Malicious Phishing Scam",
+                threatLevel: "ระดับ 4 (Phishing Attack)",
+                imageKey: "CODING_SCRATCH",
+                texts: [
+                    "🎉 ฉลองเปิดเทอมใหม่ แจกทุนการศึกษาและ iPad ฟรี 50 เครื่อง! กดลงทะเบียนด่วนที่ลิงก์ด้านล่าง 📱🎁",
+                    "⚠️ ด่วน! บัญชีของคุณถูกระงับชั่วคราว ให้คลิกลิงก์เพื่อยืนยันรหัสผ่านใหม่ทันที มิฉะนั้นจะถูกลบถาวร 🚨",
+                    "🎁 กิจกรรมแจกสกินเกม RoV ฟรี 100 รางวัล คลิกกรอกชื่อและรหัสผ่านเพื่อรับสกินทันที! 🎮🔥"
+                ],
+                correctAction: "BLOCK", // ลิงก์ฟิชชิ่งต้องบล็อก
+                criticalTargetIds: [],
+                codeDecrypted: "ไม่มีบาร์โค้ด",
+                phishingReport: "⚠️ ตรวจพบ Phishing URL: http://kuanniang.ac.th-freegift.xyz/login-student (โดเมนปลอมแอบอ้าง .xyz)",
+                piiReport: "เป้าหมายมิจฉาชีพ: หลอกลวงให้นักเรียนกรอกรหัสผ่านและเลขประจำตัว 13 หลัก",
+                butterflyGood: "✨ สกัดภัยไซเบอร์สำเร็จ: ไม่มีนักเรียนคนใดตกเป็นเหยื่อกรอกรหัสผ่าน บัญชีปลอดภัย 100%!",
+                butterflyBad: "💥 หายนะไซเบอร์: นักเรียนหลายคนหลงเชื่อกดลิงก์ บัญชีถูกแฮกและถูกนำไปใช้ส่งสแปมหลอกยืมเงินเพื่อนทั้งโรงเรียน!"
+            },
+            {
+                type: "POSITIVE_STUDY",
+                category: "Positive Digital Footprint",
+                threatLevel: "ระดับ 1 (Safe & Positive)",
+                imageKey: "STUDY_NOTES",
+                texts: [
+                    "สรุปสูตรฟิสิกส์เรื่องคลื่นกลและเสียง สรุป Mindmap แจกฟรีให้น้องๆ อ่านเตรียมสอบ โหลดอ่านได้เลยค่ะ 📖💡",
+                    "ทำสรุปคำศัพท์ภาษาอังกฤษ 100 คำที่ออกสอบบ่อยมาแจกเพื่อนๆ ขอให้สอบผ่านทุกคนน้า 📝🇬🇧",
+                    "รวมเทคนิคการจำวิชาสังคมและประวัติศาสตร์ อ่านเข้าใจง่ายใน 5 นาที โหลดอ่านฟรีได้เลยจ้า 📚✨"
+                ],
+                correctAction: "APPROVE", // โพสต์เชิงบวก ต้องอนุมัติ
+                criticalTargetIds: [],
+                codeDecrypted: "ไม่มีบาร์โค้ด",
+                phishingReport: "ลิงก์ปกติ: drive.google.com/physics-notes.pdf (ไฟล์เอกสารปลอดภัย)",
+                piiReport: "ตรวจสอบแล้ว: เอกสารสรุปบทเรียนวิชาการ ไม่มีข้อมูลส่วนบุคคลใดๆ รั่วไหล",
+                butterflyGood: "✨ อนาคตสดใส: มหาวิทยาลัยรับเข้าศึกษาต่อรอบ Portfolio เพราะประวัติออนไลน์แสดงความเป็นผู้แบ่งปันความรู้!",
+                butterflyBad: "⚠️ ถ้าคุณบล็อกโพสต์นี้: น้องๆ พลาดเอกสารอ่านสอบ และประชาชนประท้วงว่าผู้ตรวจการปิดกั้นความรู้โดยไร้เหตุผล!"
+            },
+            {
+                type: "POSITIVE_CSR",
+                category: "Positive Digital Footprint",
+                threatLevel: "ระดับ 1 (Safe & Positive)",
+                imageKey: "COMMUNITY_VOLUNTEER",
+                texts: [
+                    "ขอเชิญชวนชุมชนร่วมกิจกรรมจิตอาสาเยาวชนรักษ์ป่าชายเลน ในวันเสาร์นี้ เวลา 09.00 น. เจอกันที่ศาลาอเนกประสงค์ครับ 🌳💚",
+                    "พวกเราชมรมอนุรักษ์ร่วมกันเก็บขยะชายหาดชุมชนได้กว่า 200 กก. ขอบคุณทุกคนที่มาร่วมแรงร่วมใจกันครับ 🌊🧤",
+                    "กิจกรรมบริจาคหนังสือและอุปกรณ์การเรียนให้น้องๆ ในชนบท สำเร็จลุล่วงด้วยดี ขอบคุณทุกกำลังใจครับ 📚❤️"
+                ],
+                correctAction: "APPROVE",
+                criticalTargetIds: [],
+                codeDecrypted: "ไม่มีบาร์โค้ด",
+                phishingReport: "ไม่มีลิงก์ฟิชชิ่ง",
+                piiReport: "ตรวจสอบแล้ว: เป็นการประชาสัมพันธ์กิจกรรมเพื่อสังคม ไม่มีข้อมูลส่วนบุคคลใดๆ รั่วไหล",
+                butterflyGood: "✨ ชุมชนเข้มแข็ง: เกิดความร่วมมือที่ดีในชุมชน และสร้างภาพลักษณ์รอยเท้าดิจิทัลที่งดงามให้โรงเรียน!",
+                butterflyBad: "⚠️ ถ้าคุณบล็อกโพสต์นี้: กิจกรรมเพื่อสังคมต้องล้มเลิก และดัชนีความพึงพอใจของชุมชนลดลงฮวบ!"
+            }
+        ];
+
+        // --- 4. ตัวแปรสถานะเกม (Game State) ---
+        let currentDay = 1;
+        let casesPerShift = 5;
+        let shiftCaseCounter = 0;
+        let playerCoins = 200;
+        let playerXP = 0;
+        let currentRankIdx = 0;
+
+        let safetyIndex = 100;
+        let satisfactionIndex = 100;
+
+        let inventory = {
+            quantum: 1,
+            coffee: 1,
+            legal: 1
+        };
+
+        let currentCase = null;
+        let activeCensoredTokens = new Set();
+        let leafletMap = null;
+        let mapMarker = null;
+
+        let isCrisisActive = false;
+        let crisisTimer = 75.0; // ขยายเป็น 75 วินาที อ่านสบายใจ
+        let crisisInterval = null;
+
+        // --- 5. โหลดและบันทึกข้อมูล (LocalStorage) ---
+        function loadProfile() {
+            try {
+                const data = JSON.parse(localStorage.getItem('gatekeeper_pro_click_v1'));
+                if (data) {
+                    playerCoins = data.coins || 200;
+                    playerXP = data.xp || 0;
+                    currentDay = data.day || 1;
+                    inventory = data.inventory || { quantum: 1, coffee: 1, legal: 1 };
+                }
+            } catch(e){}
+            updateCareerUI();
+            updateInventoryUI();
+        }
+
+        function saveProfile() {
+            try {
+                const save = {
+                    coins: playerCoins,
+                    xp: playerXP,
+                    day: currentDay,
+                    inventory: inventory
+                };
+                localStorage.setItem('gatekeeper_pro_click_v1', JSON.stringify(save));
+            } catch(e){}
+        }
+
+        function updateCareerUI() {
+            for (let i = RANKS.length - 1; i >= 0; i--) {
+                if (playerXP >= RANKS[i].minXP) {
+                    currentRankIdx = i;
+                    break;
+                }
+            }
+            const rank = RANKS[currentRankIdx];
+            const nextRank = RANKS[currentRankIdx + 1];
+
+            document.getElementById('rankBadge').innerText = rank.name;
+            document.getElementById('coinDisplay').innerText = playerCoins.toLocaleString();
+            document.getElementById('xpDisplay').innerText = `XP: ${playerXP} / ${nextRank ? nextRank.minXP : 'MAX'}`;
+        }
+
+        function updateInventoryUI() {
+            document.getElementById('countQuantum').innerText = inventory.quantum;
+            document.getElementById('countCoffee').innerText = inventory.coffee;
+            document.getElementById('countLegal').innerText = inventory.legal;
+
+            document.getElementById('btnQuantum').disabled = inventory.quantum <= 0;
+            document.getElementById('btnCoffee').disabled = inventory.coffee <= 0;
+            document.getElementById('btnLegal').disabled = inventory.legal <= 0;
+
+            const items = [];
+            if (inventory.quantum > 0) items.push(`⚡ช่วยเซ็นเซอร์(${inventory.quantum})`);
+            if (inventory.coffee > 0) items.push(`☕กาแฟ(${inventory.coffee})`);
+            if (inventory.legal > 0) items.push(`📞สายด่วน(${inventory.legal})`);
+            document.getElementById('quickInventoryText').innerText = items.length > 0 ? items.join(' ') : 'ไม่มี';
+        }
+
+        // --- 6. แผนที่ Leaflet.js Interactive OSINT Engine (เสถียร ไม่ค้าง) ---
+        function initLeafletMap(lat, lon, label) {
+            const container = document.getElementById('osintMapContainer');
+            if (!container) return;
+
+            if (leafletMap) {
+                leafletMap.remove();
+                leafletMap = null;
+            }
+
+            try {
+                leafletMap = L.map('osintMapContainer', {
+                    zoomControl: false,
+                    attributionControl: false
+                }).setView([lat, lon], 14);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18
+                }).addTo(leafletMap);
+
+                mapMarker = L.marker([lat, lon]).addTo(leafletMap);
+                mapMarker.bindPopup(`<b>พิกัดดาวเทียม:</b><br>${label}`).openPopup();
+
+                setTimeout(() => {
+                    if (leafletMap) leafletMap.invalidateSize();
+                }, 150);
+            } catch(e){}
+        }
+
+        // --- 7. ตัวสร้างโจทย์สุ่มแบบไม่รู้จบ (Combinatorial Procedural Engine) ---
+        function generateEndlessCase() {
+            const persona = PERSONAS[Math.floor(Math.random() * PERSONAS.length)];
+            const archetype = SCENARIO_ARCHETYPES[Math.floor(Math.random() * SCENARIO_ARCHETYPES.length)];
+            const location = LOCATIONS_POOL[Math.floor(Math.random() * LOCATIONS_POOL.length)];
+            const randomText = archetype.texts[Math.floor(Math.random() * archetype.texts.length)];
+            const imageUrl = VISUAL_ASSETS[archetype.imageKey] || VISUAL_ASSETS.DESK_WORKSPACE;
+
+            const isCrisis = currentDay >= 2 && Math.random() < 0.25;
+
+            return {
+                author: persona.name,
+                role: persona.role,
+                avatar: persona.avatar,
+                content: randomText,
+                location: location.name,
+                lat: location.lat,
+                lon: location.lon,
+                mapLabel: location.label,
+                imageUrl: imageUrl,
+                isCrisis: isCrisis,
+                ...archetype
+            };
+        }
+
+        // --- 8. กะงานและการโหลดโจทย์สุ่ม ---
+        function startDayShift() {
+            shiftCaseCounter = 0;
+            const directive = DIRECTIVE_POOL[Math.floor(Math.random() * DIRECTIVE_POOL.length)];
+            document.getElementById('shiftTitleDisplay').innerText = `กะสุ่มที่ ${currentDay}`;
+            document.getElementById('directiveText').innerText = directive.title;
+
+            AudioFX.playClick();
+            Swal.fire({
+                title: `📋 กะงานสุ่มที่ ${currentDay}`,
+                html: `
+                    <div class="space-y-2 text-xs text-left text-slate-700">
+                        <div class="p-3 bg-sky-50 border border-sky-200 rounded-xl">
+                            <b class="text-sky-900 block mb-1">คำสั่งยุทธศาสตร์จากผู้ว่าการไซเบอร์:</b>
+                            <p class="text-slate-800 font-medium">${directive.title}</p>
+                            <span class="inline-block mt-2 font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded text-[11px]">โบนัสกะงาน: +${directive.bonus} 🪙 Data Coins</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500">คลิกที่ข้อความหรือจุดเสี่ยงเพื่อถมดำเซ็นเซอร์ คัดกรองให้ผ่าน ${casesPerShift} เคส เพื่อรับค่าจ้างและเลื่อนขั้น DPO!</p>
+                    </div>
+                `,
+                confirmButtonText: 'เริ่มงานทันที 🚀',
+                confirmButtonColor: '#0284c7'
+            }).then(() => {
+                loadNextProceduralCase();
+            });
+        }
+
+        function loadNextProceduralCase() {
+            clearInterval(crisisInterval);
+            activeCensoredTokens.clear();
+
+            if (shiftCaseCounter >= casesPerShift) {
+                finishShiftDay();
+                return;
+            }
+
+            shiftCaseCounter++;
+            document.getElementById('shiftProgressText').innerText = `${shiftCaseCounter} / ${casesPerShift}`;
+
+            // สุ่มโจทย์ใหม่สดๆ
+            currentCase = generateEndlessCase();
+            isCrisisActive = currentCase.isCrisis;
+
+            // Render Post Details
+            document.getElementById('postAvatar').innerText = currentCase.avatar;
+            document.getElementById('postAuthor').innerText = currentCase.author;
+            document.getElementById('postRole').innerText = currentCase.role;
+            document.getElementById('postLocationText').innerText = currentCase.location;
+            document.getElementById('threatLevelBadge').innerText = currentCase.threatLevel;
+
+            // Render Status Content
+            document.getElementById('postStatusBox').innerHTML = currentCase.content;
+            document.getElementById('postStatusBox').className = "p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs sm:text-sm text-slate-800 leading-relaxed font-medium transition";
+
+            // Render Realistic Photo & Clickable Tokens (ไม่มีกรอบชี้นำ)
+            renderVisualEvidence(currentCase);
+
+            // Reset OSINT Console
+            activateForensicTool('MAP');
+            updateRedactBadge();
+
+            // Handle Generous Timer (75 วินาที)
+            const timerBadge = document.getElementById('crisisTimerBadge');
+            const feedSection = document.getElementById('feedSection');
+            if (isCrisisActive) {
+                AudioFX.playAlarm();
+                timerBadge.classList.remove('hidden');
+                timerBadge.classList.add('flex');
+                feedSection.classList.add('emergency-active');
+                crisisTimer = 75.0;
+                document.getElementById('crisisTimer').innerText = crisisTimer.toFixed(1);
+
+                crisisInterval = setInterval(() => {
+                    crisisTimer -= 0.1;
+                    if (crisisTimer <= 0) {
+                        clearInterval(crisisInterval);
+                        handleCrisisTimeout();
+                    } else {
+                        document.getElementById('crisisTimer').innerText = crisisTimer.toFixed(1);
+                    }
+                }, 100);
+            } else {
+                timerBadge.classList.add('hidden');
+                timerBadge.classList.remove('flex');
+                feedSection.classList.remove('emergency-active');
+            }
+        }
+
+        // เรนเดอร์ภาพถ่ายจริงและชิ้นส่วนข้อความธรรมชาติ (คลิกเซ็นเซอร์ได้ทันที ไม่มีกรอบชี้นำ)
+        function renderVisualEvidence(c) {
+            const box = document.getElementById('interactiveArtifactBox');
+            box.innerHTML = '';
+
+            let detailsHtml = '';
+
+            if (c.type === 'PARCEL') {
+                detailsHtml = `
+                    <div class="space-y-1 text-xs">
+                        <div class="text-[9px] font-bold text-amber-900 uppercase">ป้ายจัดส่งพัสดุด่วน (Shipping Label)</div>
+                        <div>ผู้รับ: <span class="censor-token font-bold" data-token="parcel_name">${c.author}</span></div>
+                        <div class="text-[10px] text-slate-600">ที่อยู่: <span class="censor-token" data-token="parcel_addr">99/42 หมู่บ้านพรีเมียม ซ.8</span></div>
+                        <div>เบอร์ติดต่อ: <span class="censor-token font-mono font-bold" data-token="parcel_phone">089-123-4567</span></div>
+                        <div class="pt-1">
+                            <span class="censor-token p-1 bg-white border border-slate-300 font-mono text-[10px]" data-token="parcel_code">
+                                |||| 89401948201 ||||
+                            </span>
+                        </div>
+                    </div>
+                `;
+            } else if (c.type === 'BANK_SLIP') {
+                detailsHtml = `
+                    <div class="space-y-1 text-xs">
+                        <div class="text-[9px] font-bold text-emerald-900 uppercase">สลิปโอนเงินสำเร็จ • พร้อมเพย์</div>
+                        <div>โอนเข้า: <span class="censor-token" data-token="slip_name">นายวรวิทย์ (ไรเดอร์)</span></div>
+                        <div>ยอดโอน: <span class="censor-token font-bold" data-token="slip_amt">300.00 บาท</span></div>
+                        <div>เลขที่อ้างอิง: <span class="censor-token font-mono text-[10px]" data-token="slip_ref">202610248819283</span></div>
+                        <div class="flex justify-between items-center pt-1 border-t border-emerald-200">
+                            <span class="censor-token font-mono text-[10px] text-slate-700 font-bold" data-token="slip_balance">
+                                ยอดคงเหลือในบัญชี: 45,920.00 บาท
+                            </span>
+                            <span class="censor-token p-1 bg-white border border-slate-200 text-center" data-token="slip_qr">
+                                <i class="fa-solid fa-qrcode text-xl text-slate-800"></i>
+                            </span>
+                        </div>
+                    </div>
+                `;
+            } else if (c.type === 'BOARDING_PASS') {
+                detailsHtml = `
+                    <div class="space-y-1 text-xs">
+                        <div class="flex justify-between text-[10px] font-bold text-slate-800 border-b border-slate-300 pb-1">
+                            <span>AIRLINE BOARDING PASS</span>
+                            <span class="censor-token text-rose-600 font-mono font-bold" data-token="pass_pnr">PNR: K9X2Q</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-1 text-[11px]">
+                            <span>เที่ยวบิน: <span class="censor-token" data-token="pass_flight">TG475 (BKK - SYD)</span></span>
+                            <span class="censor-token text-[10px] font-mono text-slate-500" data-token="pass_tkt">TKT: 217-4820194820</span>
+                        </div>
+                    </div>
+                `;
+            } else if (c.type === 'DESK_WORKSPACE') {
+                detailsHtml = `
+                    <div class="space-y-1.5 text-xs">
+                        <div class="text-[9px] font-bold text-slate-700">ภาพถ่ายโต๊ะหนังสือ & อุปกรณ์คอมพิวเตอร์</div>
+                        <div class="flex justify-between items-center gap-2">
+                            <div>
+                                <span class="text-[10px] text-slate-500 block">เอกสารบนจอคอม:</span>
+                                <span class="censor-token font-mono text-[10px] bg-white border border-slate-200" data-token="desk_grades">
+                                    [PDF] รายงานคะแนนสอบกลางภาค_ม2.xlsx
+                                </span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] text-slate-500 block">โน้ตแปะผนัง:</span>
+                                <span class="censor-token font-mono text-[10px] bg-yellow-100 border border-yellow-200 font-bold" data-token="desk_wifi">
+                                    WIFI: Kn#2026!
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (c.type === 'PHISHING') {
+                detailsHtml = `
+                    <div class="space-y-1 text-xs">
+                        <div class="text-[9px] font-bold text-rose-800 uppercase">ลิงก์ลงทะเบียนที่แนบมาในโพสต์</div>
+                        <div class="censor-token p-1.5 bg-white border border-rose-200 rounded text-rose-700 font-mono text-[10px] break-all block" data-token="phish_url">
+                            http://kuanniang.ac.th-freegift.xyz/login-student
+                        </div>
+                    </div>
+                `;
+            } else {
+                detailsHtml = `
+                    <div class="text-xs text-slate-600 p-1 flex items-center gap-2">
+                        <i class="fa-solid fa-file-circle-check text-emerald-500 text-lg"></i>
+                        <span>ภาพถ่ายบทเรียนวิชาการ/กิจกรรมสาธารณะ (ไม่มีข้อมูลส่วนบุคคลเสี่ยง)</span>
+                    </div>
+                `;
+            }
+
+            box.innerHTML = `
+                <div class="space-y-2">
+                    <div class="relative h-28 w-full rounded-lg overflow-hidden bg-slate-900 pointer-events-none">
+                        <img src="${c.imageUrl}" alt="evidence" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+                        <span class="absolute bottom-1.5 left-2 text-[9px] font-mono text-white/90 bg-slate-950/80 px-2 py-0.5 rounded">
+                            <i class="fa-solid fa-camera mr-1"></i>หลักฐานภาพถ่ายดิจิทัล
+                        </span>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-lg p-2.5">
+                        ${detailsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ระบบคลิกเซ็นเซอร์ (ถมดำ) ทำงานแน่นอน 100% ด้วย Universal Event Delegation
+        $(document).on('click', '.censor-token', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const tokenId = $(this).data('token');
+            if (!tokenId) return;
+
+            AudioFX.playRedact();
+            if (activeCensoredTokens.has(tokenId)) {
+                activeCensoredTokens.delete(tokenId);
+                $(this).removeClass('is-censored');
+            } else {
+                activeCensoredTokens.add(tokenId);
+                $(this).addClass('is-censored');
+            }
+            updateRedactBadge();
+        });
+
+        function resetCensoring() {
+            AudioFX.playClick();
+            activeCensoredTokens.clear();
+            $('.censor-token').removeClass('is-censored');
+            updateRedactBadge();
+        }
+
+        function updateRedactBadge() {
+            const count = activeCensoredTokens.size;
+            const ind = document.getElementById('redactProgressIndicator');
+
+            if (count > 0) {
+                ind.className = "font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300 text-[10px]";
+                ind.innerText = `🔒 เซ็นเซอร์แล้ว ${count} รายการ`;
+            } else {
+                ind.className = "font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-[10px]";
+                ind.innerText = "คลิกจุดในภาพเพื่อเซ็นเซอร์";
+            }
+        }
+
+        // --- 9. เครื่องมือสืบสวนนิติวิทยาศาสตร์ ---
+        function activateForensicTool(tool) {
+            AudioFX.playScan();
+            const sc = currentCase;
+            const consoleBody = document.getElementById('forensicConsoleBody');
+            const toolTitle = document.getElementById('activeToolTitle');
+            const summary = document.getElementById('forensicThreatSummary');
+
+            if (tool === 'MAP') {
+                toolTitle.innerText = "แผนที่ดาวเทียม GPS METADATA (Leaflet Map)";
+                consoleBody.innerHTML = `
+                    <div id="osintMapWrapper">
+                        <div id="osintMapContainer" class="w-full h-full"></div>
+                    </div>
+                    <div id="forensicTextLog" class="text-[10px] text-sky-300 mt-1 truncate">
+                        📍 <b>พิกัดดาวเทียม:</b> ${sc.mapLabel} (Lat: ${sc.lat.toFixed(4)}, Lon: ${sc.lon.toFixed(4)})
+                    </div>
+                `;
+                initLeafletMap(sc.lat, sc.lon, sc.mapLabel);
+                summary.innerText = sc.mapLabel.includes('บ้าน') ? 'ความเสี่ยงพิกัดบ้านพักอาศัย' : 'พิกัดสถานที่สาธารณะ';
+
+            } else if (tool === 'CODE') {
+                toolTitle.innerText = "ถอดรหัสบาร์โค้ด & QR CODE DECRYPTOR";
+                consoleBody.innerHTML = `
+                    <div class="space-y-1.5 p-1 text-purple-300">
+                        <div class="text-[11px] font-bold">📡 ข้อมูลที่ซ่อนอยู่ในโค้ด:</div>
+                        <div class="p-2 bg-slate-800 rounded border border-slate-700 text-white font-mono text-[10px] break-all">${sc.codeDecrypted}</div>
+                        <p class="text-[9px] text-slate-400">คำเตือน: บาร์โค้ดหรือ QR Code สามารถถูกสแกนนำข้อมูลส่วนบุคคลไปใช้งานต่อได้</p>
+                    </div>
+                `;
+                summary.innerText = sc.codeDecrypted.includes('BARCODE') || sc.codeDecrypted.includes('QR') ? 'พบบาร์โค้ดสวมสิทธิ์' : 'ไม่พบบาร์โค้ดเสี่ยง';
+
+            } else if (tool === 'PHISH') {
+                toolTitle.innerText = "ตรวจจับโดเมนและลิงก์ (URL INSPECTOR)";
+                const isPhish = sc.type === 'PHISHING';
+                consoleBody.innerHTML = `
+                    <div class="space-y-1.5 p-1 ${isPhish ? 'text-rose-300' : 'text-emerald-300'}">
+                        <div class="text-[11px] font-bold">🔗 รายงานการตรวจสอบลิงก์:</div>
+                        <div class="p-2 bg-slate-800 rounded border border-slate-700 text-white font-mono text-[10px]">${sc.phishingReport}</div>
+                        <p class="text-[9px] text-slate-400">เทคนิคสังเกต: เว็บไซต์จริงของโรงเรียนจะไม่ใช้โดเมนแปลกปลอม เช่น .xyz หรือ -freegift</p>
+                    </div>
+                `;
+                summary.innerText = isPhish ? 'ตรวจพบฟิชชิ่ง 100%' : 'ลิงก์ปกติ ปลอดภัย';
+
+            } else if (tool === 'LEAK') {
+                toolTitle.innerText = "สแกนหาจุดรั่วไหลของข้อมูล (PII AUDITOR)";
+                consoleBody.innerHTML = `
+                    <div class="space-y-1.5 p-1 text-amber-300">
+                        <div class="text-[11px] font-bold">🧠 ผลวิเคราะห์การรั่วไหล:</div>
+                        <div class="p-2 bg-slate-800 rounded border border-slate-700 text-white text-[10px]">${sc.piiReport}</div>
+                        <p class="text-[9px] text-slate-400">คำแนะนำ: ค้นหาข้อมูลชิ้นดังกล่าวในภาพแล้วคลิกเซ็นเซอร์ให้เรียบร้อยก่อนอนุมัติ</p>
+                    </div>
+                `;
+                summary.innerText = sc.criticalTargetIds.length > 0 ? `พบ ${sc.criticalTargetIds.length} จุดต้องเซ็นเซอร์` : 'วิเคราะห์เสร็จสิ้น';
+            }
+        }
+
+        // --- 10. อุปกรณ์เสริมในคลัง (Shop Items ทำงานจริง 100%) ---
+        function useQuantumRedactor() {
+            if (inventory.quantum <= 0) return;
+            AudioFX.playRedact();
+            inventory.quantum--;
+            updateInventoryUI();
+            saveProfile();
+
+            // เซ็นเซอร์จุดสำคัญให้อัตโนมัติทันที
+            if (currentCase && currentCase.criticalTargetIds.length > 0) {
+                currentCase.criticalTargetIds.forEach(id => {
+                    activeCensoredTokens.add(id);
+                });
+                $('.censor-token').each(function() {
+                    const tid = $(this).data('token');
+                    if (currentCase.criticalTargetIds.includes(tid)) {
+                        $(this).addClass('is-censored');
+                    }
+                });
+                updateRedactBadge();
+            }
+
+            Swal.fire({
+                title: '⚡ เซ็นเซอร์ข้อมูลเสี่ยงเรียบร้อย!',
+                text: 'ระบบช่วยตรวจจับและถมดำข้อมูลสำคัญให้โดยอัตโนมัติ',
+                icon: 'success',
+                timer: 1100,
+                showConfirmButton: false
+            });
+        }
+
+        function useFreezeCoffee() {
+            if (inventory.coffee <= 0 || !isCrisisActive) return;
+            AudioFX.playSuccess();
+            inventory.coffee--;
+            crisisTimer += 30.0;
+            updateInventoryUI();
+            saveProfile();
+
+            Swal.fire({
+                title: '☕ กาแฟหน่วงเวลา!',
+                text: 'เพิ่มเวลาอ่านและวิเคราะห์ให้อีก +30 วินาที',
+                icon: 'info',
+                timer: 1100,
+                showConfirmButton: false
+            });
+        }
+
+        function useLegalAdvisor() {
+            if (inventory.legal <= 0) return;
+            AudioFX.playClick();
+            inventory.legal--;
+            updateInventoryUI();
+            saveProfile();
+
+            const sc = currentCase;
+            let advice = "";
+            if (sc.correctAction === 'BLOCK') {
+                advice = "ที่ปรึกษา AI ชี้เป้า: เคสนี้มีอันตรายสูงมาก (เช่น ลิงก์ฟิชชิ่ง หรือรหัส PNR ตั๋วเครื่องบิน) ต้องเลือก 'บล็อกโพสต์ (Block)' ทันที!";
+            } else if (sc.correctAction === 'APPROVE') {
+                advice = "ที่ปรึกษา AI ชี้เป้า: โพสต์นี้แบ่งปันความรู้สร้างสรรค์ ไม่มีข้อมูลส่วนตัวรั่วไหล ให้เลือก 'อนุมัติ (Safe)' ครับ!";
+            } else {
+                advice = "ที่ปรึกษา AI ชี้เป้า: โพสต์นี้มีข้อมูลส่วนตัวสำคัญ ให้คลิกถมดำจุดเสี่ยงให้ครบ แล้วกด 'อนุมัติ (Safe)'!";
+            }
+
+            Swal.fire({
+                title: '⚖️ คำปรึกษาจาก AI นิติวิทยาศาสตร์',
+                text: advice,
+                icon: 'info',
+                confirmButtonText: 'เข้าใจแล้ว',
+                confirmButtonColor: '#0284c7'
+            });
+        }
+
+        // --- 11. การตัดสินใจ & The Butterfly Effect ---
+        function executeAction(decision) {
+            clearInterval(crisisInterval);
+            AudioFX.playClick();
+            const sc = currentCase;
+
+            let isCorrect = false;
+
+            if (decision === 'BLOCK') {
+                if (sc.correctAction === 'BLOCK') isCorrect = true;
+            } else if (decision === 'APPROVE') {
+                if (sc.correctAction === 'APPROVE') {
+                    isCorrect = true;
+                } else if (sc.correctAction === 'REDACT_APPROVE') {
+                    // ตรวจสอบว่าชิ้นส่วนที่เสี่ยงถูกคลิกเซ็นเซอร์ครบทุกชิ้นหรือไม่
+                    const allCriticalCovered = sc.criticalTargetIds.every(id => activeCensoredTokens.has(id));
+                    if (allCriticalCovered) {
+                        isCorrect = true;
+                    }
+                }
+            }
+
+            const currentRank = RANKS[currentRankIdx];
+
+            if (isCorrect) {
+                AudioFX.playSuccess();
+                const earnedCoins = Math.round((isCrisisActive ? 40 : 25) * currentRank.mult);
+                const earnedXP = isCrisisActive ? 90 : 60;
+
+                playerCoins += earnedCoins;
+                playerXP += earnedXP;
+                updateCareerUI();
+                saveProfile();
+
+                Swal.fire({
+                    title: '🎉 การตัดสินใจถูกต้องแม่นยำ!',
+                    html: `
+                        <div class="space-y-2 text-xs text-left text-slate-700">
+                            <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900">
+                                <b class="text-emerald-950 block mb-1">🦋 The Butterfly Effect (ผลสะท้อนในอนาคต):</b>
+                                ${sc.butterflyGood}
+                            </div>
+                            <div class="flex justify-between font-bold text-slate-800 pt-1">
+                                <span class="text-amber-700">+${earnedCoins} 🪙 Data Coins</span>
+                                <span class="text-indigo-700">+${earnedXP} XP</span>
+                            </div>
+                        </div>
+                    `,
+                    icon: 'success',
+                    confirmButtonText: 'เคสถัดไป ⏩',
+                    confirmButtonColor: '#0284c7'
+                }).then(() => {
+                    loadNextProceduralCase();
+                });
+
+            } else {
+                AudioFX.playError();
+                
+                if (sc.correctAction === 'APPROVE' && decision === 'BLOCK') {
+                    satisfactionIndex = Math.max(0, satisfactionIndex - 25);
+                } else {
+                    safetyIndex = Math.max(0, safetyIndex - 35);
+                }
+                updateMeters();
+
+                let feedback = sc.butterflyBad;
+                if (sc.correctAction === 'REDACT_APPROVE' && decision === 'APPROVE') {
+                    feedback = `💥 คุณยังไม่ได้คลิกเซ็นเซอร์จุดเสี่ยงสำคัญครบถ้วน! ข้อมูลส่วนบุคคลจึงหลุดออกสู่อินเทอร์เน็ตถาวร!`;
+                }
+
+                Swal.fire({
+                    title: '⚠️ เกิดการรั่วไหลของข้อมูล!',
+                    html: `
+                        <div class="space-y-2 text-xs text-left text-slate-700">
+                            <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-900">
+                                <b class="text-rose-950 block mb-1">🦋 The Butterfly Effect (ผลกระทบในอนาคต):</b>
+                                ${feedback}
+                            </div>
+                        </div>
+                    `,
+                    icon: 'warning',
+                    confirmButtonText: 'รับทราบข้อผิดพลาด',
+                    confirmButtonColor: '#e11d48'
+                }).then(() => {
+                    if (safetyIndex <= 0 || satisfactionIndex <= 0) {
+                        triggerGameOver();
+                    } else {
+                        loadNextProceduralCase();
+                    }
+                });
+            }
+        }
+
+        function handleCrisisTimeout() {
+            AudioFX.playError();
+            safetyIndex = Math.max(0, safetyIndex - 40);
+            updateMeters();
+
+            Swal.fire({
+                title: '⏰ หมดเวลาวิเคราะห์!',
+                text: 'คุณตัดสินใจไม่ทันเวลา ข้อมูลสำคัญรั่วไหลสู่โลกออนไลน์ ส่งผลให้ค่าความปลอดภัยลดลงอย่างรุนแรง!',
+                icon: 'error',
+                confirmButtonText: 'ดำเนินการต่อ',
+                confirmButtonColor: '#e11d48'
+            }).then(() => {
+                if (safetyIndex <= 0) triggerGameOver();
+                else loadNextProceduralCase();
+            });
+        }
+
+        function updateMeters() {
+            document.getElementById('safetyDisplay').innerText = `${safetyIndex}%`;
+            document.getElementById('safetyMeter').style.width = `${safetyIndex}%`;
+
+            document.getElementById('satisfactionDisplay').innerText = `${satisfactionIndex}%`;
+            document.getElementById('satisfactionMeter').style.width = `${satisfactionIndex}%`;
+        }
+
+        // --- 12. จบกะงาน & ร้านค้า ---
+        function finishShiftDay() {
+            AudioFX.playCoins();
+            const bonus = 80;
+            playerCoins += bonus;
+            playerXP += 120;
+            updateCareerUI();
+
+            safetyIndex = Math.min(100, safetyIndex + 25);
+            satisfactionIndex = Math.min(100, satisfactionIndex + 25);
+            updateMeters();
+
+            currentDay++;
+            saveProfile();
+
+            Swal.fire({
+                title: `🎉 สิ้นสุดกะงานที่ ${currentDay - 1}!`,
+                html: `
+                    <div class="space-y-2 text-xs text-slate-700">
+                        <p class="font-bold text-sky-800">คุณปฏิบัติหน้าที่คุ้มครองข้อมูลส่วนบุคคลได้อย่างยอดเยี่ยม!</p>
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                            <div class="flex justify-between"><span>โบนัสกะงานสำเร็จ:</span><b class="text-amber-700">+${bonus} 🪙</b></div>
+                            <div class="flex justify-between"><span>XP ความเชี่ยวชาญ:</span><b class="text-indigo-700">+120 XP</b></div>
+                            <div class="flex justify-between border-t border-slate-200 pt-1 font-bold">
+                                <span>ยอดเหรียญสะสม:</span><span class="text-amber-800">${playerCoins} 🪙</span>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '🛒 ไปร้านค้าอุปกรณ์',
+                cancelButtonText: 'เริ่มกะถัดไปทันที ⏩',
+                confirmButtonColor: '#f59e0b',
+                cancelButtonColor: '#0284c7'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    openShopModal(true);
+                } else {
+                    startDayShift();
+                }
+            });
+        }
+
+        function openShopModal(fromShiftEnd = false) {
+            AudioFX.playClick();
+            Swal.fire({
+                title: '🛒 ร้านค้าอุปกรณ์นิติวิทยาศาสตร์ไซเบอร์',
+                html: `
+                    <div class="space-y-2 text-left text-xs text-slate-700">
+                        <div class="flex justify-between items-center pb-2 border-b border-slate-200">
+                            <span>ยอดเงินของคุณ: <b class="text-amber-800 text-sm font-black">${playerCoins} 🪙</b></span>
+                            <span class="text-[10px] text-slate-500">ซื้อไอเทมสนับสนุนกะงาน</span>
+                        </div>
+
+                        <div class="space-y-2 pt-1">
+                            <div class="p-2.5 bg-amber-50/80 border border-amber-200 rounded-xl flex items-center justify-between">
+                                <div>
+                                    <b class="text-amber-950 block">⚡ Quantum Redactor (ช่วยเซ็นเซอร์)</b>
+                                    <span class="text-[10px] text-slate-500">ช่วยตรวจจับและถมดำจุดเสี่ยงสำคัญให้อัตโนมัติ</span>
+                                </div>
+                                <button onclick="buyGear('quantum', 70)" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg shadow-xs">ซื้อ 70 🪙</button>
+                            </div>
+
+                            <div class="p-2.5 bg-sky-50/80 border border-sky-200 rounded-xl flex items-center justify-between">
+                                <div>
+                                    <b class="text-sky-950 block">☕ Freeze Coffee (กาแฟหน่วงเวลา)</b>
+                                    <span class="text-[10px] text-slate-500">เพิ่มเวลาอ่านและวิเคราะห์อีก +30 วินาที</span>
+                                </div>
+                                <button onclick="buyGear('coffee', 50)" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg shadow-xs">ซื้อ 50 🪙</button>
+                            </div>
+
+                            <div class="p-2.5 bg-purple-50/80 border border-purple-200 rounded-xl flex items-center justify-between">
+                                <div>
+                                    <b class="text-purple-950 block">📞 AI Legal Advisor (ที่ปรึกษา AI)</b>
+                                    <span class="text-[10px] text-slate-500">ชี้เป้าฟันธงคำตอบเมื่อเจอเคสกำกวม</span>
+                                </div>
+                                <button onclick="buyGear('legal', 60)" class="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-xs">ซื้อ 60 🪙</button>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                confirmButtonText: fromShiftEnd ? 'เสร็จสิ้น & เริ่มกะถัดไป' : 'ปิดร้านค้า',
+                confirmButtonColor: '#0284c7'
+            }).then(() => {
+                if (fromShiftEnd) startDayShift();
+            });
+        }
+
+        function buyGear(key, price) {
+            if (playerCoins < price) {
+                AudioFX.playError();
+                Swal.showValidationMessage('เหรียญ Data Coins ไม่พอ! ปฏิบัติหน้าที่เก็บเหรียญเพิ่มในกะถัดไปนะครับ');
+                return;
+            }
+            AudioFX.playCoins();
+            playerCoins -= price;
+            inventory[key]++;
+            updateInventoryUI();
+            updateCareerUI();
+            saveProfile();
+            openShopModal();
+        }
+
+        // --- 13. หน้าต่างคู่มือ & จบเกม ---
+        function showHowToPlayModal() {
+            AudioFX.playClick();
+            Swal.fire({
+                title: '📖 คู่มือผู้พิทักษ์ข้อมูล (ระบบสุ่มไม่รู้จบ)',
+                html: `
+                    <div class="space-y-3 text-left text-xs text-slate-700 leading-relaxed">
+                        <p class="font-bold text-sky-800 text-sm">ภารกิจ: สกัดกั้นภัยคุกคามไซเบอร์และรอยเท้าดิจิทัลอันตราย ไต่เต้าสู่ตำแหน่ง DPO ระดับตำนาน!</p>
+                        
+                        <div class="space-y-1.5">
+                            <div class="p-2 bg-sky-50 rounded-xl border border-sky-200">
+                                <b>1. โจทย์เปลี่ยนตลอดเวลา:</b> แต่ละกะและแต่ละเคสจะถูกสุ่มสร้างขึ้นใหม่ทั้งหมด ทั้งภาพถ่ายและข้อความ
+                            </div>
+                            <div class="p-2 bg-emerald-50 rounded-xl border border-emerald-200">
+                                <b>2. คลิกค้นหาและเซ็นเซอร์ด้วยตนเอง:</b> ไม่มีกรอบชี้นำ! ให้คลิกที่ข้อความหรือจุดที่คุณสงสัยว่าเป็นข้อมูลส่วนบุคคล (PII) เพื่อถมดำเซ็นเซอร์ก่อนอนุมัติ
+                            </div>
+                            <div class="p-2 bg-indigo-50 rounded-xl border border-indigo-200">
+                                <b>3. รักษาสมดุล 2 ด้าน:</b> อย่ากดบล็อกมั่วซั่ว! โพสต์สร้างสรรค์เพื่อการศึกษาต้องอนุมัติเสมอ มิฉะนั้นค่าเสรีภาพจะลดลง
+                            </div>
+                            <div class="p-2 bg-amber-50 rounded-xl border border-amber-200">
+                                <b>4. รับค่าจ้าง & เลื่อนขั้น:</b> สะสมเหรียญ 🪙 เพื่อซื้อไอเทมช่วยเซ็นเซอร์และกาแฟเพิ่มเวลาในร้านค้า
+                            </div>
+                        </div>
+                    </div>
+                `,
+                confirmButtonText: 'พร้อมปฏิบัติการ! 🚀',
+                confirmButtonColor: '#0284c7'
+            });
+        }
+
+        function triggerGameOver() {
+            AudioFX.playError();
+            Swal.fire({
+                title: '🔒 สิ้นสุดการปฏิบัติหน้าที่!',
+                text: safetyIndex <= 0 
+                    ? 'ข้อมูลส่วนบุคคลของผู้ใช้งานรั่วไหลสู่โลกออนไลน์มากเกินไป (ดัชนีความปลอดภัยเหลือ 0%)' 
+                    : 'คุณเซ็นเซอร์และบล็อกโพสต์ที่ดีเข้มงวดเกินไปจนประชาชนประท้วง (ดัชนีเสรีภาพเหลือ 0%)',
+                icon: 'error',
+                confirmButtonText: 'ฟื้นฟูระบบและลองใหม่',
+                confirmButtonColor: '#e11d48'
+            }).then(() => {
+                safetyIndex = 100;
+                satisfactionIndex = 100;
+                updateMeters();
+                startDayShift();
+            });
+        }
+
+        window.onload = function() {
+            loadProfile();
+            startDayShift();
+        };
+    </script>
+</body>
+</html>
