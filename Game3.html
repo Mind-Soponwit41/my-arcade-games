@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Network Tycoon - Student Edition</title>
+    
+    <!-- Favicon & Meta Tags สำหรับแชร์ลิงก์ -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌐</text></svg>">
+    <meta name="description" content="เกมจำลองบริหารโครงข่ายดิจิทัลและเมืองอัจฉริยะ Smart Network Tycoon สำหรับนักเรียน">
+    <meta property="og:title" content="Smart Network Tycoon - Student Edition">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700;800&family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome 6.5.2 (CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- JS Libraries (CDN) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Sarabun', 'Chakra Petch', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f1f5f9 45%, #fdf2f8 100%);
+            color: #0f172a;
+            user-select: none;
+        }
+
+        .heading-font { font-family: 'Chakra Petch', sans-serif; }
+
+        /* การ์ดสไตล์ Clean Glass สว่าง สบายตา ตัวหนังสือคมชัด */
+        .clean-card {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(203, 213, 225, 0.8);
+            box-shadow: 0 4px 15px -1px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .clean-card-hover {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .clean-card-hover:hover {
+            transform: translateY(-2px);
+            border-color: #38bdf8;
+            box-shadow: 0 10px 20px -3px rgba(14, 165, 233, 0.2);
+        }
+
+        /* Scrollbar จิ๋วเรียบร้อย */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: #0284c7; }
+
+        .coin-icon {
+            display: inline-flex;
+            filter: drop-shadow(0 2px 3px rgba(217, 119, 6, 0.3));
+        }
+
+        .meter-bar-outer {
+            background: #e2e8f0;
+            border-radius: 9999px;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+        }
+        .meter-bar-inner {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.4s ease;
+        }
+
+        /* SweetAlert ปรับธีมสว่าง คมชัด */
+        .swal2-popup {
+            font-family: 'Chakra Petch', 'Sarabun', sans-serif !important;
+            border-radius: 1.75rem !important;
+            background: #ffffff !important;
+            border: 2px solid #38bdf8 !important;
+            color: #0f172a !important;
+            box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.25) !important;
+        }
+        .swal2-title { color: #0f172a !important; font-weight: 800 !important; }
+        .swal2-html-container { color: #334155 !important; }
+
+        #networkCanvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col p-2 sm:p-2.5 selection:bg-sky-500 selection:text-white">
+
+    <!-- แคนวาสวาดสายไฟเบอร์ออปติกเชื่อมต่อเขต -->
+    <canvas id="networkCanvas"></canvas>
+
+    <!-- 1. แถบหัวเรื่องและข้อมูลสถานะ (TOP CONTROL & STATS BAR) -->
+    <header class="clean-card rounded-2xl px-3 py-2 flex items-center justify-between gap-2 shrink-0 border-t-4 border-t-sky-500 relative z-20">
+        
+        <!-- Logo, วาระ และปุ่มช่วยเหลือ -->
+        <div class="flex items-center gap-2">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-500 to-pink-500 flex items-center justify-center shadow-md shadow-sky-500/25 text-white text-lg font-black">
+                <i class="fa-solid fa-network-wired"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-1.5">
+                    <h1 class="text-base sm:text-lg font-black heading-font tracking-wide text-slate-900">
+                        Smart Network Tycoon
+                    </h1>
+                    <span id="tierBadge" class="bg-gradient-to-r from-amber-400 to-orange-500 text-white font-black text-[10px] px-2 py-0.5 rounded-full uppercase shadow-sm">
+                        Tier 1
+                    </span>
+                </div>
+                <div class="text-[11px] text-slate-600 flex items-center gap-2">
+                    <span id="monthDisplay" class="font-bold text-sky-700">เดือน 1 / 12</span>
+                    <span class="text-slate-300">•</span>
+                    <span id="runRatingDisplay" class="font-bold text-emerald-600">RANK A</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5 แถบสถานะเมือง (Vibrant Stat Pills คมชัด สบายตา) -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+            
+            <!-- งบประมาณ -->
+            <div class="bg-amber-50 border border-amber-300 px-2.5 py-1 rounded-xl flex items-center gap-2 shadow-sm">
+                <svg class="w-5 h-5 coin-icon" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" fill="url(#goldGrad)" stroke="#d97706" stroke-width="1.5"/>
+                    <path d="M12 7v10M9 9.5c0-1.5 1.5-2 3-2s3 .5 3 2-1.5 2-3 2.5-3 1-3 2.5 1.5 2 3 2 3-.5 3-2" stroke="#78350f" stroke-width="2" stroke-linecap="round"/>
+                    <defs>
+                        <linearGradient id="goldGrad" x1="2" y1="2" x2="22" y2="22">
+                            <stop stop-color="#fde047"/>
+                            <stop offset="1" stop-color="#f59e0b"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div>
+                    <div class="text-[9px] text-amber-800 font-bold uppercase leading-none">งบประมาณ</div>
+                    <div class="text-xs sm:text-sm font-black text-amber-900 heading-font" id="fundsDisplay">1,200</div>
+                </div>
+            </div>
+
+            <!-- กำไรสุทธิ/เดือน -->
+            <div class="bg-emerald-50 border border-emerald-300 px-2.5 py-1 rounded-xl flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-chart-line text-emerald-600 text-xs"></i>
+                <div>
+                    <div class="text-[9px] text-emerald-800 font-bold uppercase leading-none">กำไรสุทธิ</div>
+                    <div class="text-xs sm:text-sm font-black text-emerald-700 heading-font" id="netIncomeDisplay">+0</div>
+                </div>
+            </div>
+
+            <!-- ความสุขประชาชน -->
+            <div class="bg-rose-50 border border-rose-300 px-2.5 py-1 rounded-xl w-24 sm:w-28 flex flex-col justify-center shadow-sm">
+                <div class="flex justify-between items-center text-[10px] font-bold">
+                    <span class="text-rose-700">🥰 สุขภาพใจ</span>
+                    <span id="happinessDisplay" class="text-rose-900">85%</span>
+                </div>
+                <div class="meter-bar-outer h-1.5 w-full mt-1">
+                    <div id="happinessMeter" class="meter-bar-inner bg-gradient-to-r from-rose-500 to-pink-500" style="width: 85%;"></div>
+                </div>
+            </div>
+
+            <!-- ความปลอดภัยไซเบอร์ -->
+            <div class="bg-sky-50 border border-sky-300 px-2.5 py-1 rounded-xl w-24 sm:w-28 flex flex-col justify-center shadow-sm">
+                <div class="flex justify-between items-center text-[10px] font-bold">
+                    <span class="text-sky-800">🛡️ ไซเบอร์</span>
+                    <span id="securityDisplay" class="text-sky-950">65%</span>
+                </div>
+                <div class="meter-bar-outer h-1.5 w-full mt-1">
+                    <div id="securityMeter" class="meter-bar-inner bg-gradient-to-r from-sky-500 to-blue-500" style="width: 65%;"></div>
+                </div>
+            </div>
+
+            <!-- Bandwidth ความจุเน็ต -->
+            <div class="bg-purple-50 border border-purple-300 px-2.5 py-1 rounded-xl w-28 sm:w-32 flex flex-col justify-center shadow-sm">
+                <div class="flex justify-between items-center text-[10px] font-bold">
+                    <span class="text-purple-800 truncate">📶 แบนด์วิธ</span>
+                    <span id="bandwidthDisplay" class="text-purple-950 text-[9px]">0/200M</span>
+                </div>
+                <div class="meter-bar-outer h-1.5 w-full mt-1">
+                    <div id="bandwidthMeter" class="meter-bar-inner bg-gradient-to-r from-purple-500 to-indigo-500" style="width: 0%;"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ปุ่มฟังก์ชันด่วน (คู่มือ, เริ่มใหม่, เสียง, เต็มจอ) -->
+        <div class="flex items-center gap-1.5">
+            <button onclick="showHowToPlayModal()" class="px-2.5 py-1.5 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold text-xs flex items-center gap-1 transition active:scale-95 border border-sky-300" title="คู่มือการเล่น">
+                <i class="fa-solid fa-circle-question"></i>
+                <span class="hidden sm:inline">คู่มือ</span>
+            </button>
+            <button onclick="confirmRestartGame()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition active:scale-95 border border-slate-300" title="เริ่มเกมใหม่">
+                <i class="fa-solid fa-rotate-right text-xs"></i>
+            </button>
+            <button onclick="AudioFX.toggleMute()" id="soundToggleBtn" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition active:scale-95 border border-slate-300" title="เปิด/ปิดเสียง">
+                <i class="fa-solid fa-volume-high text-xs" id="soundIcon"></i>
+            </button>
+            <button onclick="toggleFullScreen()" class="w-8 h-8 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white flex items-center justify-center shadow-md transition active:scale-95" title="ขยายเต็มหน้าจอ">
+                <i class="fa-solid fa-expand text-xs" id="fsIcon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 2. พื้นที่กระดานหลักเกมส์ (SPLIT DASHBOARD พอดี 100vh) -->
+    <main class="flex-1 min-h-0 grid grid-cols-12 gap-2 sm:gap-2.5 mt-2 relative z-10">
+
+        <!-- คอลัมน์ซ้าย (3.5 ส่วน): ภารกิจ, แชตนักเรียน และแผงคำสั่ง -->
+        <aside class="col-span-4 lg:col-span-3.5 flex flex-col gap-2 min-h-0">
+            
+            <!-- การ์ดภารกิจสภาเมือง & ทราฟฟิกฤดูกาล -->
+            <div class="clean-card rounded-2xl p-2.5 space-y-1.5 border-l-4 border-l-amber-500 shrink-0">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-amber-800">
+                        <i class="fa-solid fa-flag-checkered text-amber-600"></i>
+                        <span>คำสั่งสภาเมือง (Mandate)</span>
+                    </div>
+                    <span id="mandateTimerBadge" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">เหลือ 3 เดือน</span>
+                </div>
+                <p id="mandateTitleText" class="text-xs font-bold text-slate-800 truncate">กำลังโหลดภารกิจ...</p>
+                
+                <div class="flex items-center justify-between text-[10px] bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg">
+                    <span class="text-slate-700 font-medium flex items-center gap-1">
+                        <i class="fa-solid fa-bolt text-amber-500 text-xs"></i> <span id="peakTitleText">ทราฟฟิกปกติ</span>
+                    </span>
+                    <span id="peakBadge" class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">ปกติ</span>
+                </div>
+            </div>
+
+            <!-- Citizen Live Chat (ข้อความสะท้อนความคิดเห็นของนักเรียน/ชาวเมือง) -->
+            <div class="clean-card rounded-2xl p-2.5 flex-1 min-h-0 flex flex-col justify-between border-l-4 border-l-pink-500">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-1.5 mb-1.5 shrink-0">
+                    <span class="text-xs font-extrabold text-pink-700 flex items-center gap-1.5">
+                        <i class="fa-solid fa-comments"></i> Cyber Citizen Chat
+                    </span>
+                    <span class="text-[9px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.2 rounded-full font-bold animate-pulse">● สดจากชุมชน</span>
+                </div>
+                
+                <div id="citizenFeedContainer" class="space-y-1.5 overflow-y-auto flex-1 pr-1">
+                    <!-- ข้อความแชตเรนเดอร์ผ่าน JS -->
+                </div>
+            </div>
+
+            <!-- แผงสั่งการ Action Command Bar -->
+            <div class="clean-card rounded-2xl p-2 space-y-1.5 shrink-0 border-l-4 border-l-purple-500">
+                <div class="grid grid-cols-2 gap-1.5">
+                    <button onclick="showInvestmentModal()" class="py-1.5 px-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:brightness-105 text-white font-bold text-[11px] shadow-sm transition active:scale-95 flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-piggy-bank"></i> <span>กองทุนเมือง</span>
+                    </button>
+                    <button onclick="showUpgradeModal()" class="py-1.5 px-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-105 text-white font-black text-[11px] shadow-sm transition active:scale-95 flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-circle-up"></i> <span>อัปเกรด Tier</span>
+                    </button>
+                    <button onclick="buyESportsEvent()" id="esportsBtn" class="py-1.5 px-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-bold text-[10px] shadow-sm transition active:scale-95 truncate">
+                        🎮 แข่ง eSports (<span id="esportsPriceText">150</span>)
+                    </button>
+                    <button onclick="buySecurityPatch()" id="secPatchBtn" class="py-1.5 px-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:brightness-105 text-white font-bold text-[10px] shadow-sm transition active:scale-95 truncate">
+                        🛡️ สแกนไวรัส (<span id="secPatchPriceText">100</span>)
+                    </button>
+                </div>
+                
+                <!-- ปุ่มข้ามเดือนเด่นชัด -->
+                <button onclick="advanceMonth()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:brightness-110 text-white font-black text-xs sm:text-sm shadow-md shadow-pink-500/25 transition active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-forward"></i>
+                    <span>เริ่มบริหารเดือนถัดไป ⏩</span>
+                </button>
+            </div>
+
+        </aside>
+
+        <!-- คอลัมน์ขวา (8.5 ส่วน): ผังเมืองดิจิทัล 16 เขตแบบ 4x4 Grid คมชัด -->
+        <section class="col-span-8 lg:col-span-8.5 h-full min-h-0 flex flex-col justify-between" id="citySection">
+            <div class="flex justify-between items-center px-1 mb-1 shrink-0">
+                <div class="text-xs font-black heading-font text-slate-800 flex items-center gap-1.5">
+                    <i class="fa-solid fa-city text-pink-500"></i>
+                    <span>ผังบริหารเครือข่ายดิจิทัล 16 เขตยุทธศาสตร์</span>
+                </div>
+                <div class="text-[11px] font-bold text-slate-700 bg-white px-2 py-0.5 rounded-full border border-slate-300 shadow-sm">
+                    เชื่อมต่อแล้ว: <b id="connectedCountDisplay" class="text-sky-600">1</b> / 16 เขต
+                </div>
+            </div>
+
+            <!-- ผังเมือง 4x4 พอดีหน้าจอ 100% -->
+            <div class="grid grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2 flex-1 min-h-0 relative z-10" id="districtGrid">
+                <!-- 16 District Cards เรนเดอร์ผ่าน JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- 1. ระบบเสียงสังเคราะห์ Web Audio API (โหลดไว ไม่ต้องพึ่งไฟล์ภายนอก) ---
+        const AudioFX = {
+            ctx: null,
+            enabled: true,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+            toggleMute() {
+                this.enabled = !this.enabled;
+                const icon = document.getElementById('soundIcon');
+                if (this.enabled) {
+                    icon.className = 'fa-solid fa-volume-high text-xs';
+                    this.playClick();
+                } else {
+                    icon.className = 'fa-solid fa-volume-xmark text-xs text-rose-500';
+                }
+            },
+            playBeep(freq, type, duration) {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type || 'sine';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e){}
+            },
+            playClick() { this.playBeep(850, 'sine', 0.05); },
+            playConnect() { this.playBeep(523.25, 'triangle', 0.15); setTimeout(() => this.playBeep(659.25, 'triangle', 0.2), 80); },
+            playUpgrade() { this.playBeep(440, 'square', 0.08); setTimeout(() => this.playBeep(880, 'square', 0.2), 90); },
+            playAlert() { this.playBeep(320, 'sawtooth', 0.2); setTimeout(() => this.playBeep(220, 'sawtooth', 0.3), 120); },
+            playWin() {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, idx) => {
+                    setTimeout(() => this.playBeep(f, 'sine', 0.25), idx * 100);
+                });
+            }
+        };
+
+        // --- 2. ฟังก์ชัน Fullscreen & Restart ---
+        function toggleFullScreen() {
+            AudioFX.playClick();
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+        document.addEventListener('fullscreenchange', () => {
+            const fsIcon = document.getElementById('fsIcon');
+            if (document.fullscreenElement) {
+                fsIcon.className = 'fa-solid fa-compress text-xs';
+            } else {
+                fsIcon.className = 'fa-solid fa-expand text-xs';
+            }
+            setTimeout(drawNetworkLines, 250);
+        });
+
+        function confirmRestartGame() {
+            AudioFX.playClick();
+            Swal.fire({
+                title: '🔄 เริ่มเกมใหม่?',
+                text: 'คุณต้องการรีเซ็ตเมืองและเริ่มวาระการบริหารรอบใหม่หรือไม่?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'ใช่, เริ่มใหม่',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#f43f5e',
+                cancelButtonColor: '#64748b'
+            }).then((res) => {
+                if (res.isConfirmed) location.reload();
+            });
+        }
+
+        // --- 3. หน้าต่างคู่มือวิธีการเล่น (How to Play) สำหรับนักเรียน ---
+        function showHowToPlayModal() {
+            AudioFX.playClick();
+            Swal.fire({
+                title: '📖 คู่มือผู้บริหารเมืองดิจิทัล',
+                html: `
+                    <div class="space-y-3 text-left text-xs leading-relaxed text-slate-700">
+                        <p class="font-bold text-sky-800 text-sm">เป้าหมาย: พัฒนาเมืองให้ก้าวสู่ Tier 4 (มหานคร AI ควอนตัม) ให้สำเร็จก่อนหมดวาระ!</p>
+                        
+                        <div class="space-y-2">
+                            <div class="p-2.5 rounded-xl bg-sky-50 border border-sky-200 flex gap-2.5 items-start">
+                                <span class="text-base text-sky-600 font-black">1.</span>
+                                <div>
+                                    <b class="text-sky-900">เดินสายเน็ต & เก็บภาษี:</b>
+                                    <p class="text-slate-600">กดปุ่ม "เชื่อมต่อ" แต่ละเขตเพื่อขยายเครือข่าย เขตที่เชื่อมต่อแล้วจะสร้างรายได้ภาษีทุกเดือน</p>
+                                </div>
+                            </div>
+
+                            <div class="p-2.5 rounded-xl bg-purple-50 border border-purple-200 flex gap-2.5 items-start">
+                                <span class="text-base text-purple-600 font-black">2.</span>
+                                <div>
+                                    <b class="text-purple-900">คุม Bandwidth อย่าให้ล้น:</b>
+                                    <p class="text-slate-600">ถ้าใช้เน็ตเกินความจุหลักของเมือง (หลอดสีแดง) จะเกิดเน็ตล่ม ถูกปรับเงินและประชาชนจะประท้วง</p>
+                                </div>
+                            </div>
+
+                            <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 flex gap-2.5 items-start">
+                                <span class="text-base text-emerald-600 font-black">3.</span>
+                                <div>
+                                    <b class="text-emerald-900">ความปลอดภัยไซเบอร์ & ซ่อมบำรุง:</b>
+                                    <p class="text-slate-600">หมั่นกดซื้อ "สแกนไวรัส" ให้ระดับความปลอดภัยสูงกว่าเกณฑ์ที่เขตต้องการ และคอยกดซ่อมอุปกรณ์ไม่ให้พัง</p>
+                                </div>
+                            </div>
+
+                            <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 flex gap-2.5 items-start">
+                                <span class="text-base text-amber-600 font-black">4.</span>
+                                <div>
+                                    <b class="text-amber-900">พิชิตภารกิจ & อัปเกรด Tier:</b>
+                                    <p class="text-slate-600">ทำตามคำสั่งสภาเมืองเพื่อรับเงินโบนัสก้อนโต แล้วกด "อัปเกรด Tier" เมื่อมีเงินและจำนวนเขตครบตามเกณฑ์</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                confirmButtonText: 'เข้าใจแล้ว เริ่มลุยเลย! 🚀',
+                confirmButtonColor: '#0284c7'
+            });
+        }
+
+        // --- 4. ข้อมูล Tier และ 16 เขต (ภาพจริงคมชัด + Fallback ป้องกันรูปเสีย 100%) ---
+        let selectedTermYears = 1;
+        let maxMonths = 12;
+        let eSportsCount = 0;       
+        let securityPatchCount = 0; 
+        let activeInvestments = [];
+
+        function getESportsPrice() { return Math.min(800, (eSportsCount + 1) * 150); }
+        function getSecurityPatchPrice() { return Math.min(700, (securityPatchCount + 1) * 100); }
+
+        const tierLevels = [
+            { tier: 1, name: "เมืองโรงเรียนดิจิทัล", bwCap: 200, req: { funds: 0, connected: 0, security: 0 }, desc: "ความจุเน็ต 200 Mbps" },
+            { tier: 2, name: "เทศบาลสมาร์ตไฟเบอร์", bwCap: 400, req: { funds: 1200, connected: 6, security: 65 }, desc: "ความจุ 400 Mbps + โบนัสภาษี 15%" },
+            { tier: 3, name: "นครไฮเทค 5G & Cloud", bwCap: 700, req: { funds: 2800, connected: 11, security: 80 }, desc: "ความจุ 700 Mbps + โบนัสภาษี 30%" },
+            { tier: 4, name: "มหานคร AI ควอนตัม", bwCap: 1200, req: { funds: 5500, connected: 16, security: 95, happiness: 90 }, desc: "ความจุสูงสุด 1200 Mbps ชนะเกมทันที!" }
+        ];
+
+        let districts = [
+            { id: 1, name: "ศูนย์โครงข่ายหลัก", sector: "Core", cost: 0, income: 0, upkeep: 0, bwUse: 0, minSec: 0, connected: true, level: 3, img: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=400&q=80", icon: "fa-tower-cell", desc: "โหนดกระจายสัญญาณหลัก", health: 100 },
+            { id: 2, name: "โรงเรียนวัดควนเนียง", sector: "Edu", cost: 180, income: 90, upkeep: 30, bwUse: 25, minSec: 60, connected: false, level: 0, img: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=400&q=80", icon: "fa-school", desc: "ห้องเรียน AI สำหรับเด็กๆ", health: 100 },
+            { id: 3, name: "มหาวิทยาลัยนวัตกรรม", sector: "Edu", cost: 320, income: 160, upkeep: 50, bwUse: 45, minSec: 70, connected: false, level: 0, img: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=400&q=80", icon: "fa-graduation-cap", desc: "แล็บวิจัยหุ่นยนต์ไฮเทค", health: 100 },
+            { id: 4, name: "ศูนย์ราชการดิจิทัล", sector: "Edu", cost: 280, income: 130, upkeep: 40, bwUse: 30, minSec: 75, connected: false, level: 0, img: "https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=400&q=80", icon: "fa-landmark", desc: "ฐานข้อมูล PDPA >= 75%", health: 100 },
+            
+            { id: 5, name: "ห้างสมาร์ตมอลล์", sector: "Biz", cost: 380, income: 240, upkeep: 75, bwUse: 50, minSec: 65, connected: false, level: 0, img: "https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=400&q=80", icon: "fa-cart-shopping", desc: "ย่านร้านค้าความเร็วสูง", health: 100 },
+            { id: 6, name: "ธนาคารดิจิทัล", sector: "Biz", cost: 480, income: 320, upkeep: 100, bwUse: 40, minSec: 85, connected: false, level: 0, img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80", icon: "fa-building-columns", desc: "ระบบชำระเงินความปลอดภัยสูง", health: 100 },
+            { id: 7, name: "ตลาดสด PromptPay", sector: "Biz", cost: 180, income: 100, upkeep: 30, bwUse: 15, minSec: 50, connected: false, level: 0, img: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=400&q=80", icon: "fa-store", desc: "สังคมไร้เงินสดในชุมชน", health: 100 },
+            { id: 8, name: "สตูดิโอเกม & eSports", sector: "Biz", cost: 320, income: 200, upkeep: 60, bwUse: 55, minSec: 60, connected: false, level: 0, img: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80", icon: "fa-gamepad", desc: "ศูนย์สตรีมเมอร์เยาวชน", health: 100 },
+
+            { id: 9, name: "โรงงานหุ่นยนต์ A", sector: "Ind", cost: 420, income: 280, upkeep: 85, bwUse: 40, minSec: 80, connected: false, level: 0, img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=400&q=80", icon: "fa-robot", desc: "แขนกล AI อัตโนมัติ", health: 100 },
+            { id: 10, name: "นิคมไฮเทค B", sector: "Ind", cost: 420, income: 280, upkeep: 85, bwUse: 40, minSec: 80, connected: false, level: 0, img: "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=400&q=80", icon: "fa-gears", desc: "สายการผลิตชิปคอมพิวเตอร์", health: 100 },
+            { id: 11, name: "Cloud Data Center", sector: "Ind", cost: 550, income: 380, upkeep: 120, bwUse: 60, minSec: 90, connected: false, level: 0, img: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=400&q=80", icon: "fa-server", desc: "คลาวด์เซิร์ฟเวอร์ความเร็วสูง", health: 100 },
+            { id: 12, name: "สถานีวิจัยอวกาศ", sector: "Ind", cost: 600, income: 340, upkeep: 110, bwUse: 50, minSec: 85, connected: false, level: 0, img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=400&q=80", icon: "fa-satellite-dish", desc: "เชื่อมต่อดาวเทียมและ AI", health: 100 },
+
+            { id: 13, name: "หมู่บ้านสายรุ้ง A", sector: "Res", cost: 140, income: 85, upkeep: 25, bwUse: 20, minSec: 50, connected: false, level: 0, img: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=400&q=80", icon: "fa-house", desc: "เน็ตบ้านการเรียนรู้สำหรับเด็ก", health: 100 },
+            { id: 14, name: "หมู่บ้านสายรุ้ง B", sector: "Res", cost: 140, income: 85, upkeep: 25, bwUse: 20, minSec: 50, connected: false, level: 0, img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80", icon: "fa-house-chimney", desc: "ชุมชนสมาร์ตโฮมปลอดภัย", health: 100 },
+            { id: 15, name: "คอนโดมิเนียมเยาวชน", sector: "Res", cost: 220, income: 140, upkeep: 40, bwUse: 35, minSec: 55, connected: false, level: 0, img: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80", icon: "fa-building", desc: "Wi-Fi ความเร็วสูงหนาแน่น", health: 100 },
+            { id: 16, name: "ชุมชนสมาร์ตวิลเลจ", sector: "Res", cost: 110, income: 70, upkeep: 20, bwUse: 15, minSec: 45, connected: false, level: 0, img: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=400&q=80", icon: "fa-users", desc: "เพิ่มความสุขประชาชน +5%", health: 100 }
+        ];
+
+        let currentMonth = 1;
+        let currentTier = 1;
+        let cityFunds = 1200;
+        let cityHappiness = 85;
+        let citySecurity = 65;
+
+        let activePeakEvent = null;
+        let activeMandate = null;
+
+        function getUsedBandwidth() {
+            let total = 0;
+            districts.forEach(d => {
+                if (d.connected && d.id !== 1) {
+                    let bw = d.bwUse + (d.level * 10);
+                    if (activePeakEvent && activePeakEvent.sector === d.sector) {
+                        bw = Math.floor(bw * activePeakEvent.multiplier);
+                    }
+                    total += bw;
+                }
+            });
+            return total;
+        }
+
+        function getMaxBandwidth() {
+            return tierLevels.find(t => t.tier === currentTier).bwCap;
+        }
+
+        // --- 5. คำนวณการเงิน & เกรดผลงาน ---
+        function calculateFinancials() {
+            const termDifficultyScale = 1 + (selectedTermYears - 1) * 0.25;
+            const wealthTaxRate = 0.02 + (currentTier * 0.015);
+            const wealthUpkeep = Math.floor(cityFunds * wealthTaxRate);
+            const baseUpkeep = Math.floor((40 + (currentMonth * 10)) * termDifficultyScale);
+            
+            let totalTax = 0;
+            let totalUpkeep = baseUpkeep + wealthUpkeep;
+
+            districts.forEach(d => {
+                if (d.connected && d.id !== 1) {
+                    const isSecPassed = citySecurity >= d.minSec;
+                    let taxGain = d.income + (d.level * 25);
+                    
+                    if (d.health < 20) {
+                        taxGain = 0;
+                    } else if (d.health < 50) {
+                        taxGain = Math.floor(taxGain * 0.5);
+                    }
+
+                    totalTax += isSecPassed ? taxGain : Math.floor(taxGain * 0.6);
+                    totalUpkeep += Math.floor((d.upkeep + (d.level * 15)) * termDifficultyScale);
+                }
+            });
+
+            activeInvestments.forEach(inv => {
+                if (inv.type === 'monthly_yield') totalTax += inv.monthlyYield;
+            });
+
+            if (currentTier === 2) totalTax = Math.floor(totalTax * 1.15);
+            if (currentTier === 3) totalTax = Math.floor(totalTax * 1.30);
+            if (currentTier === 4) totalTax = Math.floor(totalTax * 1.50);
+
+            return { tax: totalTax, upkeep: totalUpkeep, net: totalTax - totalUpkeep };
+        }
+
+        function getLiveRating() {
+            const connectedCount = districts.filter(d => d.connected).length;
+            const score = (currentTier * 1000) + (connectedCount * 200) + (cityHappiness * 15) + (citySecurity * 15);
+            if (score >= 4200) return { rank: '🌟 RANK S+', color: 'text-amber-500' };
+            if (score >= 3200) return { rank: '✨ RANK S', color: 'text-pink-600' };
+            if (score >= 2400) return { rank: '👍 RANK A', color: 'text-emerald-600' };
+            if (score >= 1700) return { rank: '⭐ RANK B', color: 'text-sky-600' };
+            return { rank: '🌱 RANK C', color: 'text-slate-500' };
+        }
+
+        // --- 6. Citizen Live Chat (โทนสดใส อารมณ์ดี เหมาะกับเด็ก) ---
+        function updateCitizenFeed() {
+            const feedContainer = document.getElementById('citizenFeedContainer');
+            if (!feedContainer) return;
+
+            let priorityItems = [];
+            const usedBw = getUsedBandwidth();
+            const maxBw = getMaxBandwidth();
+
+            if (usedBw > maxBw) {
+                priorityItems.push({ user: 'น้องมิวสิค ป.5', avatar: 'fa-gamepad text-rose-500', msg: 'เน็ตโรงเรียนหลุดแล้วครับ เล่นเกม Kahoot ไม่ทันเพื่อนแล้ว! 😭💥', time: 'เมื่อกี้' });
+            }
+
+            if (citySecurity < 50) {
+                priorityItems.push({ user: 'ชมรมคอมพิวเตอร์', avatar: 'fa-shield-virus text-amber-500', msg: 'พบไวรัสกำลังแอบเจาะระบบเมือง รีบกดสแกนไวรัสด่วนเลยครับ! ⚠️', time: '1 นาที' });
+            }
+
+            const broken = districts.find(d => d.connected && d.health < 40);
+            if (broken) {
+                priorityItems.push({ user: 'ลุงสมชาย ช่างชุมชน', avatar: 'fa-wrench text-orange-500', msg: `อุปกรณ์ที่ ${broken.name} สัญญาณเริ่มแย่แล้ว กดปุ่มซ่อมให้หน่อยครับ 🔧`, time: '2 นาที' });
+            }
+
+            const studentPool = [
+                { user: 'ครูมายด์ สอนไอที', avatar: 'fa-chalkboard-user text-sky-600', msg: 'วันนี้เน็ตโรงเรียนวัดควนเนียงเร็วมาก เด็กๆ ส่งการบ้าน Scratch กันสนุกสนานเลยครับ 💻🎉', time: '3 นาที' },
+                { user: 'น้องออโต้ ป.6', avatar: 'fa-robot text-purple-600', msg: 'เน็ตแรงมาก! โหลดโมเดลหุ่นยนต์ 3 มิติมาฝึกเขียนโค้ดเสร็จไวสุดๆ ครับ 🤖✨', time: '4 นาที' },
+                { user: 'ป้าแมว ร้านขนมหวาน', avatar: 'fa-cake-candles text-pink-500', msg: 'เด็กๆ มาสแกนซื้อขนมโตเกียวผ่าน PromptPay ลื่นไหลมาก เงินเข้าทันใจจ้า 🥞📱', time: '5 นาที' },
+                { user: 'พี่วิน มอเตอร์ไซค์', avatar: 'fa-motorcycle text-amber-600', msg: 'สัญญาณ GPS แม่นยำ ขี่ส่งการบ้านและพัสดุไม่หลงซอยเลย ยอดเยี่ยมมากครับ 🛵', time: '6 นาที' },
+                { user: 'น้องใบเฟิร์น ม.1', avatar: 'fa-palette text-emerald-600', msg: 'วาดภาพดิจิทัลส่งประกวด สัญญาณไม่มีสะดุด ขอชื่นชมท่านผู้ว่าฯ เลยค่ะ 🎨💖', time: '7 นาที' }
+            ];
+
+            let finalFeed = priorityItems.concat(studentPool.sort(() => 0.5 - Math.random())).slice(0, 3);
+            feedContainer.innerHTML = '';
+            
+            finalFeed.forEach(item => {
+                feedContainer.innerHTML += `
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5 flex items-start gap-2 text-xs shadow-xs">
+                        <div class="w-6 h-6 rounded-lg bg-white border border-slate-300 flex items-center justify-center shrink-0 text-xs shadow-xs">
+                            <i class="fa-solid ${item.avatar}"></i>
+                        </div>
+                        <div class="space-y-0.5 flex-1 min-w-0">
+                            <div class="flex justify-between items-center leading-none">
+                                <span class="font-bold text-slate-800 text-[10px] truncate">${item.user}</span>
+                                <span class="text-[8px] text-slate-400">${item.time}</span>
+                            </div>
+                            <p class="text-slate-600 text-[10px] leading-tight line-clamp-2">${item.msg}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 7. มินิเกมแก้ไวรัส (รองรับทั้งคลิกเมาส์ และกดคีย์บอร์ดจริง 0-9) ---
+        function startCyberDefenseMinigame(onSuccess, onFailure) {
+            AudioFX.playAlert();
+            let timeLeft = 10;
+            let targetCode = Math.floor(100 + Math.random() * 900).toString();
+            let timerInterval;
+
+            Swal.fire({
+                title: '⚡ มินิเกมถอดรหัสไวรัส!',
+                html: `
+                    <div class="space-y-2.5 text-center my-1">
+                        <div class="p-2.5 bg-rose-50 border border-rose-200 rounded-2xl">
+                            <p class="text-xs text-rose-800 font-medium">กดปุ่มตัวเลขบนหน้าจอ หรือกดจาก <b>คีย์บอร์ดจริง</b> ก็ได้:</p>
+                            <div class="text-3xl font-black text-rose-600 heading-font my-1" id="minigameTimer">10.00s</div>
+                            <div class="text-xs font-bold text-slate-700">รหัสผ่านที่ต้องกด: <span class="text-xl text-sky-600 underline tracking-widest font-black" id="targetCodeDisplay">${targetCode}</span></div>
+                        </div>
+
+                        <div class="p-1.5 bg-slate-100 rounded-xl border border-slate-300 text-center">
+                            <div class="text-[10px] text-slate-500 font-medium">รหัสที่คุณกด:</div>
+                            <div class="text-2xl font-black text-slate-900 tracking-widest h-7" id="userEnteredDisplay">_ _ _</div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-1.5 max-w-xs mx-auto">
+                            ${[1,2,3,4,5,6,7,8,9].map(n => `<button onclick="pressCodeDigit(${n})" class="py-2 rounded-xl bg-white hover:bg-sky-50 active:scale-95 text-slate-800 font-black text-base border border-slate-300 shadow-xs transition">${n}</button>`).join('')}
+                            <button onclick="clearCodeDigit()" class="py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold text-xs border border-amber-300">ล้าง</button>
+                            <button onclick="pressCodeDigit(0)" class="py-2 rounded-xl bg-white hover:bg-sky-50 text-slate-800 font-black text-base border border-slate-300 shadow-xs">0</button>
+                            <button onclick="deleteCodeDigit()" class="py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold text-xs border border-rose-300">ลบ</button>
+                        </div>
+                    </div>
+                `,
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    window.minigameTarget = targetCode;
+                    window.minigameEntered = "";
+                    window.minigameSuccess = onSuccess;
+                    window.minigameFailure = onFailure;
+
+                    timerInterval = setInterval(() => {
+                        timeLeft -= 0.1;
+                        if (timeLeft <= 0) {
+                            clearInterval(timerInterval);
+                            Swal.close();
+                            AudioFX.playAlert();
+                            Swal.fire('❌ กู้ระบบไม่ทัน!', 'ไวรัสโจมตีสำเร็จ คุณต้องเสียค่าซ่อมตามปกติ', 'error').then(() => {
+                                if (typeof onFailure === 'function') onFailure();
+                            });
+                        } else {
+                            const timerElem = document.getElementById('minigameTimer');
+                            if (timerElem) timerElem.innerText = `${timeLeft.toFixed(2)}s`;
+                        }
+                    }, 100);
+                    window.minigameTimerInterval = timerInterval;
+                },
+                willClose: () => { clearInterval(timerInterval); }
+            });
+        }
+
+        function pressCodeDigit(digit) {
+            AudioFX.playClick();
+            window.minigameEntered = (window.minigameEntered || "") + digit.toString();
+            const disp = document.getElementById('userEnteredDisplay');
+            if (disp) disp.innerText = window.minigameEntered;
+
+            if (window.minigameEntered.length >= 3) {
+                clearInterval(window.minigameTimerInterval);
+                if (window.minigameEntered === window.minigameTarget) {
+                    AudioFX.playWin();
+                    Swal.close();
+                    citySecurity = Math.min(100, citySecurity + 5);
+                    renderDashboard();
+                    Swal.fire('🎉 เก่งมาก!', 'ถอดรหัสบล็อกไวรัสสำเร็จ! ปลอดภัย 100% และได้ความปลอดภัย +5%', 'success').then(() => {
+                        if (typeof window.minigameSuccess === 'function') window.minigameSuccess();
+                    });
+                } else {
+                    AudioFX.playAlert();
+                    Swal.close();
+                    Swal.fire('❌ รหัสผิดพลาด!', 'ใส่รหัสไม่ถูกต้อง ระบบถูกไวรัสเจาะ', 'error').then(() => {
+                        if (typeof window.minigameFailure === 'function') window.minigameFailure();
+                    });
+                }
+            }
+        }
+
+        function clearCodeDigit() {
+            AudioFX.playClick();
+            window.minigameEntered = "";
+            const disp = document.getElementById('userEnteredDisplay');
+            if (disp) disp.innerText = '_ _ _';
+        }
+
+        function deleteCodeDigit() {
+            AudioFX.playClick();
+            if (window.minigameEntered && window.minigameEntered.length > 0) {
+                window.minigameEntered = window.minigameEntered.slice(0, -1);
+                const disp = document.getElementById('userEnteredDisplay');
+                if (disp) disp.innerText = window.minigameEntered || '_ _ _';
+            }
+        }
+
+        // ดักจับปุ่มกดคีย์บอร์ดจริงของคอมพิวเตอร์
+        $(document).on('keydown', function(e) {
+            if ($('#minigameTimer').length > 0) {
+                if (e.key >= '0' && e.key <= '9') {
+                    e.preventDefault();
+                    pressCodeDigit(parseInt(e.key, 10));
+                } else if (e.key === 'Backspace') {
+                    e.preventDefault();
+                    deleteCodeDigit();
+                } else if (e.key === 'Escape' || e.key === 'Delete') {
+                    e.preventDefault();
+                    clearCodeDigit();
+                }
+            }
+        });
+
+        // --- 8. กองทุนพัฒนาเมือง & ตลาดหุ้นดิจิทัล ---
+        function showInvestmentModal() {
+            AudioFX.playClick();
+            let activeInvListHtml = activeInvestments.length === 0 
+                ? `<div class="text-xs text-slate-500 text-center py-2">ยังไม่มีโครงการที่กำลังลงทุน</div>`
+                : activeInvestments.map(inv => `
+                    <div class="flex justify-between items-center text-xs bg-slate-50 p-2 rounded-xl border border-slate-200">
+                        <div>
+                            <span class="font-bold text-slate-800">${inv.name}</span>
+                            <div class="text-[10px] text-slate-500">เหลืออีก ${inv.durationMonths - (currentMonth - inv.startMonth)} เดือน</div>
+                        </div>
+                        <span class="font-bold text-emerald-600">${inv.type === 'monthly_yield' ? `+${inv.monthlyYield} 🪙/เดือน` : `ลุ้น +${inv.finalYield} 🪙`}</span>
+                    </div>
+                `).join('');
+
+            Swal.fire({
+                title: '📈 กองทุนพัฒนาเมืองดิจิทัล',
+                html: `
+                    <div class="space-y-2.5 text-left my-1 text-sm">
+                        <p class="text-xs text-slate-600">เลือกลงทุนงบประมาณส่วนเกิน เพื่อสร้างรายได้และเสริมแกร่งเมือง:</p>
+
+                        <div class="grid grid-cols-1 gap-2">
+                            <div class="p-2.5 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-1">
+                                <div class="flex justify-between items-center">
+                                    <b class="text-amber-900 text-xs">🚀 สตาร์ทอัพหุ่นยนต์ AI</b>
+                                    <span class="text-[9px] bg-rose-100 text-rose-800 border border-rose-200 px-1.5 py-0.2 rounded font-bold">เสี่ยงสูง</span>
+                                </div>
+                                <p class="text-[11px] text-slate-600">ลงทุน 250 🪙 มีโอกาส 60% รับเงินก้อนใหญ่ 550 🪙 ในอีก 3 เดือน</p>
+                                <button onclick="investFund(1)" class="w-full py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-105 text-white font-black text-xs transition">ลงทุน 250 🪙</button>
+                            </div>
+
+                            <div class="p-2.5 rounded-2xl bg-emerald-50/60 border border-emerald-200 space-y-1">
+                                <div class="flex justify-between items-center">
+                                    <b class="text-emerald-900 text-xs">🌱 โซลาร์เซลล์โรงเรียนสีเขียว</b>
+                                    <span class="text-[9px] bg-emerald-100 text-emerald-800 border border-emerald-200 px-1.5 py-0.2 rounded font-bold">ปันผลมั่นคง</span>
+                                </div>
+                                <p class="text-[11px] text-slate-600">ลงทุน 300 🪙 รับเงินปันผล +60 🪙/เดือน นาน 6 เดือน (รวม 360 🪙)</p>
+                                <button onclick="investFund(2)" class="w-full py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition">ลงทุน 300 🪙</button>
+                            </div>
+
+                            <div class="p-2.5 rounded-2xl bg-sky-50/60 border border-sky-200 space-y-1">
+                                <div class="flex justify-between items-center">
+                                    <b class="text-sky-900 text-xs">🛡️ ศูนย์วิจัย Cyber Defense</b>
+                                    <span class="text-[9px] bg-sky-100 text-sky-800 border border-sky-200 px-1.5 py-0.2 rounded font-bold">เพิ่มความปลอดภัย</span>
+                                </div>
+                                <p class="text-[11px] text-slate-600">ลงทุน 200 🪙 เพิ่มค่าความปลอดภัยไซเบอร์ +2% ทุกเดือน นาน 6 เดือน</p>
+                                <button onclick="investFund(3)" class="w-full py-1.5 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 hover:brightness-105 text-white font-black text-xs transition">ลงทุน 200 🪙</button>
+                            </div>
+                        </div>
+
+                        <div class="pt-1.5 border-t border-slate-200 space-y-1">
+                            <div class="text-[11px] font-bold text-slate-800">พอร์ตที่กำลังลงทุนอยู่:</div>
+                            ${activeInvListHtml}
+                        </div>
+                    </div>
+                `,
+                showConfirmButton: false,
+                showCancelButton: true,
+                cancelButtonText: 'ปิด'
+            });
+        }
+
+        function investFund(type) {
+            AudioFX.playClick();
+            if (type === 1) {
+                if (cityFunds < 250) { Swal.fire('งบไม่พอ', 'ต้องใช้เงิน 250 🪙 ในการลงทุน', 'warning'); return; }
+                cityFunds -= 250;
+                activeInvestments.push({ id: Date.now(), name: '🚀 สตาร์ทอัพหุ่นยนต์ AI', durationMonths: 3, startMonth: currentMonth, type: 'one_time_risk', finalYield: 550 });
+            } else if (type === 2) {
+                if (cityFunds < 300) { Swal.fire('งบไม่พอ', 'ต้องใช้เงิน 300 🪙 ในการลงทุน', 'warning'); return; }
+                cityFunds -= 300;
+                activeInvestments.push({ id: Date.now(), name: '🌱 โซลาร์เซลล์สีเขียว', durationMonths: 6, startMonth: currentMonth, type: 'monthly_yield', monthlyYield: 60 });
+            } else if (type === 3) {
+                if (cityFunds < 200) { Swal.fire('งบไม่พอ', 'ต้องใช้เงิน 200 🪙 ในการลงทุน', 'warning'); return; }
+                cityFunds -= 200;
+                activeInvestments.push({ id: Date.now(), name: '🛡️ ศูนย์วิจัย Cyber Defense', durationMonths: 6, startMonth: currentMonth, type: 'security_buff', securityBuff: 2 });
+            }
+
+            AudioFX.playWin();
+            renderDashboard();
+            Swal.fire('ลงทุนสำเร็จ!', 'เริ่มบันทึกสัญญาโครงการพัฒนาเมืองแล้วครับ', 'success');
+        }
+
+        function processMonthlyInvestments() {
+            let logMsgs = [];
+            let remainingInvestments = [];
+
+            activeInvestments.forEach(inv => {
+                const elapsed = currentMonth - inv.startMonth;
+                if (inv.type === 'security_buff') citySecurity = Math.min(100, citySecurity + inv.securityBuff);
+
+                if (elapsed >= inv.durationMonths) {
+                    if (inv.type === 'one_time_risk') {
+                        const isSuccess = Math.random() < 0.60;
+                        if (isSuccess) {
+                            cityFunds += inv.finalYield;
+                            logMsgs.push(`📈 โครงการ ${inv.name} สำเร็จ! ได้รับเงินตอบแทน +${inv.finalYield} 🪙`);
+                        } else {
+                            logMsgs.push(`📉 โครงการ ${inv.name} พลาดเป้า ไม่ได้รับผลตอบแทนงวดนี้`);
+                        }
+                    } else {
+                        logMsgs.push(`✅ โครงการ ${inv.name} สิ้นสุดสัญญาเรียบร้อย`);
+                    }
+                } else {
+                    remainingInvestments.push(inv);
+                }
+            });
+
+            activeInvestments = remainingInvestments;
+            return logMsgs;
+        }
+
+        // --- 9. เริ่มต้นเลือกวาระบริหาร ---
+        function selectTermModal() {
+            Swal.fire({
+                title: '🏫 เลือกวาระการบริหารเมือง',
+                html: `
+                    <div class="space-y-2 text-left my-1 text-sm">
+                        <p class="text-slate-600 text-xs">เลือกระยะเวลาวาระที่ต้องการบริหารเมือง (เล่นเพื่อความสนุกและการเรียนรู้):</p>
+                        <div class="grid grid-cols-1 gap-2">
+                            <button onclick="confirmTerm(1)" class="p-3 rounded-2xl bg-slate-50 hover:bg-sky-50 border border-slate-200 hover:border-sky-400 text-left transition flex items-center justify-between">
+                                <div><b class="text-slate-900 text-sm">1 ปี (12 เดือน)</b> - ระดับปกติ</div>
+                                <span class="text-xs text-emerald-600 font-bold">แนะนำเริ่มต้น</span>
+                            </button>
+                            <button onclick="confirmTerm(2)" class="p-3 rounded-2xl bg-slate-50 hover:bg-sky-50 border border-slate-200 hover:border-sky-400 text-left transition flex items-center justify-between">
+                                <div><b class="text-slate-900 text-sm">2 ปี (24 เดือน)</b> - ระดับปานกลาง</div>
+                                <span class="text-xs text-amber-600 font-bold">ค่าบำรุง x1.25</span>
+                            </button>
+                            <button onclick="confirmTerm(3)" class="p-3 rounded-2xl bg-slate-50 hover:bg-sky-50 border border-slate-200 hover:border-sky-400 text-left transition flex items-center justify-between">
+                                <div><b class="text-slate-900 text-sm">3 ปี (36 เดือน)</b> - ผู้เชี่ยวชาญ</div>
+                                <span class="text-xs text-rose-600 font-bold">ค่าบำรุง x1.50</span>
+                            </button>
+                        </div>
+                    </div>
+                `,
+                showConfirmButton: false,
+                allowOutsideClick: false
+            });
+        }
+
+        function confirmTerm(years) {
+            AudioFX.playClick();
+            selectedTermYears = years;
+            maxMonths = years * 12;
+            Swal.close();
+            generateNewMandate();
+            initGame();
+        }
+
+        // --- 10. เรนเดอร์ UI ผังเมืองและกระดานแบบ Single-Screen 100vh ---
+        function initGame() {
+            renderDashboard();
+            renderDistricts();
+            updateCitizenFeed();
+            setTimeout(drawNetworkLines, 300);
+            window.addEventListener('resize', drawNetworkLines);
+        }
+
+        function renderDashboard() {
+            const fin = calculateFinancials();
+            const usedBw = getUsedBandwidth();
+            const maxBw = getMaxBandwidth();
+            const rating = getLiveRating();
+
+            document.getElementById('monthDisplay').innerText = `เดือน ${currentMonth} / ${maxMonths}`;
+            document.getElementById('fundsDisplay').innerText = `${cityFunds.toLocaleString()}`;
+            
+            const ratingEl = document.getElementById('runRatingDisplay');
+            ratingEl.innerText = rating.rank;
+            ratingEl.className = `font-bold ${rating.color}`;
+
+            document.getElementById('esportsPriceText').innerText = `${getESportsPrice()}🪙`;
+            document.getElementById('secPatchPriceText').innerText = `${getSecurityPatchPrice()}🪙`;
+
+            document.getElementById('netIncomeDisplay').innerText = `${fin.net >= 0 ? '+' : ''}${fin.net.toLocaleString()}`;
+
+            if (fin.net < 0) {
+                $('#netIncomeDisplay').removeClass('text-emerald-700').addClass('text-rose-600');
+            } else {
+                $('#netIncomeDisplay').removeClass('text-rose-600').addClass('text-emerald-700');
+            }
+
+            document.getElementById('happinessDisplay').innerText = `${Math.min(100, Math.max(0, cityHappiness))}%`;
+            document.getElementById('happinessMeter').style.width = `${Math.min(100, Math.max(0, cityHappiness))}%`;
+
+            document.getElementById('securityDisplay').innerText = `${Math.min(100, Math.max(0, citySecurity))}%`;
+            document.getElementById('securityMeter').style.width = `${Math.min(100, Math.max(0, citySecurity))}%`;
+
+            const bwPercent = Math.min(100, Math.floor((usedBw / maxBw) * 100));
+            document.getElementById('bandwidthDisplay').innerText = `${usedBw}/${maxBw}M`;
+            document.getElementById('bandwidthMeter').style.width = `${bwPercent}%`;
+
+            if (usedBw > maxBw) {
+                $('#bandwidthDisplay').addClass('text-rose-600 font-black animate-pulse');
+                $('#bandwidthMeter').addClass('from-rose-500 to-red-600 animate-pulse');
+            } else {
+                $('#bandwidthDisplay').removeClass('text-rose-600 font-black animate-pulse');
+                $('#bandwidthMeter').removeClass('from-rose-500 to-red-600 animate-pulse');
+            }
+
+            document.getElementById('tierBadge').innerText = `Tier ${currentTier}`;
+            const connectedCount = districts.filter(d => d.connected).length;
+            document.getElementById('connectedCountDisplay').innerText = connectedCount;
+
+            updateMandateUI();
+            updatePeakDemandUI();
+        }
+
+        function handleImgError(img, iconClass) {
+            img.style.display = 'none';
+            const fallbackBox = img.parentElement.querySelector('.fallback-icon-box');
+            if (fallbackBox) fallbackBox.classList.remove('hidden');
+        }
+
+        function renderDistricts() {
+            const $grid = $('#districtGrid');
+            $grid.empty();
+
+            districts.forEach(d => {
+                const isConnected = d.connected;
+                const isSecPassed = citySecurity >= d.minSec;
+
+                let sectorBadgeColor = "bg-slate-100 text-slate-700 border-slate-300";
+                if (d.sector === "Edu") sectorBadgeColor = "bg-blue-100 text-blue-800 border-blue-300";
+                if (d.sector === "Biz") sectorBadgeColor = "bg-amber-100 text-amber-800 border-amber-300";
+                if (d.sector === "Ind") sectorBadgeColor = "bg-purple-100 text-purple-800 border-purple-300";
+                if (d.sector === "Res") sectorBadgeColor = "bg-emerald-100 text-emerald-800 border-emerald-300";
+
+                let healthBarColor = "bg-emerald-500";
+                if (d.health < 50) healthBarColor = "bg-amber-500";
+                if (d.health < 20) healthBarColor = "bg-rose-500";
+
+                const actionBtn = isConnected
+                    ? (d.id === 1 
+                        ? `<div class="text-center text-[10px] text-amber-800 font-bold py-0.5 bg-amber-100 rounded-lg border border-amber-300">โหนดส่งสัญญาณหลัก</div>`
+                        : (d.health < 80 
+                            ? `<button onclick="repairDistrict(${d.id})" class="w-full py-0.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-[10px] border border-amber-300 transition">🔧 ซ่อม (${40 + (d.level * 15)}🪙)</button>`
+                            : `<button onclick="upgradeDistrict(${d.id})" class="w-full py-0.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:brightness-110 text-white font-black text-[10px] transition active:scale-95 flex items-center justify-center gap-1">
+                                 <i class="fa-solid fa-bolt text-[9px]"></i> <span>Lv.${d.level + 1} (${100 + (d.level * 40)}🪙)</span>
+                               </button>`))
+                    : `<button onclick="connectDistrict(${d.id})" class="w-full py-0.5 rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 hover:brightness-110 text-white font-black text-[10px] shadow-xs transition active:scale-95 flex items-center justify-center gap-1">
+                         <i class="fa-solid fa-wifi text-[9px]"></i> <span>เชื่อมต่อ (${d.cost}🪙)</span>
+                       </button>`;
+
+                $grid.append(`
+                    <div id="district-card-${d.id}" class="clean-card clean-card-hover rounded-xl overflow-hidden border ${isConnected ? 'border-sky-400 shadow-sm' : 'border-slate-200 opacity-90'} flex flex-col justify-between p-1.5 min-h-0 bg-white">
+                        
+                        <!-- Header รูปภาพ + Fallback ป้องกันรูปแตก 100% -->
+                        <div class="relative h-12 sm:h-14 md:h-16 w-full rounded-lg overflow-hidden bg-slate-100 shrink-0">
+                            <img src="${d.img}" alt="${d.name}" class="w-full h-full object-cover" onerror="handleImgError(this, '${d.icon}')">
+                            
+                            <div class="fallback-icon-box hidden absolute inset-0 bg-gradient-to-tr from-sky-100 to-indigo-100 flex items-center justify-center text-sky-600 text-lg">
+                                <i class="fa-solid ${d.icon}"></i>
+                            </div>
+
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
+
+                            <span class="absolute top-1 left-1 px-1.5 py-0.2 rounded-full border text-[8px] font-black backdrop-blur-md ${sectorBadgeColor} shadow-xs">
+                                ${d.sector}
+                            </span>
+
+                            <span class="absolute top-1 right-1 bg-white/90 border border-slate-200 px-1 py-0.2 rounded-full text-[8px] font-black text-sky-800 shadow-xs">
+                                ${d.bwUse + (d.level * 10)}M
+                            </span>
+
+                            <div class="absolute bottom-1 left-1.5 right-1.5 flex items-center justify-between">
+                                <span class="font-bold text-[11px] text-white heading-font truncate drop-shadow-sm">${d.name}</span>
+                                ${isConnected && d.id !== 1 ? `<span class="text-[8px] font-black bg-pink-500 text-white px-1 rounded shadow-xs">Lv.${d.level}</span>` : ''}
+                            </div>
+                        </div>
+
+                        <!-- เนื้อหากลาง: สภาพเครื่อง & ภาษี -->
+                        <div class="space-y-0.5 my-0.5">
+                            ${isConnected && d.id !== 1 ? `
+                            <div class="space-y-0.5">
+                                <div class="flex justify-between text-[8px] text-slate-600">
+                                    <span>สุขภาพเครื่อง:</span>
+                                    <span class="font-bold ${d.health < 50 ? 'text-rose-600' : 'text-emerald-600'}">${d.health}%</span>
+                                </div>
+                                <div class="meter-bar-outer h-1 w-full">
+                                    <div class="meter-bar-inner ${healthBarColor}" style="width: ${d.health}%;"></div>
+                                </div>
+                            </div>` : `<p class="text-[9px] text-slate-500 line-clamp-1">${d.desc}</p>`}
+
+                            <div class="flex justify-between text-[9px] text-slate-700 font-bold pt-0.5 border-t border-slate-100">
+                                <span>ได้: <b class="${isSecPassed && d.health >= 50 ? 'text-amber-600' : 'text-rose-600'}">+${Math.floor((d.income + (d.level * 25)) * (isSecPassed ? 1 : 0.6) * (d.health < 20 ? 0 : d.health < 50 ? 0.5 : 1))}</b></span>
+                                <span>จ่าย: <b class="text-rose-600">-${d.upkeep + (d.level * 15)}</b></span>
+                            </div>
+                        </div>
+
+                        <!-- ปุ่ม Action พอดีช่อง -->
+                        <div class="shrink-0">
+                            ${actionBtn}
+                        </div>
+
+                    </div>
+                `);
+            });
+            drawNetworkLines();
+        }
+
+        // --- 11. วาดสายไฟเบอร์ออปติก (พิกัด Grid แม่นยำ) ---
+        function drawNetworkLines() {
+            const canvas = document.getElementById('networkCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const coreElem = document.getElementById('district-card-1');
+            if (!coreElem) return;
+
+            const coreBox = coreElem.getBoundingClientRect();
+            const startX = coreBox.left + coreBox.width / 2;
+            const startY = coreBox.top + coreBox.height / 2;
+
+            districts.forEach(d => {
+                if (d.connected && d.id !== 1) {
+                    const targetElem = document.getElementById(`district-card-${d.id}`);
+                    if (targetElem) {
+                        const targetBox = targetElem.getBoundingClientRect();
+                        const endX = targetBox.left + targetBox.width / 2;
+                        const endY = targetBox.top + targetBox.height / 2;
+
+                        ctx.beginPath();
+                        ctx.moveTo(startX, startY);
+                        ctx.lineTo(endX, endY);
+                        ctx.strokeStyle = 'rgba(14, 165, 233, 0.45)';
+                        ctx.lineWidth = 1.8;
+                        ctx.setLineDash([4, 4]);
+                        ctx.stroke();
+                    }
+                }
+            });
+        }
+
+        // ภารกิจสภาเมืองอัจฉริยะ (สุ่มเฉพาะเป้าหมายที่ผู้เล่นยังทำไม่เสร็จ)
+        function generateNewMandate() {
+            const bizCount = districts.filter(d => d.connected && d.sector === 'Biz').length;
+            const eduCount = districts.filter(d => d.connected && d.sector === 'Edu').length;
+            const indCount = districts.filter(d => d.connected && d.sector === 'Ind').length;
+            
+            const pool = [];
+            if (bizCount < 4) pool.push({ id: 'biz', title: `ขยายเขตธุรกิจ (Biz) ให้ได้ ${bizCount + 1} เขต`, type: 'sector', sector: 'Biz', target: bizCount + 1, monthsLeft: 3, reward: 300, penalty: 150 });
+            if (eduCount < 4) pool.push({ id: 'edu', title: `พัฒนาโซนการศึกษา (Edu) ให้ได้ ${eduCount + 1} เขต`, type: 'sector', sector: 'Edu', target: eduCount + 1, monthsLeft: 3, reward: 280, penalty: 140 });
+            if (indCount < 4) pool.push({ id: 'ind', title: `เชื่อมต่อนิคมอุตสาหกรรม (Ind) ให้ได้ ${indCount + 1} เขต`, type: 'sector', sector: 'Ind', target: indCount + 1, monthsLeft: 3, reward: 320, penalty: 160 });
+            if (citySecurity < 90) {
+                const targetSec = Math.min(95, Math.ceil((citySecurity + 15) / 5) * 5);
+                pool.push({ id: 'sec', title: `ยกระดับความปลอดภัยไซเบอร์ให้ถึง ${targetSec}%`, type: 'security', target: targetSec, monthsLeft: 2, reward: 260, penalty: 130 });
+            }
+            if (pool.length === 0) pool.push({ id: 'tier', title: 'พัฒนาเมืองสู่ Tier ถัดไป', type: 'tier', target: currentTier + 1, monthsLeft: 4, reward: 400, penalty: 200 });
+
+            activeMandate = JSON.parse(JSON.stringify(pool[Math.floor(Math.random() * pool.length)]));
+        }
+
+        function updateMandateUI() {
+            if (!activeMandate) return;
+            document.getElementById('mandateTitleText').innerText = activeMandate.title;
+            document.getElementById('mandateTimerBadge').innerText = `เหลือ ${activeMandate.monthsLeft} เดือน`;
+        }
+
+        function checkMandateProgress() {
+            if (!activeMandate) return;
+            let isCompleted = false;
+
+            if (activeMandate.type === 'sector') {
+                const count = districts.filter(d => d.connected && d.sector === activeMandate.sector).length;
+                if (count >= activeMandate.target) isCompleted = true;
+            } else if (activeMandate.type === 'security') {
+                if (citySecurity >= activeMandate.target) isCompleted = true;
+            } else if (activeMandate.type === 'tier') {
+                if (currentTier >= activeMandate.target) isCompleted = true;
+            }
+
+            if (isCompleted) {
+                AudioFX.playWin();
+                cityFunds += activeMandate.reward;
+                cityHappiness = Math.min(100, cityHappiness + 5);
+                Swal.fire('🎉 ภารกิจสภาเมืองสำเร็จ!', `ทำตามคำสั่งสภาเมืองสำเร็จ ได้รับงบโบนัส +${activeMandate.reward} 🪙 และความสุข +5%`, 'success');
+                generateNewMandate();
+            } else {
+                activeMandate.monthsLeft--;
+                if (activeMandate.monthsLeft <= 0) {
+                    AudioFX.playAlert();
+                    cityFunds = Math.max(0, cityFunds - activeMandate.penalty);
+                    cityHappiness = Math.max(0, cityHappiness - 8);
+                    Swal.fire('❌ ภารกิจไม่ทันเวลา!', `ถูกหักเงินงบประมาณ -${activeMandate.penalty} 🪙`, 'error');
+                    generateNewMandate();
+                }
+            }
+        }
+
+        function updatePeakDemandUI() {
+            if (activePeakEvent) {
+                document.getElementById('peakBadge').innerText = '🔥 PEAK';
+                document.getElementById('peakBadge').className = 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-rose-100 text-rose-800 border border-rose-300 animate-pulse';
+                document.getElementById('peakTitleText').innerText = activePeakEvent.name;
+            } else {
+                document.getElementById('peakBadge').innerText = 'ปกติ';
+                document.getElementById('peakBadge').className = 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300';
+                document.getElementById('peakTitleText').innerText = 'ทราฟฟิกปกติ';
+            }
+        }
+
+        function triggerSeasonalTraffic() {
+            if (Math.random() < 0.40 && !activePeakEvent) {
+                const peaks = [
+                    { name: 'สัปดาห์สอบออนไลน์ประจำปี', sector: 'Edu', multiplier: 1.8 },
+                    { name: 'ช้อปปิ้งออนไลน์ลดกระหน่ำ', sector: 'Biz', multiplier: 2.0 },
+                    { name: 'ทัวร์นาเมนต์เกม eSports', sector: 'Res', multiplier: 1.5 }
+                ];
+                activePeakEvent = peaks[Math.floor(Math.random() * peaks.length)];
+            } else {
+                activePeakEvent = null;
+            }
+        }
+
+        function repairDistrict(id) {
+            AudioFX.playClick();
+            const d = districts.find(item => item.id === id);
+            if (!d || !d.connected) return;
+
+            const cost = 40 + (d.level * 15);
+            if (cityFunds < cost) {
+                AudioFX.playAlert();
+                Swal.fire('งบไม่พอ', `ต้องใช้เงิน ${cost} 🪙 ในการซ่อมบำรุงครับ`, 'warning');
+                return;
+            }
+
+            cityFunds -= cost;
+            d.health = 100;
+            AudioFX.playUpgrade();
+            renderDashboard();
+            renderDistricts();
+        }
+
+        function buyESportsEvent() {
+            AudioFX.playClick();
+            const price = getESportsPrice();
+            if (cityFunds < price) {
+                AudioFX.playAlert();
+                Swal.fire('งบไม่พอ', `ต้องใช้เงิน ${price} 🪙 ในการจัดแข่ง eSports ครับ`, 'warning');
+                return;
+            }
+
+            cityFunds -= price;
+            cityHappiness = Math.min(100, cityHappiness + 10);
+            eSportsCount++;
+            AudioFX.playUpgrade();
+            renderDashboard();
+            updateCitizenFeed();
+            Swal.fire({ title: '🎉 จัดแข่ง eSports สำเร็จ!', text: 'เด็กๆ มีความสุขมาก! ความสุข +10%', icon: 'success', timer: 1000, showConfirmButton: false });
+        }
+
+        function buySecurityPatch() {
+            AudioFX.playClick();
+            const price = getSecurityPatchPrice();
+            if (cityFunds < price) {
+                AudioFX.playAlert();
+                Swal.fire('งบไม่พอ', `ต้องใช้เงิน ${price} 🪙 ในการซื้อตัวสแกนไวรัสครับ`, 'warning');
+                return;
+            }
+
+            cityFunds -= price;
+            citySecurity = Math.min(100, citySecurity + 15);
+            securityPatchCount++;
+            AudioFX.playUpgrade();
+            renderDashboard();
+            renderDistricts();
+            updateCitizenFeed();
+            Swal.fire({ title: '🛡️ อัปเดตความปลอดภัยสำเร็จ!', text: 'เพิ่มเกราะป้องกันไวรัส +15%', icon: 'success', timer: 1000, showConfirmButton: false });
+        }
+
+        function connectDistrict(id) {
+            AudioFX.playClick();
+            const d = districts.find(item => item.id === id);
+            if (!d) return;
+
+            if (cityFunds < d.cost) {
+                AudioFX.playAlert();
+                Swal.fire('งบประมาณไม่พอ', `ต้องใช้เงิน ${d.cost} 🪙 ในการเดินสายเน็ตครับ`, 'warning');
+                return;
+            }
+
+            cityFunds -= d.cost;
+            d.connected = true;
+            d.level = 1;
+            d.health = 100;
+
+            AudioFX.playConnect();
+            renderDashboard();
+            renderDistricts();
+            updateCitizenFeed();
+        }
+
+        function upgradeDistrict(id) {
+            AudioFX.playClick();
+            const d = districts.find(item => item.id === id);
+            if (!d) return;
+
+            const cost = 100 + (d.level * 40);
+            if (cityFunds < cost) {
+                AudioFX.playAlert();
+                Swal.fire('งบประมาณไม่พอ', `ต้องใช้เงิน ${cost} 🪙 ในการอัปเกรดครับ`, 'warning');
+                return;
+            }
+
+            cityFunds -= cost;
+            d.level += 1;
+            AudioFX.playUpgrade();
+            renderDashboard();
+            renderDistricts();
+        }
+
+        function showUpgradeModal() {
+            AudioFX.playClick();
+            const nextTierObj = tierLevels.find(t => t.tier === currentTier + 1);
+            const connectedCount = districts.filter(d => d.connected).length;
+
+            if (!nextTierObj) {
+                Swal.fire('ระดับสูงสุดแล้ว!', 'เมืองของคุณอยู่ในระดับ Tier 4 สูงสุดแล้วครับ!', 'info');
+                return;
+            }
+
+            const req = nextTierObj.req;
+            const passFunds = cityFunds >= req.funds;
+            const passConn = connectedCount >= req.connected;
+            const passSec = citySecurity >= req.security;
+            const passHap = req.happiness ? cityHappiness >= req.happiness : true;
+            const canUpgrade = passFunds && passConn && passSec && passHap;
+
+            let htmlMsg = `
+                <div class="space-y-2 text-left my-2 text-xs">
+                    <div class="p-2.5 bg-sky-50 border border-sky-200 rounded-xl">
+                        <div class="text-[10px] text-sky-800 font-bold">เป้าหมายถัดไป:</div>
+                        <div class="text-sm font-black text-slate-900">Tier ${nextTierObj.tier}: ${nextTierObj.name}</div>
+                        <div class="text-[10px] text-slate-600">${nextTierObj.desc}</div>
+                    </div>
+
+                    <div class="p-2 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                        <div class="flex justify-between">
+                            <span>1. เงินงบประมาณ (>= ${req.funds} 🪙):</span>
+                            <span class="${passFunds ? 'text-emerald-600 font-bold' : 'text-rose-600'}">${cityFunds}/${req.funds} ${passFunds ? '✓' : '✗'}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>2. เขตที่เชื่อมต่อ (>= ${req.connected} เขต):</span>
+                            <span class="${passConn ? 'text-emerald-600 font-bold' : 'text-rose-600'}">${connectedCount}/${req.connected} ${passConn ? '✓' : '✗'}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>3. ความปลอดภัย (>= ${req.security}%):</span>
+                            <span class="${passSec ? 'text-emerald-600 font-bold' : 'text-rose-600'}">${citySecurity}%/${req.security}% ${passSec ? '✓' : '✗'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            Swal.fire({
+                title: `🚀 ศูนย์อัปเกรดระดับเมือง`,
+                html: htmlMsg,
+                showCancelButton: true,
+                confirmButtonText: canUpgrade ? '🎉 ปลดล็อกอัปเกรดเลย!' : 'พยายามต่อไป',
+                cancelButtonText: 'ปิด',
+                confirmButtonColor: '#0284c7'
+            }).then((result) => {
+                if (result.isConfirmed && canUpgrade) {
+                    currentTier++;
+                    AudioFX.playWin();
+                    renderDashboard();
+                    if (currentTier === 4) checkGameEnd(true);
+                    else Swal.fire('อัปเกรดสำเร็จ!', `เมืองก้าวสู่ Tier ${currentTier} แล้ว!`, 'success');
+                }
+            });
+        }
+
+        // --- 12. ผ่านเดือนและประมวลผลเหตุการณ์ ---
+        function advanceMonth() {
+            AudioFX.playClick();
+            const investmentLogs = processMonthlyInvestments();
+            const fin = calculateFinancials();
+            cityFunds += fin.net;
+
+            if (cityFunds < 0) {
+                AudioFX.playAlert();
+                renderDashboard();
+                triggerGameOver('💸 เมืองล้มละลาย!', 'งบประมาณติดลบ ไม่สามารถจ่ายค่าบำรุงรักษาได้');
+                return;
+            }
+
+            districts.forEach(d => {
+                if (d.connected && d.id !== 1) {
+                    d.health = Math.max(0, d.health - Math.floor(Math.random() * 5 + 4));
+                }
+            });
+
+            triggerSeasonalTraffic();
+            checkMandateProgress();
+
+            const decayRate = 2 + (selectedTermYears * 0.5);
+            citySecurity = Math.max(0, citySecurity - decayRate);
+
+            const usedBw = getUsedBandwidth();
+            const maxBw = getMaxBandwidth();
+            let bwPenaltyMsg = "";
+            if (usedBw > maxBw) {
+                AudioFX.playAlert();
+                cityHappiness = Math.max(0, cityHappiness - 15);
+                const bwFine = Math.floor((100 * selectedTermYears) + (cityFunds * 0.08));
+                cityFunds = Math.max(0, cityFunds - bwFine);
+                bwPenaltyMsg = `<br><span class="text-rose-600 font-bold">⚠️ Bandwidth เกินความจุ! ถูกปรับ -${bwFine} 🪙 และความสุขลดลง -15%</span>`;
+            }
+
+            const isPositive = Math.random() > 0.45;
+            let invLogHtml = investmentLogs.length > 0 ? `<div class="p-2 bg-purple-50 rounded-xl text-xs text-purple-900 border border-purple-200 my-1">${investmentLogs.join('<br>')}</div>` : '';
+            
+            if (isPositive) {
+                const posEvents = [
+                    { title: "💡 นักเรียนสร้าง AI ชนะการแข่งขัน", desc: "เพิ่มความปลอดภัยไซเบอร์ +10% และได้รับเงินรางวัล +150 🪙", funds: 150, sec: 10, hap: 5 },
+                    { title: "🏛️ ได้รับงบสนับสนุน Smart City", desc: "รัฐบาลมอบทุนสนับสนุนเน็ตโรงเรียน +250 🪙", funds: 250, sec: 0, hap: 5 },
+                    { title: "🏆 ชนะรางวัลเมืองเน็ตเร็วขวัญใจเด็กๆ", desc: "ประชาชนมีความสุข +10% และได้รับเงิน +200 🪙", funds: 200, sec: 5, hap: 10 }
+                ];
+                const ev = posEvents[Math.floor(Math.random() * posEvents.length)];
+                cityFunds += ev.funds;
+                citySecurity = Math.min(100, citySecurity + ev.sec);
+                cityHappiness = Math.min(100, cityHappiness + ev.hap);
+
+                renderDashboard();
+                renderDistricts();
+                updateCitizenFeed();
+
+                Swal.fire({
+                    title: `🌟 ${ev.title}`,
+                    html: `<div class="text-xs text-slate-700">${ev.desc} ${bwPenaltyMsg} ${invLogHtml}</div>`,
+                    icon: 'success',
+                    confirmButtonText: 'ลุยต่อเลย!',
+                    confirmButtonColor: '#0284c7'
+                }).then(() => { processNextMonthStep(); });
+
+            } else {
+                const dynamicCrisisFee = Math.floor(120 + (cityFunds * 0.1));
+                const negEvents = [
+                    {
+                        title: "🔒 มัลแวร์ระบาดในระบบโรงเรียน",
+                        desc: "มีแฮกเกอร์กำลังพยายามส่งมัลแวร์เข้าสู่ระบบเมือง!",
+                        optA: `🕹️ เล่นมินิเกมถอดรหัส (ฟรี / 10 วิ)`,
+                        optB: `จ่ายค่าซ่อมด่วน -${dynamicCrisisFee} 🪙`,
+                        actionA: () => { 
+                            startCyberDefenseMinigame(
+                                () => { renderDashboard(); renderDistricts(); updateCitizenFeed(); processNextMonthStep(); },
+                                () => { 
+                                    cityFunds -= dynamicCrisisFee; 
+                                    renderDashboard(); renderDistricts(); updateCitizenFeed(); 
+                                    if (cityFunds < 0) { checkGameEnd(); return; }
+                                    processNextMonthStep(); 
+                                }
+                            ); 
+                        },
+                        actionB: () => { 
+                            cityFunds -= dynamicCrisisFee; 
+                            renderDashboard(); renderDistricts(); updateCitizenFeed(); 
+                            if (cityFunds < 0) { checkGameEnd(); return; }
+                            processNextMonthStep(); 
+                        }
+                    },
+                    {
+                        title: "⛈️ พายุฝนพัดสายไฟเบอร์ขาด",
+                        desc: "สายส่งสัญญาณหลักชำรุดหลายเขต!",
+                        optA: `ส่งทีมช่างซ่อมทันที -${dynamicCrisisFee} 🪙`,
+                        optB: "ใช้สายสำรอง (ความสุขประชาชน -12%)",
+                        actionA: () => { 
+                            cityFunds -= dynamicCrisisFee; 
+                            renderDashboard(); renderDistricts(); updateCitizenFeed(); 
+                            if (cityFunds < 0) { checkGameEnd(); return; }
+                            processNextMonthStep(); 
+                        },
+                        actionB: () => { cityHappiness = Math.max(0, cityHappiness - 12); renderDashboard(); renderDistricts(); updateCitizenFeed(); processNextMonthStep(); }
+                    }
+                ];
+                const ev = negEvents[Math.floor(Math.random() * negEvents.length)];
+
+                Swal.fire({
+                    title: `⚠️ ${ev.title}`,
+                    html: `<p class="text-xs text-slate-700 mb-2">${ev.desc} ${bwPenaltyMsg} ${invLogHtml}</p><p class="text-xs font-bold text-slate-900">คุณจะเลือกแก้ปัญหาอย่างไร?</p>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: ev.optA,
+                    cancelButtonText: ev.optB,
+                    confirmButtonColor: '#0284c7',
+                    cancelButtonColor: '#64748b'
+                }).then((result) => {
+                    if (result.isConfirmed) ev.actionA();
+                    else ev.actionB();
+                });
+            }
+        }
+
+        function processNextMonthStep() {
+            if (checkGameEnd()) return;
+            currentMonth++;
+            renderDashboard();
+            updateCitizenFeed();
+        }
+
+        // --- 13. จบเกม & พลุเฉลิมฉลอง ---
+        function checkGameEnd(isInstantQuantumWin = false) {
+            const connectedCount = districts.filter(d => d.connected).length;
+
+            if (cityFunds < 0) {
+                triggerGameOver('💸 เมืองล้มละลาย!', 'งบประมาณติดลบ ไม่สามารถชำระค่าบำรุงรักษาได้');
+                return true;
+            }
+            if (cityHappiness <= 0) {
+                triggerGameOver('😡 ประชาชนประท้วง!', 'ค่าความสุขเหลือ 0% เนื่องจากเน็ตล่มต่อเนื่อง');
+                return true;
+            }
+
+            if (isInstantQuantumWin) {
+                triggerVictory('⚛️ นครหลวง AI ควอนตัมสำเร็จ!', 'คุณพัฒนาเมืองจนถึงขีดสุด Tier 4 ได้อย่างงดงาม!');
+                return true;
+            }
+
+            if (currentMonth >= maxMonths) {
+                const minConnectedNeeded = Math.min(16, 6 + (selectedTermYears - 1) * 2);
+                if (connectedCount < minConnectedNeeded || currentTier < 2) {
+                    triggerGameOver('❌ ยังไม่ผ่านเกณฑ์วาระนี้!', `เชื่อมต่อได้ ${connectedCount}/${minConnectedNeeded} เขต (ต้องการ Tier 2 ขึ้นไป)`);
+                    return true;
+                } else {
+                    triggerVictory(`🎉 บริหารสำเร็จครบวาระ ${selectedTermYears} ปี!`, `คุณนำพาเมืองดิจิทัลผ่านพ้น ${maxMonths} เดือนได้อย่างยอดเยี่ยม`);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        function triggerGameOver(title, reason) {
+            AudioFX.playAlert();
+            Swal.fire({
+                title: title,
+                text: reason,
+                icon: 'error',
+                confirmButtonText: '🔄 เริ่มเล่นรอบใหม่',
+                confirmButtonColor: '#0284c7'
+            }).then(() => { location.reload(); });
+        }
+
+        function triggerVictory(title, msg) {
+            AudioFX.playWin();
+
+            try {
+                confetti({ particleCount: 160, spread: 90, origin: { y: 0.6 } });
+            } catch(e){}
+
+            const connectedCount = districts.filter(d => d.connected).length;
+            const finalRating = getLiveRating();
+            const totalScore = (currentTier * 1500) + (connectedCount * 250) + (cityHappiness * 20) + (citySecurity * 20) + Math.floor(cityFunds / 4);
+
+            let summaryHtml = `
+                <div class="space-y-2 text-left text-xs my-1">
+                    <div class="p-3 bg-sky-50 border border-sky-300 rounded-2xl text-center">
+                        <div class="text-[10px] text-sky-800 font-bold">เกรดผลงานการบริหารรอบนี้:</div>
+                        <div class="text-2xl font-black text-amber-600 mt-0.5">${finalRating.rank}</div>
+                        <div class="text-[11px] text-slate-600 mt-0.5">${msg}</div>
+                    </div>
+
+                    <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                        <div class="flex justify-between"><span>ระดับเทคโนโลยี:</span><b>Tier ${currentTier}</b></div>
+                        <div class="flex justify-between"><span>เขตที่เชื่อมต่อได้:</span><b>${connectedCount} / 16 เขต</b></div>
+                        <div class="flex justify-between"><span>งบประมาณคงเหลือ:</span><b>${cityFunds.toLocaleString()} 🪙</b></div>
+                        <div class="flex justify-between"><span>ความสุข / ไซเบอร์:</span><b>${cityHappiness}% / ${citySecurity}%</b></div>
+                        <div class="flex justify-between border-t border-slate-200 pt-1 text-sky-800 font-bold">
+                            <span>คะแนนรวมรอบนี้:</span>
+                            <span>${totalScore.toLocaleString()} แต้ม</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            Swal.fire({
+                title: '🏆 ยินดีด้วยคุณชนะเกมส์แล้ว!',
+                html: summaryHtml,
+                icon: 'success',
+                confirmButtonText: '🔄 เล่นรอบใหม่เพื่อทำคะแนนให้สูงขึ้น',
+                confirmButtonColor: '#0284c7'
+            }).then(() => {
+                location.reload();
+            });
+        }
+
+        window.onload = function() {
+            selectTermModal();
+        };
+    </script>
+</body>
+</html>
