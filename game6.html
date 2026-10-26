@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI vs Tech Classifier — แดนผจญภัยยอดนักคิด 50+ ข้อ</title>
+
+    <!-- Google Fonts: Mali & Kanit & Orbitron -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700;800;900&family=Mali:wght@500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS & Canvas Confetti -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --primary-purple: #7c3aed;
+            --primary-pink: #ec4899;
+            --primary-cyan: #06b6d4;
+            --primary-yellow: #fbbf24;
+            --primary-green: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            overflow: hidden !important;
+            font-family: 'Kanit', sans-serif;
+            background: radial-gradient(circle at 50% 20%, #2e1065 0%, #090d16 100%);
+            color: #ffffff;
+        }
+
+        .mali-font { font-family: 'Mali', cursive, sans-serif; }
+        .cyber-font { font-family: 'Orbitron', 'Kanit', sans-serif; }
+
+        /* Starry Particle Canvas */
+        #starCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Glass Panel */
+        .glass-card {
+            background: rgba(30, 27, 75, 0.82);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 2px solid rgba(168, 85, 247, 0.45);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(168, 85, 247, 0.15);
+        }
+
+        /* 3D Toy-Style Action Buttons */
+        .btn-tech-toy {
+            background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+            border: 2px solid #bae6fd;
+            box-shadow: 0 6px 0 #0369a1, 0 10px 20px rgba(2, 132, 199, 0.35);
+            transition: all 0.1s ease-in-out;
+        }
+        .btn-tech-toy:hover {
+            filter: brightness(1.08);
+            transform: translateY(-2px);
+        }
+        .btn-tech-toy:active {
+            transform: translateY(5px);
+            box-shadow: 0 1px 0 #0369a1, 0 4px 8px rgba(2, 132, 199, 0.3);
+        }
+
+        .btn-ai-toy {
+            background: linear-gradient(180deg, #f472b6 0%, #db2777 100%);
+            border: 2px solid #fbcfe8;
+            box-shadow: 0 6px 0 #9d174d, 0 10px 20px rgba(219, 39, 119, 0.35);
+            transition: all 0.1s ease-in-out;
+        }
+        .btn-ai-toy:hover {
+            filter: brightness(1.08);
+            transform: translateY(-2px);
+        }
+        .btn-ai-toy:active {
+            transform: translateY(5px);
+            box-shadow: 0 1px 0 #9d174d, 0 4px 8px rgba(219, 39, 119, 0.3);
+        }
+
+        /* Animated Sound Wave */
+        .sound-wave-bar {
+            width: 3px;
+            background: #ec4899;
+            border-radius: 99px;
+            animation: bounceWave 0.7s ease-in-out infinite alternate;
+        }
+        @keyframes bounceWave {
+            0% { height: 4px; }
+            100% { height: 16px; }
+        }
+
+        /* Screen Shake */
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0); }
+            20% { transform: translate(-7px, 5px); }
+            40% { transform: translate(7px, -5px); }
+            60% { transform: translate(-4px, 3px); }
+            80% { transform: translate(4px, -3px); }
+        }
+        .screen-shake { animation: shake 0.32s ease-in-out; }
+
+        /* Floating Mascot */
+        @keyframes gentleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        .mascot-float { animation: gentleFloat 2.8s ease-in-out infinite; }
+
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #c084fc; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body class="flex flex-col h-screen w-screen p-2 sm:p-3 justify-between relative selection:bg-pink-500 selection:text-white">
+
+    <!-- Starry Particles Canvas -->
+    <canvas id="starCanvas"></canvas>
+
+    <!-- HEADER: Status HUD & Mascot AI -->
+    <header class="glass-card rounded-2xl p-2 sm:p-2.5 flex items-center justify-between gap-2 z-10 shrink-0">
+        <!-- Left: Profile & Score -->
+        <div class="flex items-center gap-2 cursor-pointer hover:opacity-90 transition bg-indigo-950/60 p-1.5 rounded-xl border border-indigo-400/30" onclick="editPlayerName()" title="คลิกเพื่อแก้ไขชื่อผู้เล่น">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-cyan-400 to-indigo-500 p-0.5 flex items-center justify-center shadow">
+                <svg viewBox="0 0 100 100" class="w-full h-full">
+                    <circle cx="50" cy="50" r="45" fill="#fef08a"/>
+                    <circle cx="35" cy="40" r="6" fill="#1e1b4b"/>
+                    <circle cx="65" cy="40" r="6" fill="#1e1b4b"/>
+                    <path d="M 35 65 Q 50 80 65 65" stroke="#1e1b4b" stroke-width="5" fill="none" stroke-linecap="round"/>
+                    <circle cx="28" cy="52" r="5" fill="#f43f5e" opacity="0.6"/>
+                    <circle cx="72" cy="52" r="5" fill="#f43f5e" opacity="0.6"/>
+                </svg>
+            </div>
+            <div>
+                <div class="flex items-center gap-1">
+                    <span id="playerNameText" class="font-black text-xs sm:text-sm text-yellow-300 mali-font leading-none">น้องนักคิด</span>
+                    <span class="text-[9px] text-slate-300">✏️</span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] font-bold text-white mt-0.5">
+                    <span class="text-amber-300 text-xs sm:text-sm font-black" id="playerScoreDisplay">0</span>
+                    <span class="text-amber-400 text-xs">⭐</span>
+                    <span class="text-[10px] text-indigo-200 hidden sm:inline">(คะแนนรวม)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center: AI Mascot & Speech Bubble -->
+        <div class="flex items-center gap-2 max-w-[50%] sm:max-w-md">
+            <div class="relative shrink-0 mascot-float cursor-pointer" onclick="replayVoice()" title="กดเพื่อให้พี่ AI พูดซ้ำ">
+                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-pink-500 via-purple-500 to-cyan-400 p-0.5 shadow-md shadow-pink-500/30">
+                    <div class="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center p-1 relative overflow-hidden">
+                        <svg viewBox="0 0 100 100" class="w-full h-full">
+                            <rect x="20" y="25" width="60" height="52" rx="18" fill="#ec4899"/>
+                            <rect x="25" y="30" width="50" height="40" rx="14" fill="#fdf4ff"/>
+                            <ellipse cx="38" cy="46" rx="5" ry="7" fill="#831843"/>
+                            <ellipse cx="62" cy="46" rx="5" ry="7" fill="#831843"/>
+                            <circle cx="39" cy="44" r="2" fill="#ffffff"/>
+                            <circle cx="63" cy="44" r="2" fill="#ffffff"/>
+                            <path d="M 42 58 Q 50 66 58 58" stroke="#db2777" stroke-width="3" fill="none" stroke-linecap="round"/>
+                            <line x1="50" y1="25" x2="50" y2="15" stroke="#f472b6" stroke-width="4"/>
+                            <circle cx="50" cy="12" r="5" fill="#facc15"/>
+                        </svg>
+                    </div>
+                </div>
+                <button class="absolute -bottom-1 -right-1 bg-yellow-400 text-slate-900 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow border border-white">
+                    🔊
+                </button>
+            </div>
+
+            <!-- Speech Bubble -->
+            <div onclick="replayVoice()" class="cursor-pointer bg-white/95 text-purple-950 px-2.5 py-1 sm:py-1.5 rounded-xl rounded-tl-none border-2 border-pink-300 shadow text-xs sm:text-sm font-bold flex items-center gap-1.5 hover:bg-yellow-50 transition">
+                <span id="aiSpeechText" class="mali-font line-clamp-1 sm:line-clamp-2">"สวัสดีจ้า! ลองทายดูซิ ภาพนี้คืออะไร?"</span>
+                <div id="speakingWaves" class="hidden items-center gap-0.5 h-3.5 shrink-0">
+                    <div class="sound-wave-bar" style="animation-delay: 0.1s"></div>
+                    <div class="sound-wave-bar" style="animation-delay: 0.3s"></div>
+                    <div class="sound-wave-bar" style="animation-delay: 0.2s"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Action Controls -->
+        <div class="flex items-center gap-1.5">
+            <button onclick="startNewSessionConfirm()" class="bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-black px-2 sm:px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow transition active:scale-95" title="เริ่มเล่นด่านใหม่">
+                <span>🎲</span>
+                <span class="hidden sm:inline font-bold mali-font">เริ่มใหม่</span>
+            </button>
+            <button onclick="openLeaderboardModal()" class="bg-indigo-900/80 hover:bg-indigo-800 text-yellow-300 border border-yellow-400/40 p-1.5 sm:px-2.5 rounded-xl text-xs font-bold flex items-center gap-1 transition active:scale-95" title="ดูตารางอันดับ">
+                <span>🏆</span>
+                <span class="hidden md:inline mali-font">อันดับ</span>
+            </button>
+            <button onclick="toggleAudio()" id="audioToggleBtn" class="bg-indigo-900/80 hover:bg-indigo-800 text-cyan-300 border border-cyan-400/40 p-1.5 rounded-xl transition active:scale-95" title="เปิด/ปิด เสียงเอฟเฟกต์">
+                <span id="audioIcon">🔊</span>
+            </button>
+            <button onclick="toggleFullscreen()" class="bg-indigo-900/80 hover:bg-indigo-800 text-purple-300 border border-purple-400/40 p-1.5 rounded-xl transition active:scale-95" title="เต็มหน้าจอ">
+                <span id="fsIcon">⛶</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN GAME WORKSPACE (Strict Zero-Overflow Viewport-Fit) -->
+    <main id="mainGameStage" class="glass-card rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 flex-1 flex flex-col justify-between my-1.5 sm:my-2.5 z-10 overflow-hidden min-h-0">
+
+        <!-- Subheader: Round Badge, Question Tracker & Combo Streak -->
+        <div class="flex items-center justify-between gap-2 text-xs sm:text-sm font-bold shrink-0 pb-1">
+            <div class="flex items-center gap-2">
+                <!-- Round Badge with Difficulty Tier -->
+                <span id="roundDifficultyBadge" class="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-[11px] sm:text-xs shadow">
+                    รอบที่ 1/5 : ง่ายมาก
+                </span>
+                <span class="text-cyan-300 font-extrabold mali-font text-xs sm:text-sm">
+                    ข้อที่: <span id="progressText" class="text-yellow-300 font-black text-sm sm:text-base">1/10</span>
+                </span>
+            </div>
+
+            <!-- Combo Flame Banner -->
+            <div id="comboBanner" class="hidden items-center gap-1 bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 text-white px-2.5 py-0.5 rounded-full font-black text-xs shadow-md shadow-pink-500/40 animate-bounce">
+                <span>🔥</span>
+                <span id="comboCountText">COMBO x2!</span>
+            </div>
+
+            <div class="text-indigo-200 text-[11px] hidden md:flex items-center gap-1.5 bg-indigo-950/70 px-2.5 py-0.5 rounded-full border border-indigo-500/30">
+                <span>คีย์บอร์ด:</span>
+                <kbd class="px-1.5 py-0.2 bg-sky-500 text-white rounded font-bold text-[10px]">◄ / A</kbd>
+                <kbd class="px-1.5 py-0.2 bg-pink-500 text-white rounded font-bold text-[10px]">► / D</kbd>
+            </div>
+        </div>
+
+        <!-- Progress Tube -->
+        <div class="w-full bg-slate-900/90 rounded-full h-2 p-0.5 border border-indigo-400/40 shrink-0 mb-1">
+            <div id="progressBar" class="bg-gradient-to-r from-cyan-400 via-yellow-400 to-pink-500 h-full rounded-full transition-all duration-300 shadow-[0_0_8px_rgba(244,114,182,0.8)]" style="width: 10%;"></div>
+        </div>
+
+        <!-- CENTRAL QUESTION & ARTWORK AREA (Strictly Bounded Height - NO OVERFLOW) -->
+        <div class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-2 sm:gap-4 items-center justify-center my-auto min-h-0 overflow-hidden">
+
+            <!-- Left: Vector SVG Artwork Box (Capped Height to Never Overlap Buttons) -->
+            <div class="md:col-span-5 h-full max-h-[25vh] sm:max-h-[28vh] flex items-center justify-center min-h-0">
+                <div class="h-full aspect-square max-h-full max-w-full rounded-2xl p-2 bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-950 border-2 sm:border-3 border-yellow-400/80 shadow-lg flex flex-col items-center justify-center relative group">
+
+                    <!-- Vector Graphic (Scales perfectly inside) -->
+                    <div id="itemSvgContainer" class="w-full h-full flex items-center justify-center p-1 transition duration-300 group-hover:scale-105 min-h-0">
+                        <!-- Dynamically Injected SVG -->
+                    </div>
+
+                    <!-- Compact Badges at bottom of card -->
+                    <div class="absolute bottom-1.5 left-2 right-2 flex justify-between items-center text-[10px]">
+                        <span id="itemCategoryBadge" class="px-2 py-0.5 rounded-full bg-indigo-600/90 text-yellow-300 border border-yellow-400/40 font-black text-[10px] shadow">
+                            หมวดหมู่
+                        </span>
+                        <button onclick="replayVoice()" class="px-2 py-0.5 rounded-full bg-pink-500 hover:bg-pink-400 text-white font-black text-[10px] flex items-center gap-1 shadow transition active:scale-95">
+                            <span>🔊 ฟังชื่อภาพ</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Item Details & Kid-Friendly Prompt -->
+            <div class="md:col-span-7 flex flex-col justify-center space-y-1.5 sm:space-y-2 text-left min-h-0">
+                <div>
+                    <span class="inline-block px-2.5 py-0.2 rounded-full bg-cyan-400/20 text-cyan-300 border border-cyan-400/40 text-[10px] sm:text-xs font-bold mali-font">
+                        🎯 สังเกตสิ่งนี้:
+                    </span>
+                    <h2 id="itemTitleText" class="text-xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-300 to-cyan-300 leading-tight">
+                        ชื่ออุปกรณ์
+                    </h2>
+                </div>
+
+                <!-- Working Mechanism Description Box -->
+                <div class="bg-indigo-950/80 p-2.5 sm:p-3 rounded-xl border border-indigo-400/40 space-y-1 shadow-inner">
+                    <div class="text-[11px] text-yellow-300 font-bold uppercase tracking-wider flex items-center gap-1">
+                        <span>🔍</span> วิธีการทำงานของมัน:
+                    </div>
+                    <p id="itemDescText" class="text-xs sm:text-sm text-slate-100 leading-relaxed font-normal mali-font line-clamp-3">
+                        คำอธิบายอุปกรณ์นี้แบบง่ายๆ...
+                    </p>
+                </div>
+
+                <!-- Thinking Hint -->
+                <div class="bg-amber-400/15 border border-amber-400/40 p-2 rounded-xl flex items-center gap-2 text-amber-200">
+                    <span class="text-xl shrink-0">🤔</span>
+                    <span class="text-[11px] sm:text-xs font-semibold mali-font">
+                        <b>ช่วยคิดหน่อย:</b> สิ่งนี้ทำตามโปรแกรมคงที่ หรือ<b>คิดวิเคราะห์และเรียนรู้ได้เอง</b>เอ่ย?
+                    </span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- BOTTOM ACTION BUTTONS (Anchored & Never Overlapped) -->
+        <div class="grid grid-cols-2 gap-2.5 sm:gap-4 pt-1.5 border-t border-indigo-500/30 shrink-0">
+            <!-- Tech Button -->
+            <button onclick="submitAnswer('tech')" id="btnTech" class="btn-tech-toy p-2.5 sm:p-3.5 rounded-xl text-white flex items-center justify-between group cursor-pointer">
+                <div class="flex items-center gap-2 sm:gap-3 text-left">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/20 border-2 border-white/60 flex items-center justify-center text-2xl group-hover:scale-105 transition shrink-0 shadow-inner">
+                        ⚙️
+                    </div>
+                    <div>
+                        <div class="font-black text-base sm:text-xl text-white mali-font drop-shadow leading-tight">🛠️ เทคโนโลยีทั่วไป</div>
+                        <div class="text-[10px] sm:text-xs text-cyan-100 font-medium">ทำตามคำสั่งคงที่ ไม่คิดเอง</div>
+                    </div>
+                </div>
+                <span class="hidden md:inline px-2.5 py-1 rounded-lg bg-slate-900/50 text-[10px] font-mono text-cyan-200 border border-white/30">ปุ่ม ◄</span>
+            </button>
+
+            <!-- AI Button -->
+            <button onclick="submitAnswer('ai')" id="btnAI" class="btn-ai-toy p-2.5 sm:p-3.5 rounded-xl text-white flex items-center justify-between group cursor-pointer">
+                <div class="flex items-center gap-2 sm:gap-3 text-left">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/20 border-2 border-white/60 flex items-center justify-center text-2xl group-hover:scale-105 transition shrink-0 shadow-inner">
+                        🧠
+                    </div>
+                    <div>
+                        <div class="font-black text-base sm:text-xl text-white mali-font drop-shadow leading-tight">🤖 ปัญญาประดิษฐ์ (AI)</div>
+                        <div class="text-[10px] sm:text-xs text-pink-100 font-medium">คิดวิเคราะห์และเรียนรู้ได้เอง</div>
+                    </div>
+                </div>
+                <span class="hidden md:inline px-2.5 py-1 rounded-lg bg-slate-900/50 text-[10px] font-mono text-pink-200 border border-white/30">ปุ่ม ►</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- FOOTER STATUS TIP -->
+    <footer class="text-center text-[10px] sm:text-xs text-indigo-300 font-medium py-0.5 shrink-0 mali-font">
+        รายวิชาวิทยาการคำนวณและปัญญาประดิษฐ์ (50+ คำถาม 5 ระดับความยาก)
+    </footer>
+
+    <!-- MODAL: Feedback Dialog -->
+    <div id="feedbackModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 hidden">
+        <div class="glass-card max-w-md w-full rounded-2xl p-4 sm:p-6 text-center space-y-3 border-3 border-yellow-300 shadow-2xl relative">
+
+            <div id="feedbackHeaderIcon" class="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-4xl shadow-lg">
+                <!-- Icon -->
+            </div>
+
+            <div>
+                <h3 id="feedbackTitle" class="text-xl sm:text-2xl font-black mali-font">ผลการวิเคราะห์</h3>
+                <div id="feedbackSubTitle" class="text-xs sm:text-sm font-bold mt-0.5 text-slate-200">...</div>
+            </div>
+
+            <div class="bg-indigo-950/90 p-3 rounded-xl border border-indigo-400/40 text-left space-y-0.5">
+                <div class="text-[10px] text-yellow-300 font-bold uppercase tracking-wider flex items-center gap-1">
+                    <span>💡</span> เหตุผลที่แท้จริง:
+                </div>
+                <p id="feedbackReasonText" class="text-xs sm:text-sm text-slate-100 leading-relaxed font-normal mali-font">...</p>
+            </div>
+
+            <button onclick="closeFeedbackModal()" class="w-full py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-green-600 hover:from-emerald-300 hover:to-green-500 text-white font-black text-sm sm:text-base shadow-lg shadow-green-500/40 transition active:scale-95 mali-font">
+                ข้อถัดไปเลยจ้า ➔ (กด Spacebar)
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: Round Complete (Next Difficulty Tier) -->
+    <div id="roundCompleteModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 hidden">
+        <div class="glass-card max-w-md w-full rounded-2xl p-5 text-center space-y-3.5 border-3 border-teal-400 shadow-2xl">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-400 to-teal-500 mx-auto flex items-center justify-center text-3xl shadow-lg animate-bounce">
+                🎯
+            </div>
+            <div>
+                <h2 class="text-xl sm:text-2xl font-black text-cyan-300 mali-font" id="roundCompleteTitle">
+                    ผ่านรอบที่ 1 แล้ว!
+                </h2>
+                <p class="text-xs text-indigo-200 mt-0.5 mali-font" id="roundCompleteSubtitle">
+                    เตรียมตัวพบกับคำถามระดับความยากถัดไป!
+                </p>
+            </div>
+            <div class="bg-indigo-950/80 p-3 rounded-xl border border-indigo-400/30 text-xs text-yellow-300 font-bold">
+                คะแนนสะสมรอบนี้: <span id="roundScoreGain" class="text-white text-sm">+20 ⭐</span>
+            </div>
+            <button onclick="proceedToNextRound()" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 text-white font-black text-sm shadow-md transition active:scale-95 mali-font">
+                ลุยรอบถัดไป (ยากขึ้น) ➔
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: Grand Championship (Completed All 5 Rounds) -->
+    <div id="gameOverModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 hidden">
+        <div class="glass-card max-w-md w-full rounded-2xl p-5 sm:p-7 text-center space-y-3.5 border-4 border-yellow-400 shadow-2xl">
+            <div class="w-18 h-18 rounded-2xl bg-gradient-to-tr from-yellow-300 via-amber-400 to-pink-500 mx-auto flex items-center justify-center text-4xl shadow-xl shadow-yellow-500/40 animate-bounce">
+                👑
+            </div>
+
+            <div>
+                <h2 class="text-2xl font-black text-yellow-300 mali-font">
+                    สุดยอดแชมเปียนยอดนักคิด!
+                </h2>
+                <p class="text-xs text-indigo-200 mt-0.5 mali-font">หนูผ่านครบทั้ง 5 รอบ (50 ข้อ) สุดยอดมาก!</p>
+            </div>
+
+            <!-- Score Summary Cards -->
+            <div class="grid grid-cols-3 gap-2">
+                <div class="bg-indigo-950/90 p-2.5 rounded-xl border border-indigo-400/40">
+                    <div class="text-[10px] text-indigo-300 font-bold">ตอบถูกรวม</div>
+                    <div class="text-base font-black text-white mt-0.5" id="finalCorrectCount">0/50</div>
+                </div>
+                <div class="bg-pink-950/70 p-2.5 rounded-xl border border-pink-400/50">
+                    <div class="text-[10px] text-pink-300 font-bold">ดาวที่ได้รับ</div>
+                    <div class="text-base font-black text-pink-300 mt-0.5" id="finalEarnedPoints">+0</div>
+                </div>
+                <div class="bg-yellow-950/70 p-2.5 rounded-xl border border-yellow-400/50">
+                    <div class="text-[10px] text-yellow-300 font-bold">รวมสะสม</div>
+                    <div class="text-base font-black text-yellow-400 mt-0.5" id="finalTotalScore">0 ⭐</div>
+                </div>
+            </div>
+
+            <div class="space-y-2 pt-1">
+                <button onclick="startFullGameFromRound1()" class="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 text-white font-black text-sm shadow-md transition active:scale-95 flex items-center justify-center gap-1.5 mali-font">
+                    <span>🎲 เล่นใหม่อีกครั้ง (เริ่มรอบ 1)</span>
+                </button>
+                <button onclick="openLeaderboardModal()" class="w-full py-2.5 rounded-xl bg-indigo-900 hover:bg-indigo-800 text-yellow-300 font-bold text-xs border border-indigo-500/40 transition mali-font">
+                    🏆 ดูตารางคะแนนสูงสุด (Leaderboard)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Leaderboard -->
+    <div id="leaderboardModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 hidden">
+        <div class="glass-card max-w-md w-full rounded-2xl p-4 sm:p-5 text-center space-y-3 border-3 border-yellow-400">
+            <div class="flex items-center justify-between border-b border-indigo-500/40 pb-2">
+                <h3 class="text-base font-black text-yellow-300 mali-font flex items-center gap-1.5">
+                    🏆 ตารางดาวเกียรติยศยอดนักคิด
+                </h3>
+                <button onclick="closeLeaderboardModal()" class="w-7 h-7 rounded-full bg-indigo-900 text-slate-300 hover:text-white font-bold text-xs">✕</button>
+            </div>
+
+            <div id="leaderboardList" class="space-y-1.5 max-h-[45vh] overflow-y-auto custom-scroll pr-1 text-xs">
+                <!-- Rendered dynamically -->
+            </div>
+
+            <button onclick="closeLeaderboardModal()" class="w-full py-2 rounded-xl bg-indigo-900 hover:bg-indigo-800 text-white font-bold text-xs mali-font">
+                ปิดหน้าต่าง
+            </button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC ENGINE -->
+    <script>
+        /* ========================================================
+           1. WEB AUDIO SYNTHESIZER
+           ======================================================== */
+        let audioEnabled = true;
+        const AudioFX = {
+            ctx: null,
+            init() {
+                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            },
+            playTone(freq, type, duration, gainVal = 0.08) {
+                if (!audioEnabled) return;
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const g = this.ctx.createGain();
+                    osc.type = type || 'sine';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    g.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+                    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    osc.connect(g); g.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + duration);
+                } catch(e){}
+            },
+            playPop() { this.playTone(820, 'sine', 0.05, 0.08); },
+            playCorrect() {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, idx) => {
+                    setTimeout(() => this.playTone(f, 'triangle', 0.12, 0.09), idx * 60);
+                });
+            },
+            playWrong() {
+                this.playTone(160, 'sawtooth', 0.22, 0.11);
+            },
+            playVictoryFanfare() {
+                [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((f, idx) => {
+                    setTimeout(() => this.playTone(f, 'sine', 0.2, 0.1), idx * 75);
+                });
+            }
+        };
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            document.getElementById('audioIcon').innerText = audioEnabled ? '🔊' : '🔇';
+            if (audioEnabled) AudioFX.playPop();
+        }
+
+        function toggleFullscreen() {
+            AudioFX.playPop();
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(()=>{});
+                document.getElementById('fsIcon').innerText = '⤢';
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                document.getElementById('fsIcon').innerText = '⛶';
+            }
+        }
+
+        /* ========================================================
+           2. THAI FEMALE AI SPEECH SYNTHESIS (SLOW & CLEAR)
+           ======================================================== */
+        let thaiFemaleVoice = null;
+
+        function loadVoices() {
+            if (!('speechSynthesis' in window)) return;
+            const voices = window.speechSynthesis.getVoices();
+            const thVoices = voices.filter(v => v.lang === 'th-TH' || v.lang.startsWith('th'));
+            if (thVoices.length > 0) {
+                const femaleCandidate = thVoices.find(v => 
+                    v.name.toLowerCase().includes('female') || 
+                    v.name.toLowerCase().includes('kanya') || 
+                    v.name.toLowerCase().includes('siri') ||
+                    v.name.toLowerCase().includes('narisa')
+                );
+                thaiFemaleVoice = femaleCandidate || thVoices[0];
+            }
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+            loadVoices();
+        }
+
+        function speakAI(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'th-TH';
+            if (thaiFemaleVoice) utterance.voice = thaiFemaleVoice;
+            
+            // Adjust to be slower, gentle, and clear for kids
+            utterance.rate = 0.52; // Slower speed
+            utterance.pitch = 2.12; // Friendly tone
+
+            const waves = document.getElementById('speakingWaves');
+            utterance.onstart = () => {
+                if (waves) { waves.classList.remove('hidden'); waves.classList.add('flex'); }
+            };
+            utterance.onend = () => {
+                if (waves) { waves.classList.add('hidden'); waves.classList.remove('flex'); }
+            };
+            utterance.onerror = () => {
+                if (waves) { waves.classList.add('hidden'); waves.classList.remove('flex'); }
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function replayVoice() {
+            if (!currentRoundQuestions || !currentRoundQuestions[currentIndex]) return;
+            const item = currentRoundQuestions[currentIndex];
+            const speechPhrase = `นี่คือ ${item.title} จ้า เป็นเทคโนโลยีทั่วไป หรือ AI เอ่ย?`;
+            document.getElementById('aiSpeechText').innerText = `"${item.title} เป็น AI หรือเทคโนโลยีทั่วไปคะ?"`;
+            speakAI(speechPhrase);
+        }
+
+        /* ========================================================
+           3. FLOATING STAR PARTICLES
+           ======================================================== */
+        const canvas = document.getElementById('starCanvas');
+        const ctx = canvas.getContext('2d');
+        let starList = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class CuteStar {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2.5 + 1;
+                this.alpha = Math.random() * 0.6 + 0.2;
+                this.speed = Math.random() * 0.25 + 0.1;
+                this.color = ['#f472b6', '#38bdf8', '#facc15', '#c084fc'][Math.floor(Math.random() * 4)];
+            }
+            update() {
+                this.y -= this.speed;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        for (let i = 0; i < 40; i++) starList.push(new CuteStar());
+
+        function animateStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            starList.forEach(s => { s.update(); s.draw(); });
+            requestAnimationFrame(animateStars);
+        }
+        animateStars();
+
+        /* ========================================================
+           4. COLORFUL KIDS VECTOR SVGS (NO OVERFLOW)
+           ======================================================== */
+        const CUTE_SVGS = {
+            carAI: `<svg viewBox="0 0 160 160" class="w-full h-full" preserveAspectRatio="xMidYMid meet"><circle cx="80" cy="80" r="70" fill="#38bdf8" opacity="0.15"/><circle cx="80" cy="55" r="22" stroke="#38bdf8" stroke-width="3" stroke-dasharray="5 5" fill="none"/><path d="M35 105 L45 75 L115 75 L125 105 Z" fill="#ec4899"/><path d="M50 75 L62 50 L98 50 L110 75 Z" fill="#bae6fd"/><rect x="25" y="100" width="110" height="24" rx="10" fill="#db2777"/><circle cx="50" cy="124" r="14" fill="#1e293b"/><circle cx="50" cy="124" r="6" fill="#94a3b8"/><circle cx="110" cy="124" r="14" fill="#1e293b"/><circle cx="110" cy="124" r="6" fill="#94a3b8"/><rect x="74" y="40" width="12" height="10" rx="3" fill="#facc15"/></svg>`,
+            calcTech: `<svg viewBox="0 0 160 160" class="w-full h-full" preserveAspectRatio="xMidYMid meet"><circle cx="80" cy="80" r="70" fill="#0284c7" opacity="0.15"/><rect x="42" y="24" width="76" height="112" rx="16" fill="#0284c7" stroke="#38bdf8" stroke-width="4"/><rect x="54" y="38" width="52" height="24" rx="6" fill="#fef08a"/><text x="100" y="55" font-family="'Orbitron', sans-serif" font-size="14" font-weight="900" fill="#1e1b4b" text-anchor="end">123+45</text><circle cx="60" cy="78" r="7" fill="#e0f2fe"/><circle cx="80" cy="78" r="7" fill="#e0f2fe"/><circle cx="100" cy="78" r="7" fill="#f59e0b"/><circle cx="60" cy="98" r="7" fill="#e0f2fe"/><circle cx="80" cy="98" r="7" fill="#e0f2fe"/><circle cx="100" cy="98" r="7" fill="#f59e0b"/><circle cx="60" cy="118" r="7" fill="#e0f2fe"/><circle cx="80" cy="118" r="7" fill="#10b981"/><circle cx="100" cy="118" r="7" fill="#f43f5e"/></svg>`,
+            chatgptAI: `<svg viewBox="0 0 160 160" class="w-full h-full" preserveAspectRatio="xMidYMid meet"><circle cx="80" cy="80" r="70" fill="#10b981" opacity="0.15"/><rect x="35" y="44" width="90" height="74" rx="22" fill="#10b981" stroke="#a7f3d0" stroke-width="4"/><ellipse cx="62" cy="76" rx="9" ry="13" fill="#064e3b"/><ellipse cx="98" cy="76" rx="9" ry="13" fill="#064e3b"/><circle cx="65" cy="72" r="4" fill="#ffffff"/><circle cx="101" cy="72" r="4" fill="#ffffff"/><path d="M 72 95 Q 80 103 88 95" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round"/><line x1="80" y1="44" x2="80" y2="28" stroke="#facc15" stroke-width="4"/><circle cx="80" cy="24" r="5" fill="#facc15"/></svg>`,
+            doorTech: `<svg viewBox="0 0 160 160" class="w-full h-full" preserveAspectRatio="xMidYMid meet"><circle cx="80" cy="80" r="70" fill="#64748b" opacity="0.15"/><rect x="36" y="28" width="88" height="108" rx="6" fill="#334155" stroke="#94a3b8" stroke-width="3"/><rect x="44" y="36" width="34" height="100" fill="#38bdf8" opacity="0.85"/><rect x="82" y="36" width="34" height="100" fill="#38bdf8" opacity="0.85"/><rect x="70" y="18" width="20" height="10" rx="3" fill="#ef4444"/><polygon points="68,28 92,28 112,85 48,85" fill="#ef4444" opacity="0.2"/></svg>`,
+            faceAI: `<svg viewBox="0 0 160 160" class="w-full h-full" preserveAspectRatio="xMidYMid meet"><circle cx="80" cy="80" r="70" fill="#a855f7" opacity="0.15"/><path d="M 32 48 L 32 32 L 48 32 M 128 48 L 128 32 L 112 32 M 32 112 L 32 128 L 48 128 M 128 112 L 128 128 L 112 128" stroke="#06b6d4" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="80" cy="80" r="34" fill="#fed7aa"/><circle cx="68" cy="76" r="4" fill="#431407"/><circle cx="92" cy="76" r="4" fill="#431407"/><path d="M 72 92 Q 80 100 88 92" stroke="#431407" stroke-width="3" fill="none" stroke-linecap="round"/><line x1="36" y1="80" x2="124" y2="80" stroke="#10b981" stroke-width="2.5" stroke-dasharray="3 3"/></svg>`,
+            microwaveTech: `<svg viewBox="0 0 160 160" class="w-full h-full" preserveAspectRatio="xMidYMid meet"><circle cx="80" cy="80" r="70" fill="#f59e0b" opacity="0.15"/><rect x="30" y="44" width="100" height="72" rx="10" fill="#475569" stroke="#cbd5e1" stroke-width="4"/><rect x="40" y="56" width="58" height="48" rx="6" fill="#1e293b"/><path d="M 58 80 Q 69 72 80 80" stroke="#f59e0b" stroke-width="3" fill="none"/><rect x="106" y="56" width="16" height="10" rx="2" fill="#fde047"/><circle cx="114" cy="80" r="6" fill="#94a3b8"/><circle cx="114" cy="96" r="6" fill="#94a3b8"/></svg>`,
+            vacuumAI: `<svg viewBox="0 0 160 160" class="w-full h-full" preserveAspectRatio="xMidYMid meet"><circle cx="80" cy="80" r="70" fill="#a855f7" opacity="0.15"/><circle cx="80" cy="80" r="52" fill="#f8fafc" stroke="#c084fc" stroke-width="5"/><circle cx="80" cy="80" r="24" fill="#9333ea"/><circle cx="80" cy="80" r="11" fill="#38bdf8"/><circle cx="60" cy="68" r="3.5" fill="#475569"/><circle cx="100" cy="68" r="3.5" fill="#475569"/><line x1="80" y1="56" x2="80" y2="28" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/><line x1="96" y1="60" x2="116" y2="36" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/></svg>`,
+            fanTech: `<svg viewBox="0 0 160 160" class="w-full h-full" preserveAspectRatio="xMidYMid meet"><circle cx="80" cy="80" r="70" fill="#06b6d4" opacity="0.15"/><circle cx="80" cy="64" r="36" fill="none" stroke="#38bdf8" stroke-width="4"/><circle cx="80" cy="64" r="11" fill="#0284c7"/><ellipse cx="80" cy="44" rx="6" ry="14" fill="#7dd3fc"/><ellipse cx="80" cy="84" rx="6" ry="14" fill="#7dd3fc"/><ellipse cx="60" cy="64" rx="14" ry="6" fill="#7dd3fc"/><ellipse cx="100" cy="64" rx="14" ry="6" fill="#7dd3fc"/><rect x="76" y="100" width="8" height="28" fill="#64748b"/><rect x="56" y="128" width="48" height="11" rx="5" fill="#334155"/></svg>`,
+            ytAI: `<svg viewBox="0 0 160 160" class="w-full h-full" preserveAspectRatio="xMidYMid meet"><circle cx="80" cy="80" r="70" fill="#f43f5e" opacity="0.15"/><rect x="32" y="44" width="96" height="72" rx="20" fill="#ef4444"/><polygon points="72,64 100,80 72,96" fill="#ffffff"/><polygon points="120,32 124,40 132,44 124,48 120,56 116,48 108,44 116,40" fill="#facc15"/></svg>`,
+            trafficTech: `<svg viewBox="0 0 160 160" class="w-full h-full" preserveAspectRatio="xMidYMid meet"><circle cx="80" cy="80" r="70" fill="#475569" opacity="0.15"/><rect x="60" y="24" width="40" height="96" rx="12" fill="#1e293b" stroke="#cbd5e1" stroke-width="3"/><circle cx="80" cy="44" r="10" fill="#ef4444"/><circle cx="80" cy="72" r="10" fill="#facc15"/><circle cx="80" cy="100" r="10" fill="#10b981"/><rect x="75" y="120" width="10" height="28" fill="#64748b"/></svg>`,
+            genericTech: `<svg viewBox="0 0 160 160" class="w-full h-full" preserveAspectRatio="xMidYMid meet"><circle cx="80" cy="80" r="70" fill="#0284c7" opacity="0.15"/><circle cx="80" cy="80" r="32" fill="#0284c7" stroke="#38bdf8" stroke-width="5"/><circle cx="80" cy="80" r="12" fill="#0f172a"/><rect x="74" y="24" width="12" height="16" rx="3" fill="#38bdf8"/><rect x="74" y="120" width="12" height="16" rx="3" fill="#38bdf8"/><rect x="24" y="74" width="16" height="12" rx="3" fill="#38bdf8"/><rect x="120" y="74" width="16" height="12" rx="3" fill="#38bdf8"/></svg>`,
+            genericAI: `<svg viewBox="0 0 160 160" class="w-full h-full" preserveAspectRatio="xMidYMid meet"><circle cx="80" cy="80" r="70" fill="#a855f7" opacity="0.15"/><path d="M 80 32 C 55 32 40 50 40 76 C 40 98 56 114 74 120 L 74 128 L 86 128 L 86 120 C 104 114 120 98 120 76 C 120 50 105 32 80 32 Z" fill="#9333ea" stroke="#d8b4fe" stroke-width="4"/><circle cx="64" cy="65" r="6" fill="#38bdf8"/><circle cx="96" cy="65" r="6" fill="#38bdf8"/><circle cx="80" cy="90" r="7" fill="#f43f5e"/><line x1="64" y1="65" x2="80" y2="90" stroke="#fbcfe8" stroke-width="3"/><line x1="96" y1="65" x2="80" y2="90" stroke="#fbcfe8" stroke-width="3"/></svg>`
+        };
+
+        /* ========================================================
+           5. 55+ EXTENSIVE QUESTIONS (DIVIDED INTO 5 ROUNDS)
+           ======================================================== */
+        const QUESTION_DATABASE = {
+            // ROUND 1: VERY EASY (รอบตัว เห็นบ่อย ชัดเจนมาก)
+            1: [
+                { id: 'R1-1', title: 'รถยนต์ขับเคลื่อนเอง (Tesla)', category: 'ยานพาหนะอัจฉริยะ', svgKey: 'carAI', desc: 'มีกล้องมองถนนและตัดสินใจเลี้ยว หลบสิ่งกีดขวาง และเบรกเองได้อย่างปลอดภัย', correctType: 'ai', reason: 'ใช้ AI ตัดสินใจควบคุมการขับขี่แบบสดๆ บนท้องถนน' },
+                { id: 'R1-2', title: 'เครื่องคิดเลขพกพา', category: 'อุปกรณ์คำนวณ', svgKey: 'calcTech', desc: 'กดปุ่มบวกลบคูณหาร แล้วแสดงผลลัพธ์ตามสูตรคณิตศาสตร์ที่โปรแกรมไว้ตายตัว', correctType: 'tech', reason: 'ทำตามคำสั่งโปรแกรมเดิม ไม่สามารถเรียนรู้วิธีคิดใหม่ได้' },
+                { id: 'R1-3', title: 'แชตบอต ChatGPT', category: 'ระบบประมวลผลภาษา', svgKey: 'chatgptAI', desc: 'สามารถพิมพ์คุย ตอบคำถาม แต่งนิทาน และคิดคำตอบใหม่ๆ ได้คล้ายมนุษย์', correctType: 'ai', reason: 'ใช้โมเดลภาษาขนาดใหญ่คิดและสร้างสรรค์คำตอบขึ้นใหม่' },
+                { id: 'R1-4', title: 'ประตูเลื่อนเซนเซอร์ร้านสะดวกซื้อ', category: 'ระบบเปิด-ปิด', svgKey: 'doorTech', desc: 'ประตูจะเลื่อนเปิดทันทีที่มีคนเดินตัดผ่านลำแสงเซนเซอร์ด้านบน', correctType: 'tech', reason: 'ทำงานตามสวิตช์แสงอินฟราเรด ไม่ได้คิดหรือจดจำผู้คน' },
+                { id: 'R1-5', title: 'สแกนใบหน้าปลดล็อก (Face ID)', category: 'ความปลอดภัย', svgKey: 'faceAI', desc: 'จำใบหน้าของเจ้าของเครื่องได้ แม้จะใส่แว่นตา หรือตัดผมทรงใหม่', correctType: 'ai', reason: 'มี AI คอยเรียนรู้และปรับการจดจำโครงหน้าของเจ้าของเครื่อง' },
+                { id: 'R1-6', title: 'เตาอบไมโครเวฟ', category: 'เครื่องใช้ไฟฟ้า', svgKey: 'microwaveTech', desc: 'หมุนตั้งเวลา 1 นาที แล้วปล่อยคลื่นความร้อนตามเวลาที่กำหนดเป๊ะๆ', correctType: 'tech', reason: 'นับเวลาตามตัวจับเวลาธรรมดา ไม่รู้ว่าอาหารสุกหรือยัง' },
+                { id: 'R1-7', title: 'หุ่นยนต์ดูดฝุ่นเดินหลบของเล่น', category: 'หุ่นยนต์ทำความสะอาด', svgKey: 'vacuumAI', desc: 'ยิงเลเซอร์วัดระยะทางและจำแนกสิ่งกีดขวางบนพื้นเพื่อเลี้ยวหลบเอง', correctType: 'ai', reason: 'ใช้ AI วิเคราะห์ภาพสิ่งกีดขวางและคำนวณเส้นทางใหม่ตลอดเวลา' },
+                { id: 'R1-8', title: 'พัดลมตั้งโต๊ะ', category: 'เครื่องใช้ไฟฟ้า', svgKey: 'fanTech', desc: 'กดปุ่มเบอร์ 1 ลมเบา กดเบอร์ 3 ลมแรง หมุนส่ายไปมาตามสวิตช์', correctType: 'tech', reason: 'ทำงานรับคำสั่งตรงไปตรงมาตามสวิตช์ไฟฟ้า ไม่คิดเอง' },
+                { id: 'R1-9', title: 'ระบบแนะนำคลิปการ์ตูน YouTube', category: 'ระบบแนะนำคอนเทนต์', svgKey: 'ytAI', desc: 'รู้ว่าเราชอบดูการ์ตูนเรื่องไหน แล้วคัดเลือกคลิปใหม่ๆ ที่เราน่าจะชอบขึ้นมาให้ดู', correctType: 'ai', reason: 'ใช้อัลกอริทึม AI เรียนรู้ความชอบของผู้ใช้งานแต่ละคน' },
+                { id: 'R1-10', title: 'ไฟสัญญาณจราจรสี่แยก', category: 'สัญญาณไฟ', svgKey: 'trafficTech', desc: 'นับเวลาถอยหลังสลับ สีแดง สีเขียว สีเหลือง ตามเวลาที่ตั้งไว้ในตู้ไฟ', correctType: 'tech', reason: 'นับเวลาตามวงจรเวลาคงที่ ไม่ได้ดูปริมาณรถจริง' },
+                { id: 'R1-11', title: 'นาฬิกาปลุกดิจิทัล', category: 'อุปกรณ์จับเวลา', svgKey: 'calcTech', desc: 'ส่งเสียงร้องเตือนเมื่อตัวเลขเวลาเดินมาถึงชั่วโมงและนาทีที่ตั้งไว้', correctType: 'tech', reason: 'ทำงานตามวงจรเวลาควอตซ์ ไม่มีความฉลาดหรือการเรียนรู้' }
+            ],
+
+            // ROUND 2: EASY (เครื่องใช้ในบ้านและโรงเรียน)
+            2: [
+                { id: 'R2-1', title: 'แอปแปลเสียงพูดสดภาษาต่างประเทศ', category: 'การสื่อสาร', svgKey: 'genericAI', desc: 'เราพูดภาษาไทยใส่เครื่อง แล้วแปลเป็นเสียงภาษาอังกฤษออกมาให้ทันที', correctType: 'ai', reason: 'ใช้ AI แปลงคลื่นเสียงและแปลความหมายตามบริบทประโยค' },
+                { id: 'R2-2', title: 'กาต้มน้ำไฟฟ้าตัดไฟเอง', category: 'เครื่องใช้ในครัว', svgKey: 'genericTech', desc: 'ต้มน้ำจนเดือดกลายเป็นไอน้ำไปดันแผ่นโลหะให้ดีดตัดกระแสไฟ', correctType: 'tech', reason: 'เป็นกลไกการขยายตัวของโลหะตามความร้อนธรรมดา' },
+                { id: 'R2-3', title: 'ฟิลเตอร์ติดหูแมวบน TikTok', category: 'กล้องเอฟเฟกต์', svgKey: 'genericAI', desc: 'หูแมวและจมูกแมวจะเกาะติดบนหน้าเราพอดี แม้เราจะขยับหัวไปมา', correctType: 'ai', reason: 'ใช้ Computer Vision ตรวจจับพิกัดใบหน้าแบบ Real-time' },
+                { id: 'R2-4', title: 'ตู้เย็นรักษาความเย็น', category: 'เครื่องใช้ไฟฟ้า', svgKey: 'genericTech', desc: 'เปิดคอมเพรสเซอร์ทำความเย็นเมื่ออุณหภูมิในตู้สูงเกินค่าที่หมุนตั้งไว้', correctType: 'tech', reason: 'ทำงานตามเทอร์โมสตัทวัดอุณหภูมิทางกลศาสตร์' },
+                { id: 'R2-5', title: 'AI ผู้ช่วยเสียงอัจฉริยะ (Siri / Google)', category: 'ผู้ช่วยเสียง', svgKey: 'genericAI', desc: 'ฟังคำสั่งเสียงของเราแล้วช่วยค้นหาข้อมูลหรือเปิดเพลงที่ขอได้ถูกต้อง', correctType: 'ai', reason: 'ใช้ระบบสั่งการด้วยเสียง AI ทำความเข้าใจเจตนาของผู้พูด' },
+                { id: 'R2-6', title: 'เครื่องซักผ้าฝาหน้าโหมดมาตรฐาน', category: 'เครื่องใช้ในบ้าน', svgKey: 'genericTech', desc: 'หมุนถังซักและปล่อยน้ำตามลำดับขั้นตอนเวลาที่ตั้งโปรแกรมไว้', correctType: 'tech', reason: 'หมุนตามโปรแกรมคำสั่งเดิมที่โรงงานตั้งไว้' },
+                { id: 'R2-7', title: 'ระบบนำทาง Google Maps เลี่ยงรถติด', category: 'แผนที่การเดินทาง', svgKey: 'carAI', desc: 'คำนวณและเปลี่ยนเส้นทางให้ทันทีเมื่อพบว่าถนนข้างหน้าเริ่มมีรถติด', correctType: 'ai', reason: 'ใช้ AI วิเคราะห์ข้อมูลการจราจรหนาแน่นเพื่อเลือกเส้นทางที่ดีที่สุด' },
+                { id: 'R2-8', title: 'ไดร์เป่าผมปรับความร้อน 3 ระดับ', category: 'เครื่องใช้ไฟฟ้า', svgKey: 'genericTech', desc: 'เป่าลมร้อนออกมาตามสวิตช์ เบอร์ 1, 2 หรือ 3 ที่มือเรากดเลื่อน', correctType: 'tech', reason: 'ทำงานตามกระแสไฟไหลผ่านขดลวดความร้อนตรงๆ' },
+                { id: 'R2-9', title: 'โปรแกรมแปลงลายมือเขียนเป็นตัวพิมพ์', category: 'การศึกษา', svgKey: 'genericAI', desc: 'อ่านลายมือหวัดๆ ของเด็กๆ บนแท็บเล็ตแล้วแปลงเป็นตัวหนังสือพิมพ์ได้แม่นยำ', correctType: 'ai', reason: 'ใช้ AI OCR เรียนรู้ลายเส้นตัวอักษรหลากหลายรูปแบบ' },
+                { id: 'R2-10', title: 'รีโมตคอนโทรลทีวี', category: 'อุปกรณ์สั่งการ', svgKey: 'genericTech', desc: 'ยิงสัญญาณแสงอินฟราเรดเปลี่ยนช่องทีวีตามปุ่มตัวเลขที่เรากด', correctType: 'tech', reason: 'ส่งรหัสสัญญาณแสงแบบคงที่ตามปุ่มที่กด' },
+                { id: 'R2-11', title: 'เตารีดไอน้ำตั้งโต๊ะ', category: 'เครื่องใช้ในบ้าน', svgKey: 'genericTech', desc: 'ปล่อยความร้อนตามที่เราหมุนปรับระดับความร้อนของผ้า', correctType: 'tech', reason: 'ทำงานตามขดลวดความร้อน ไม่สามารถวิเคราะห์ชนิดผ้าเองได้' }
+            ],
+
+            // ROUND 3: MEDIUM (แอปพลิเคชัน & กิจกรรมดิจิทัล)
+            3: [
+                { id: 'R3-1', title: 'โปรแกรมตารางคำนวณ Excel', category: 'ซอฟต์แวร์สำนักงาน', svgKey: 'calcTech', desc: 'คำนวณหาผลรวม =SUM(A1:A10) ออกมาอย่างถูกต้องตามสูตร', correctType: 'tech', reason: 'คำนวณตามสูตรคณิตศาสตร์ตายตัว ไม่มีการเรียนรู้เพิ่มเติม' },
+                { id: 'R3-2', title: 'ระบบแนะนำเพลงบน Spotify', category: 'สตรีมมิงเพลง', svgKey: 'ytAI', desc: 'เลือกเพลงใหม่ๆ ที่มีจังหวะและแนวเพลงคล้ายกับเพลงที่เราฟังบ่อยๆ มาให้', correctType: 'ai', reason: 'ใช้ Machine Learning วิเคราะห์แนวเพลงและพฤติกรรมการฟัง' },
+                { id: 'R3-3', title: 'เครื่องอ่านแถบรหัสบาร์โค้ด', category: 'เครื่องคิดเงิน', svgKey: 'genericTech', desc: 'ยิงแสงเลเซอร์สีแดงอ่านแถบดำขาวแล้วส่งตัวเลขรหัสสินค้าเข้าคอม', correctType: 'tech', reason: 'แปลงความกว้างของแถบดำขาวเป็นตัวเลขตามตารางรหัสคงที่' },
+                { id: 'R3-4', title: 'แอปถ่ายรูปบอกสายพันธุ์สุนัข', category: 'แอปมือถือ', svgKey: 'genericAI', desc: 'เอากล้องส่องน้องหมา แล้วแอปบอกได้ทันทีว่าเป็นพันธุ์ชิบะหรือพุดเดิ้ล', correctType: 'ai', reason: 'ใช้ Deep Learning จดจำลักษณะรูปร่าง ขน และหน้าตาของสุนัข' },
+                { id: 'R3-5', title: 'เครื่องสแกนวัดอุณหภูมิหน้าผาก', category: 'สุขอนามัย', svgKey: 'genericTech', desc: 'ตรวจจับคลื่นความร้อนอินฟราเรดจากผิวหนังแล้วแปลงเป็นตัวเลของศา', correctType: 'tech', reason: 'แปลงค่าแรงดันไฟฟ้าจากเซนเซอร์ความร้อนเป็นตัวเลขตรงๆ' },
+                { id: 'R3-6', title: 'แป้นพิมพ์มือถือเดาคำศัพท์ล่วงหน้า', category: 'แป้นพิมพ์สมาร์ตโฟน', svgKey: 'genericAI', desc: 'พิมพ์คำว่า "ไปโรง" แป้นพิมพ์จะเสนอคำว่า "เรียน" ขึ้นมาให้กดทันที', correctType: 'ai', reason: 'ใช้โมเดลภาษาคาดเดาคำศัพท์ถัดไปจากพฤติกรรมที่เราพิมพ์บ่อยๆ' },
+                { id: 'R3-7', title: 'ไฟฉาย LED ปรับซูมลำแสง', category: 'อุปกรณ์ส่องสว่าง', svgKey: 'genericTech', desc: 'เลื่อนหัวไฟฉายเข้าออกเพื่อให้ลำแสงบานกว้างหรือพุ่งเป็นจุดแคบ', correctType: 'tech', reason: 'เป็นเพียงการปรับระยะห่างของเลนส์กระจกธรรมดา' },
+                { id: 'R3-8', title: 'โปรแกรมตัดต่อภาพ ลบคนข้างหลังด้วย AI', category: 'ตกแต่งภาพ', svgKey: 'genericAI', desc: 'แตะที่คนที่ไม่ต้องการในรูป ระบบจะลบออกและเนรมิตฉากหลังกลืนเนียนกริบ', correctType: 'ai', reason: 'ใช้ Generative Fill เติมเต็มพื้นหลังที่ขาดหายไปอย่างชาญฉลาด' },
+                { id: 'R3-9', title: 'ก๊อกน้ำเปิด-ปิดด้วยมือบังเซนเซอร์', category: 'สุขภัณฑ์', svgKey: 'doorTech', desc: 'ยื่นมือไปข้างใต้วาล์วน้ำจะเปิด พอดึงมือออกน้ำจะหยุดไหลทันที', correctType: 'tech', reason: 'ทำงานตามสวิตช์ตรวจจับวัตถุสะท้อนแสงอินฟราเรด' },
+                { id: 'R3-10', title: 'AI ช่วยคัดกรองอีเมลสแปมหลอกลวง', category: 'ความปลอดภัยอีเมล', svgKey: 'chatgptAI', desc: 'ตรวจสอบข้อความและลิงก์อันตรายในอีเมล แล้วคัดแยกไปทิ้งถังขยะอัตโนมัติ', correctType: 'ai', reason: 'ใช้ Text Classification วิเคราะห์ลักษณะข้อความหลอกลวงที่เปลี่ยนรูปแบบเสมอ' },
+                { id: 'R3-11', title: 'หม้อหุงข้าวดิจิทัลโหมดข้าวต้ม', category: 'เครื่องครัว', svgKey: 'genericTech', desc: 'ปรับกำลังไฟตามเวลาที่โรงงานเขียนโปรแกรมไว้สำหรับทำข้าวต้ม', correctType: 'tech', reason: 'รันตามโปรแกรมขั้นตอนและเวลาคงที่ ไม่ได้ประเมินความนุ่มของข้าว' }
+            ],
+
+            // ROUND 4: CHALLENGING (เซนเซอร์ & เทคโนโลยีในเมือง)
+            4: [
+                { id: 'R4-1', title: 'โดรนบินติดตามถ่ายคนวิ่งออกกำลังกาย', category: 'อากาศยานไร้คนขับ', svgKey: 'genericAI', desc: 'บินลอยตัวและล็อกเป้าหมายถ่ายวิดีโอตามคนวิ่ง แม้คนวิ่งจะเลี้ยวหลบมุม', correctType: 'ai', reason: 'ใช้ Visual Tracking ติดตามวัตถุและควบคุมทิศทางการบินหลบกิ่งไม้เอง' },
+                { id: 'R4-2', title: 'ไม้กั้นลานจอดรถกดปุ่มเปิด', category: 'ระบบควบคุมทางเข้า', svgKey: 'doorTech', desc: 'รปภ. กดปุ่มเปิด มอเตอร์จะหมุนยกไม้กั้นขึ้นด้านบน', correctType: 'tech', reason: 'ทำงานตามวงจรสวิตช์มอเตอร์ไฟฟ้าธรรมดา' },
+                { id: 'R4-3', title: 'กล้องอ่านป้ายทะเบียนรถคิดเงินอัตโนมัติ', category: 'ระบบลานจอดรถ', svgKey: 'genericAI', desc: 'จับภาพหน้ารถ ถอดตัวอักษรป้ายทะเบียน และคำนวณค่าจอดรถได้อัตโนมัติ', correctType: 'ai', reason: 'ใช้ License Plate Recognition ด้วย AI สกัดตัวหนังสือจากมุมกล้องต่างๆ' },
+                { id: 'R4-4', title: 'เครื่องปั่นน้ำผลไม้กดปุ่ม Pulse', category: 'เครื่องครัว', svgKey: 'genericTech', desc: 'ใบมีดหมุนปั่นแรงสุดเฉพาะตอนที่เราใช้มือกดปุ่มค้างไว้', correctType: 'tech', reason: 'ส่งกระแสไฟเข้ามอเตอร์เมื่อกดสวิตช์เชื่อมวงจร' },
+                { id: 'R4-5', title: 'ระบบตรวจจับคนขับหลับใน', category: 'ความปลอดภัยรถยนต์', svgKey: 'genericAI', desc: 'กล้องในรถจับตาดูว่าคนขับกะพริบตาถี่ผิดปกติหรือสัปหงก แล้วส่งเสียงเตือน', correctType: 'ai', reason: 'ใช้ AI ตรวจจับท่าทางดวงตาและศีรษะเพื่อเตือนอันตราย' },
+                { id: 'R4-6', title: 'ป้ายไฟวิ่ง LED แสดงข้อความต้อนรับ', category: 'ป้ายแสดงผล', svgKey: 'genericTech', desc: 'หลอดไฟ LED กะพริบเลื่อนตัวอักษรจากขวาไปซ้ายตามที่พิมพ์บันทึกไว้ในชิป', correctType: 'tech', reason: 'แสดงผลตามหน่วยความจำคงที่ ไม่มีการประมวลผลข้อความใหม่' },
+                { id: 'R4-7', title: 'AI ช่วยแพทย์ตรวจรอยโรคในปอดจากฟิล์มเอกซเรย์', category: 'การแพทย์', svgKey: 'genericAI', desc: 'ช่วยคุณหมอไฮไลต์จุดผิดปกติหรือก้อนเนื้อเล็กๆ ในภาพเอกซเรย์ปอด', correctType: 'ai', reason: 'ใช้โมเดลวิเคราะห์ภาพทางการแพทย์ที่ผ่านการเทรนจากฟิล์มนับแสนภาพ' },
+                { id: 'R4-8', title: 'ลิฟต์โดยสารขึ้นลงตามชั้นที่กด', category: 'ระบบอาคาร', svgKey: 'genericTech', desc: 'กดชั้น 5 รอกดึงลิฟต์จะพาขึ้นไปจอดที่ชั้น 5 ตามคำสั่ง', correctType: 'tech', reason: 'ทำงานตามอัลกอริทึมจัดคิวปุ่มกดสวิตช์ ไม่ได้คิดเอง' },
+                { id: 'R4-9', title: 'ระบบจำลองเสียงคนพูด (AI Voice Clone)', category: 'เสียงสังเคราะห์', svgKey: 'genericAI', desc: 'ฟังเสียงตัวอย่างแค่ 10 วินาที ก็สามารถพูดข้อความใหม่ด้วยน้ำเสียงคนนั้นได้เป๊ะ', correctType: 'ai', reason: 'ใช้ Generative Voice Model เลียนแบบโทนเสียงและลักษณะการพูด' },
+                { id: 'R4-10', title: 'โคมไฟโซลาร์เซลล์สว่างเองตอนฟ้ามืด', category: 'พลังงานแสงอาทิตย์', svgKey: 'genericTech', desc: 'เมื่อแผงโซลาร์เซลล์ไม่ได้รับแสงแดด วงจรจะสลับให้แบตเตอรี่จ่ายไฟเข้าหลอดไฟ', correctType: 'tech', reason: 'ทำงานตามระดับแรงดันไฟฟ้าของแผงโซลาร์เซลล์' },
+                { id: 'R4-11', title: 'เครื่องพ่นแอลกอฮอล์อัตโนมัติ', category: 'สุขอนามัย', svgKey: 'doorTech', desc: 'ยื่นมือเข้าไปแล้วปั๊มจะพ่นน้ำยาออกมา 1 วินาที', correctType: 'tech', reason: 'ทำงานตามเซนเซอร์จับวัตถุ ไม่มีการเรียนรู้ใดๆ' }
+            ],
+
+            // ROUND 5: EXPERT (ระดับเซียน - ตัดสินใจซับซ้อน & ลึกซึ้ง)
+            5: [
+                { id: 'R5-1', title: 'AI แข่งขันเล่นหมากรุก (AlphaZero)', category: 'เกมกระดานเชิงกลยุทธ์', svgKey: 'genericAI', desc: 'เรียนรู้วิธีเดินหมากจากการเล่นกับตัวเองหลายล้านกระดานจนชนะแชมป์โลก', correctType: 'ai', reason: 'ใช้การเรียนรู้แบบ Reinforcement Learning วางแผนกลยุทธ์ขั้นสูง' },
+                { id: 'R5-2', title: 'แขนกลโรงงานพ่นสีรถยนต์ตามพิกัด', category: 'หุ่นยนต์อุตสาหกรรม', svgKey: 'genericTech', desc: 'ขยับแขนกลพ่นสีซ้ำๆ ในมุมองศาเดิมตามที่วิศวกรบันทึกพิกัดไว้', correctType: 'tech', reason: 'ทำซ้ำตามพิกัดโปรแกรมตายตัว หากรถเบี้ยวจะไม่สามารถปรับมุมเองได้' },
+                { id: 'R5-3', title: 'ระบบพยากรณ์อากาศด้วยโมเดล AI ล้ำสมัย', category: 'อุตุนิยมวิทยา', svgKey: 'genericAI', desc: 'คำนวณทิศทางพายุฝนล่วงหน้า 7 วัน จากข้อมูลดาวเทียมและลมทั่วโลก', correctType: 'ai', reason: 'ใช้ Deep Learning วิเคราะห์แบบจำลองสภาพอากาศที่ซับซ้อนมหาศาล' },
+                { id: 'R5-4', title: 'ตู้กดน้ำดื่มหยอดเหรียญ', category: 'ตู้อัตโนมัติ', svgKey: 'genericTech', desc: 'ตรวจสอบขนาดและความหนาของเหรียญ ถ้าถูกต้องจะปล่อยน้ำตามปริมาณ', correctType: 'tech', reason: 'ตรวจสอบเหรียญด้วยเซนเซอร์แม่เหล็กและขนาดทางกายภาพ' },
+                { id: 'R5-5', title: 'แว่นตาอัจฉริยะบอกสิ่งกีดขวางให้คนตาบอด', category: 'เทคโนโลยีช่วยเหลือ', svgKey: 'faceAI', desc: 'กล้องที่แว่นตามองเห็นเก้าอี้ข้างหน้า แล้วกระซิบเสียงบอกผู้ใช้ว่า "มีเก้าอี้อยู่ข้างหน้า"', correctType: 'ai', reason: 'ใช้ Object Detection และ AI สังเคราะห์คำอธิบายภาพเป็นเสียงแบบ Real-time' },
+                { id: 'R5-6', title: 'มิเตอร์วัดค่าไฟฟ้าดิจิทัล', category: 'เครื่องมือวัด', svgKey: 'calcTech', desc: 'คำนวณและแสดงผลหน่วยไฟที่บ้านใช้ไปเป็นกิโลวัตต์-ชั่วโมง', correctType: 'tech', reason: 'วัดปริมาณกระแสไฟฟ้าและแรงดันตามสูตรไฟฟ้าคงที่' },
+                { id: 'R5-7', title: 'ระบบตรวจจับพฤติกรรมแปลกปลอมในบัญชีธนาคาร', category: 'การเงินและความปลอดภัย', svgKey: 'genericAI', desc: 'แจ้งเตือนและระงับการโอนเงินทันที เมื่อพบการโอนเงินผิดปกติจากประเทศอื่น', correctType: 'ai', reason: 'ใช้ Anomaly Detection ของ AI วิเคราะห์รูปแบบพฤติกรรมบัญชีที่ผิดปกติ' },
+                { id: 'R5-8', title: 'รถไฟความเร็วสูงชินคันเซ็น', category: 'ระบบราง', svgKey: 'trafficTech', desc: 'วิ่งบนรางและควบคุมความเร็วตามระบบสัญญาณอาณัติสัญญาณบนรางรถไฟ', correctType: 'tech', reason: 'ควบคุมด้วยระบบความปลอดภัยและวงจรสัญญาณไฟฟ้าที่กำหนดไว้' },
+                { id: 'R5-9', title: 'ระบบค้นหาภาพจากความหมาย (AI Semantic Search)', category: 'ระบบค้นหา', svgKey: 'chatgptAI', desc: 'เราพิมพ์ค้นหาว่า "ความสุขในวันฝนตก" ระบบสามารถค้นหารูปภาพที่สื่ออารมณ์นั้นมาได้', correctType: 'ai', reason: 'ใช้ Multimodal AI เชื่อมโยงความหมายของตัวหนังสือเข้ากับอารมณ์ของรูปภาพ' },
+                { id: 'R5-10', title: 'เครื่องตัดหญ้าอัตโนมัติตามสายไฟฝังใต้ดิน', category: 'สวนและบ้าน', svgKey: 'genericTech', desc: 'วิ่งตัดหญ้าและเลี้ยวกลับเมื่อหัวเซนเซอร์สัมผัสคลื่นแม่เหล็กจากสายไฟที่ฝังไว้', correctType: 'tech', reason: 'วิ่งตามแนวสายไฟเหนี่ยวนำ ไม่ได้มองเห็นหรือคิดเส้นทางเอง' },
+                { id: 'R5-11', title: 'กังหันลมผลิตไฟฟ้า', category: 'พลังงานทดแทน', svgKey: 'fanTech', desc: 'ลมพัดใบพัดให้หมุนเพื่อขับเคลื่อนไดนาโมปั่นกระแสไฟฟ้า', correctType: 'tech', reason: 'เป็นเครื่องจักรกลทางกายภาพแปลงพลังงานลมเป็นไฟฟ้า' }
+            ]
+        };
+
+        /* ========================================================
+           6. PROGRESSIVE 5-ROUND CONTROLLER
+           ======================================================== */
+        let currentRound = 1; // 1 to 5
+        let currentRoundQuestions = [];
+        let currentIndex = 0; // 0 to 9 in current round
+        let roundCorrectCount = 0;
+        let totalCorrectCount = 0;
+        let combo = 0;
+        let isAnswering = false;
+
+        function getActiveUserScore() {
+            return parseInt(localStorage.getItem('cyber_cute_score_v2') || '0', 10);
+        }
+        function saveActiveUserScore(val) {
+            localStorage.setItem('cyber_cute_score_v2', val.toString());
+        }
+        function getActiveUserName() {
+            return localStorage.getItem('cyber_cute_player_v2') || 'น้องนักคิด';
+        }
+
+        function editPlayerName() {
+            AudioFX.playPop();
+            const cur = getActiveUserName();
+            const n = prompt('พิมพ์ชื่อเท่ๆ ของหนูเลยจ้า:', cur);
+            if (n && n.trim() !== '') {
+                localStorage.setItem('cyber_cute_player_v2', n.trim().substring(0, 15));
+                updatePlayerHUD();
+            }
+        }
+
+        function updatePlayerHUD() {
+            document.getElementById('playerNameText').innerText = getActiveUserName();
+            document.getElementById('playerScoreDisplay').innerText = getActiveUserScore();
+        }
+
+        function shuffle(arr) {
+            let res = [...arr];
+            for (let i = res.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [res[i], res[j]] = [res[j], res[i]];
+            }
+            return res;
+        }
+
+        const ROUND_DIFFICULTY_INFO = {
+            1: { name: 'รอบที่ 1/5 : ง่ายมาก', bg: 'from-emerald-500 to-teal-600' },
+            2: { name: 'รอบที่ 2/5 : ระดับง่าย', bg: 'from-cyan-500 to-blue-600' },
+            3: { name: 'รอบที่ 3/5 : ปานกลาง', bg: 'from-indigo-500 to-purple-600' },
+            4: { name: 'รอบที่ 4/5 : ท้าทาย', bg: 'from-purple-500 to-pink-600' },
+            5: { name: 'รอบที่ 5/5 : ระดับเซียน', bg: 'from-rose-500 to-amber-600' }
+        };
+
+        function startFullGameFromRound1() {
+            currentRound = 1;
+            totalCorrectCount = 0;
+            document.getElementById('gameOverModal').classList.add('hidden');
+            startRound(currentRound);
+        }
+
+        function startNewSessionConfirm() {
+            AudioFX.playPop();
+            if (confirm("ต้องการเริ่มเล่นใหม่ตั้งแต่รอบที่ 1 หรือไม่?")) {
+                startFullGameFromRound1();
+            }
+        }
+
+        function startRound(roundNum) {
+            currentRound = roundNum;
+            const pool = QUESTION_DATABASE[currentRound] || QUESTION_DATABASE[1];
+            currentRoundQuestions = shuffle(pool).slice(0, 10); // Exactly 10 questions per round
+            currentIndex = 0;
+            roundCorrectCount = 0;
+            combo = 0;
+            isAnswering = false;
+
+            // Update Round Badge
+            const info = ROUND_DIFFICULTY_INFO[currentRound];
+            const badge = document.getElementById('roundDifficultyBadge');
+            badge.innerText = info.name;
+            badge.className = `px-2.5 py-0.5 rounded-full bg-gradient-to-r ${info.bg} text-white font-black text-[11px] sm:text-xs shadow`;
+
+            document.getElementById('roundCompleteModal').classList.add('hidden');
+            document.getElementById('feedbackModal').classList.add('hidden');
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            isAnswering = false;
+            const item = currentRoundQuestions[currentIndex];
+
+            // Progress Bar & Counter
+            document.getElementById('progressText').innerText = `${currentIndex + 1}/10`;
+            document.getElementById('progressBar').style.width = `${((currentIndex + 1) / 10) * 100}%`;
+
+            // SVG Artwork Container
+            const svgContent = CUTE_SVGS[item.svgKey] || CUTE_SVGS.genericTech;
+            document.getElementById('itemSvgContainer').innerHTML = svgContent;
+
+            // Text info
+            document.getElementById('itemCategoryBadge').innerText = item.category;
+            document.getElementById('itemTitleText').innerText = item.title;
+            document.getElementById('itemDescText').innerText = item.desc;
+
+            // Combo Banner
+            const banner = document.getElementById('comboBanner');
+            if (combo >= 2) {
+                document.getElementById('comboCountText').innerText = `COMBO x${combo}! เก่งมาก!`;
+                banner.classList.remove('hidden');
+                banner.classList.add('flex');
+            } else {
+                banner.classList.add('hidden');
+                banner.classList.remove('flex');
+            }
+
+            updatePlayerHUD();
+
+            // Slower AI Voice
+            const speechPhrase = `นี่คือ ${item.title} จ้า เป็นเทคโนโลยีทั่วไป หรือ AI เอ่ย?`;
+            document.getElementById('aiSpeechText').innerText = `"${item.title} เป็น AI หรือเทคโนโลยีทั่วไปคะ?"`;
+            speakAI(speechPhrase);
+        }
+
+        /* --- SUBMIT ANSWER & FEEDBACK --- */
+        function submitAnswer(choice) {
+            if (isAnswering) return;
+            isAnswering = true;
+
+            const item = currentRoundQuestions[currentIndex];
+            const isCorrect = (choice === item.correctType);
+
+            const modal = document.getElementById('feedbackModal');
+            const headerIcon = document.getElementById('feedbackHeaderIcon');
+            const title = document.getElementById('feedbackTitle');
+            const subTitle = document.getElementById('feedbackSubTitle');
+            const reason = document.getElementById('feedbackReasonText');
+
+            if (isCorrect) {
+                AudioFX.playCorrect();
+                combo++;
+                roundCorrectCount++;
+                totalCorrectCount++;
+
+                headerIcon.className = "w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-4xl shadow-lg bg-emerald-500/30 text-emerald-300 border-3 border-emerald-400";
+                headerIcon.innerHTML = "🎉";
+                title.className = "text-xl sm:text-2xl font-black text-emerald-300 mali-font";
+                title.innerText = "ถูกต้องแล้วจ้า! เก่งมาก!";
+                subTitle.className = "text-xs sm:text-sm font-bold text-yellow-300 mt-0.5 mali-font";
+                subTitle.innerText = `${item.title} คือ ${item.correctType === 'ai' ? '🤖 ปัญญาประดิษฐ์ (AI)' : '🛠️ เทคโนโลยีทั่วไป'}`;
+
+                speakAI("ถูกต้องแล้วจ้า! เก่งมากเลย!");
+            } else {
+                AudioFX.playWrong();
+                combo = 0;
+                const stage = document.getElementById('mainGameStage');
+                stage.classList.add('screen-shake');
+                setTimeout(() => stage.classList.remove('screen-shake'), 320);
+
+                headerIcon.className = "w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-4xl shadow-lg bg-pink-500/30 text-pink-300 border-3 border-pink-400";
+                headerIcon.innerHTML = "💡";
+                title.className = "text-xl sm:text-2xl font-black text-pink-300 mali-font";
+                title.innerText = "ยังไม่ใช่นะจ๊ะ ลองดูเหตุผล!";
+                subTitle.className = "text-xs sm:text-sm font-bold text-slate-200 mt-0.5 mali-font";
+                subTitle.innerText = `${item.title} จริงๆ แล้วคือ: ${item.correctType === 'ai' ? '🤖 ปัญญาประดิษฐ์ (AI)' : '🛠️ เทคโนโลยีทั่วไป'}`;
+
+                speakAI("ข้อนี้ยังไม่ใช่นะจ๊ะ ลองดูเหตุผลกันนะ!");
+            }
+
+            reason.innerHTML = item.reason;
+            modal.classList.remove('hidden');
+        }
+
+        function closeFeedbackModal() {
+            AudioFX.playPop();
+            document.getElementById('feedbackModal').classList.add('hidden');
+            currentIndex++;
+            if (currentIndex < 10) {
+                loadQuestion();
+            } else {
+                finishCurrentRound();
+            }
+        }
+
+        /* --- FINISH ROUND / ADVANCE --- */
+        function finishCurrentRound() {
+            const starsEarnedThisRound = roundCorrectCount * 3;
+            const currentTotal = getActiveUserScore() + starsEarnedThisRound;
+            saveActiveUserScore(currentTotal);
+            updatePlayerHUD();
+
+            if (currentRound < 5) {
+                // Show Round Complete Modal
+                AudioFX.playVictoryFanfare();
+                document.getElementById('roundCompleteTitle').innerText = `🎉 ผ่านรอบที่ ${currentRound} สำเร็จ!`;
+                document.getElementById('roundCompleteSubtitle').innerText = `หนูตอบถูก ${roundCorrectCount}/10 ข้อ ในระดับ ${ROUND_DIFFICULTY_INFO[currentRound].name}`;
+                document.getElementById('roundScoreGain').innerText = `+${starsEarnedThisRound} ⭐ (รวม ${currentTotal} ⭐)`;
+                document.getElementById('roundCompleteModal').classList.remove('hidden');
+                speakAI(`ยอดเยี่ยมมากจ้า ผ่านรอบที่ ${currentRound} แล้ว ลุยรอบถัดไปกันเลย!`);
+            } else {
+                // Grand Championship (Completed All 5 Rounds)
+                AudioFX.playVictoryFanfare();
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 150, spread: 85, origin: { y: 0.6 } });
+                }
+                saveToLeaderboard(getActiveUserName(), currentTotal);
+
+                document.getElementById('finalCorrectCount').innerText = `${totalCorrectCount}/50`;
+                document.getElementById('finalEarnedPoints').innerText = `+${starsEarnedThisRound}`;
+                document.getElementById('finalTotalScore').innerText = `${currentTotal} ⭐`;
+                document.getElementById('gameOverModal').classList.remove('hidden');
+                speakAI(`ยินดีด้วยจ้า หนูผ่านครบทั้ง 5 รอบ สุดยอดแชมเปียนยอดนักคิดเลย!`);
+            }
+        }
+
+        function proceedToNextRound() {
+            AudioFX.playPop();
+            startRound(currentRound + 1);
+        }
+
+        /* ========================================================
+           7. LEADERBOARD SYSTEM (LOCAL STORAGE)
+           ======================================================== */
+        function getLeaderboard() {
+            const data = localStorage.getItem('cyber_cute_leaderboard_v2');
+            if (data) return JSON.parse(data);
+            return [
+                { name: 'น้องต้นกล้า', score: 140 },
+                { name: 'น้องฟ้าใส', score: 115 },
+                { name: 'เจ้ากระต่ายน้อย', score: 95 },
+                { name: 'หุ่นยนต์จิ๋ว', score: 70 },
+                { name: 'นักสืบน้อย', score: 45 }
+            ];
+        }
+
+        function saveToLeaderboard(name, total) {
+            let list = getLeaderboard();
+            const idx = list.findIndex(b => b.name === name);
+            if (idx !== -1) {
+                if (total > list[idx].score) list[idx].score = total;
+            } else {
+                list.push({ name: name, score: total });
+            }
+            list.sort((a, b) => b.score - a.score);
+            list = list.slice(0, 10);
+            localStorage.setItem('cyber_cute_leaderboard_v2', JSON.stringify(list));
+        }
+
+        function openLeaderboardModal() {
+            AudioFX.playPop();
+            const list = getLeaderboard();
+            const container = document.getElementById('leaderboardList');
+            let html = '';
+
+            list.forEach((item, i) => {
+                let medal = `${i + 1}`;
+                let rowBg = "bg-indigo-950/70 border-indigo-500/30";
+                if (i === 0) { medal = '🥇'; rowBg = "bg-amber-500/20 border-yellow-400 text-yellow-300"; }
+                else if (i === 1) { medal = '🥈'; rowBg = "bg-slate-300/20 border-slate-300 text-slate-200"; }
+                else if (i === 2) { medal = '🥉'; rowBg = "bg-amber-700/20 border-amber-600 text-amber-400"; }
+
+                html += `
+                    <div class="flex items-center justify-between p-2 rounded-xl border ${rowBg} mali-font">
+                        <div class="flex items-center gap-2">
+                            <span class="font-black text-sm w-5">${medal}</span>
+                            <span class="font-bold text-xs">${item.name}</span>
+                        </div>
+                        <span class="font-black text-amber-300 text-xs">${item.score} ⭐</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('leaderboardModal').classList.remove('hidden');
+        }
+
+        function closeLeaderboardModal() {
+            document.getElementById('leaderboardModal').classList.add('hidden');
+        }
+
+        /* ========================================================
+           8. KEYBOARD CONTROLS & INIT
+           ======================================================== */
+        document.addEventListener('keydown', (e) => {
+            const feedbackModal = document.getElementById('feedbackModal');
+            if (!feedbackModal.classList.contains('hidden')) {
+                if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    closeFeedbackModal();
+                }
+                return;
+            }
+
+            const roundModal = document.getElementById('roundCompleteModal');
+            if (!roundModal.classList.contains('hidden')) {
+                if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    proceedToNextRound();
+                }
+                return;
+            }
+
+            const gameOverModal = document.getElementById('gameOverModal');
+            if (!gameOverModal.classList.contains('hidden')) return;
+
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                submitAnswer('tech');
+            } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                submitAnswer('ai');
+            }
+        });
+
+        window.onload = () => {
+            updatePlayerHUD();
+            startFullGameFromRound1();
+        };
+    </script>
+</body>
+</html>
