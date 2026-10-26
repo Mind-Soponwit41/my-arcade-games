@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>เกมผจญภัยกระต่ายน้อยยอดนักคิด ป.1 - Bunny Maze Adventure</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Kodchasan Font (ฟอนต์น่ารัก อ่านง่าย สบายตาสำหรับเด็กประถม) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kodchasan:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      font-family: 'Kodchasan', cursive, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+    }
+
+    /* 3D Button Effects */
+    .btn-3d {
+      transition: all 0.08s ease;
+      box-shadow: 0 5px 0 rgba(0,0,0,0.22);
+    }
+    .btn-3d:active {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.22);
+    }
+
+    /* Keyframe Animations */
+    @keyframes hop {
+      0%, 100% { transform: translateY(0) scale(1, 1); }
+      40% { transform: translateY(-9px) scale(0.92, 1.12); }
+      75% { transform: translateY(0) scale(1.08, 0.92); }
+    }
+    @keyframes bonk-shake {
+      0%, 100% { transform: translateX(0) rotate(0deg); }
+      20% { transform: translateX(-6px) rotate(-8deg); }
+      40% { transform: translateX(6px) rotate(8deg); }
+      60% { transform: translateX(-4px) rotate(-5deg); }
+      80% { transform: translateX(4px) rotate(5deg); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(251,191,36,0.6)); }
+      50% { transform: scale(1.1); filter: drop-shadow(0 0 10px rgba(251,191,36,1)); }
+    }
+    @keyframes hint-flash {
+      0%, 100% { opacity: 0.25; transform: scale(0.85); }
+      50% { opacity: 0.95; transform: scale(1.15); }
+    }
+    @keyframes pop-modal {
+      0% { transform: scale(0.65); opacity: 0; }
+      80% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+
+    .bunny-hop { animation: hop 0.28s ease-in-out; }
+    .bunny-bonk { animation: bonk-shake 0.35s ease-in-out; }
+    .pulse-item { animation: pulse-glow 1.5s infinite ease-in-out; }
+    .hint-step { animation: hint-flash 0.9s infinite ease-in-out; }
+    .pop-in { animation: pop-modal 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+    /* Custom Scrollbar */
+    .clean-scroll::-webkit-scrollbar { width: 6px; }
+    .clean-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 10px; }
+    .clean-scroll::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 10px; }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-sky-300 via-sky-200 to-amber-100 min-h-screen text-slate-800 flex flex-col justify-between overflow-x-hidden select-none">
+
+  <!-- ================= TOP HEADER NAVIGATION ================= -->
+  <header class="w-full bg-white/95 backdrop-blur-md px-3 py-2 border-b-4 border-sky-400 shadow-md sticky top-0 z-40 flex items-center justify-between">
+    <!-- Left: Menu & Voice Listen -->
+    <div class="flex items-center gap-1.5 sm:gap-2">
+      <button onclick="openLevelSelect()" class="btn-3d bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-3 py-1.5 rounded-2xl border-2 border-amber-600 flex items-center gap-1 text-sm sm:text-base">
+        <span class="text-xl">🗺️</span>
+        <span class="hidden sm:inline">เลือกด่าน</span>
+      </button>
+
+      <button onclick="speakInstruction(currentInstructionText)" class="btn-3d bg-emerald-400 hover:bg-emerald-300 text-emerald-950 font-bold px-3 py-1.5 rounded-2xl border-2 border-emerald-600 flex items-center gap-1 text-sm sm:text-base animate-pulse">
+        <span class="text-xl">🔊</span>
+        <span class="hidden sm:inline">ฟังเสียงครู</span>
+      </button>
+    </div>
+
+    <!-- Center: World / Level Title -->
+    <div id="topLevelBadge" class="bg-amber-100 border-2 border-amber-400 px-3 py-1 rounded-2xl shadow-sm flex items-center gap-1.5 text-amber-900 font-extrabold text-xs sm:text-sm">
+      <span id="topWorldIcon">🌱</span>
+      <span id="topLevelText">ด่าน 1 : สวนกระต่ายน้อย</span>
+    </div>
+
+    <!-- Right: Stats & Mute -->
+    <div class="flex items-center gap-1.5 sm:gap-2">
+      <!-- Total Stars -->
+      <div class="bg-yellow-100 border-2 border-yellow-400 px-2.5 py-1 rounded-2xl flex items-center gap-1 font-black text-amber-800 text-sm sm:text-base">
+        <span>⭐</span>
+        <span id="topTotalStars">0</span>
+      </div>
+
+      <!-- Sound Mute Toggle -->
+      <button onclick="toggleAudio()" class="btn-3d bg-indigo-400 hover:bg-indigo-300 text-white p-1.5 px-2.5 rounded-2xl border-2 border-indigo-600 text-lg">
+        <span id="soundIcon">🔔</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= SUB-BANNER: AUDIO SPEECH BUBBLE ================= -->
+  <section class="max-w-3xl w-full mx-auto px-2 mt-2">
+    <div class="bg-white/90 border-3 border-amber-300 shadow-md rounded-2xl p-2 px-3 flex items-center justify-between gap-2 transition-all">
+      <div class="flex items-center gap-2 overflow-hidden">
+        <span class="text-2xl flex-shrink-0 animate-bounce">🐰</span>
+        <p id="instructionBubble" class="text-xs sm:text-sm md:text-base font-bold text-amber-950 truncate">
+          พากระต่ายเดินไปเก็บแครอท ถ้าติดทางตันลองถอยมาเลือกทางใหม่นะ!
+        </p>
+      </div>
+      <button onclick="speakInstruction(currentInstructionText)" class="bg-amber-200 hover:bg-amber-300 text-amber-900 text-xs font-bold px-2.5 py-1 rounded-xl flex items-center gap-1 border border-amber-400 flex-shrink-0">
+        <span>🔊 แตะฟัง</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ================= MAIN GAMEPLAY VIEWPORT ================= -->
+  <main class="flex-1 flex flex-col items-center justify-center p-2 sm:p-3 w-full max-w-4xl mx-auto">
+    
+    <!-- LEVEL META BAR (Carrot status, Key status, Owl Hint) -->
+    <div class="w-full max-w-md flex items-center justify-between px-2 mb-2">
+      <!-- Carrots Needed -->
+      <div class="flex items-center gap-1 bg-white/80 border-2 border-orange-300 px-2.5 py-1 rounded-2xl text-xs sm:text-sm font-bold text-orange-900 shadow-sm">
+        <span class="text-lg">🥕</span>
+        <span id="carrotCounter">0 / 1</span>
+      </div>
+
+      <!-- Key Inventory (Shown when level has keys) -->
+      <div id="keyIndicator" class="hidden items-center gap-1 bg-white/80 border-2 border-yellow-400 px-2.5 py-1 rounded-2xl text-xs sm:text-sm font-bold text-yellow-900 shadow-sm">
+        <span class="text-lg">🔑</span>
+        <span id="keyCounter">0 / 0</span>
+      </div>
+
+      <!-- Step Counter (Trial & Error Tracking) -->
+      <div class="flex items-center gap-1 bg-white/80 border-2 border-sky-300 px-2.5 py-1 rounded-2xl text-xs sm:text-sm font-bold text-sky-900 shadow-sm">
+        <span class="text-lg">🐾</span>
+        <span>ก้าว: <span id="stepCounter">0</span></span>
+      </div>
+
+      <!-- Owl Hint Button -->
+      <button id="btnOwlHint" onclick="activateOwlHint()" class="btn-3d bg-purple-500 hover:bg-purple-400 text-white font-extrabold px-3 py-1 rounded-2xl border-2 border-purple-700 flex items-center gap-1 text-xs sm:text-sm shadow-md">
+        <span class="text-lg">🦉</span>
+        <span>พี่ฮูกบอกทาง</span>
+      </button>
+    </div>
+
+    <!-- MAZE CONTAINER (Theme styles applied dynamically) -->
+    <div id="mazeOuterWrapper" class="relative p-2.5 sm:p-3.5 rounded-3xl border-4 shadow-2xl transition-all duration-300 w-full max-w-md aspect-square flex items-center justify-center bg-emerald-100 border-emerald-500">
+      <div id="mazeBoard" class="w-full h-full grid gap-1 relative rounded-2xl overflow-hidden border-2 border-black/10">
+        <!-- Maze cells generated via JavaScript -->
+      </div>
+    </div>
+
+    <!-- TOUCH D-PAD CONTROLLER (Optimized for Kids' fingers & Smartboards) -->
+    <div class="mt-3 flex flex-col items-center select-none">
+      <!-- Up Button -->
+      <button onclick="handleInputDirection(0, -1)" class="btn-3d w-16 h-14 bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-2xl border-3 border-amber-600 rounded-2xl flex items-center justify-center">
+        ⬆️
+      </button>
+      
+      <!-- Left, Reset, Right Buttons -->
+      <div class="flex items-center gap-3 mt-1">
+        <button onclick="handleInputDirection(-1, 0)" class="btn-3d w-16 h-14 bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-2xl border-3 border-amber-600 rounded-2xl flex items-center justify-center">
+          ⬅️
+        </button>
+
+        <!-- Center Reset Button (เด็กสามารถเริ่มใหม่ได้ทันทีโดยไม่ถูกลงโทษ) -->
+        <button onclick="restartCurrentLevel()" title="เริ่มเดินใหม่" class="btn-3d w-14 h-12 bg-white hover:bg-slate-100 text-slate-700 font-bold border-2 border-slate-300 rounded-2xl flex flex-col items-center justify-center text-[10px]">
+          <span class="text-base">🔄</span>
+          <span>เริ่มใหม่</span>
+        </button>
+
+        <button onclick="handleInputDirection(1, 0)" class="btn-3d w-16 h-14 bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-2xl border-3 border-amber-600 rounded-2xl flex items-center justify-center">
+          ➡️
+        </button>
+      </div>
+
+      <!-- Down Button -->
+      <button onclick="handleInputDirection(0, 1)" class="btn-3d w-16 h-14 bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-2xl border-3 border-amber-600 rounded-2xl flex items-center justify-center mt-1">
+        ⬇️
+      </button>
+
+      <span class="text-[11px] font-bold text-sky-900 mt-1 bg-white/70 px-3 py-0.5 rounded-full">
+        💡 กดลูกศรบนแป้นพิมพ์ ⬆️ ⬇️ ⬅️ ➡️ หรือปุ่ม W A S D ได้ด้วยนะ
+      </span>
+    </div>
+
+  </main>
+
+  <!-- ================= MODAL: LEVEL SELECT MAP (20 Levels across 4 Worlds) ================= -->
+  <div id="modalLevelSelect" class="fixed inset-0 bg-black/65 backdrop-blur-sm z-50 hidden items-center justify-center p-3">
+    <div class="bg-gradient-to-b from-sky-50 to-amber-50 border-4 border-amber-400 rounded-3xl p-4 sm:p-6 max-w-xl w-full shadow-2xl relative max-h-[92vh] flex flex-col pop-in">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-3 border-b-2 border-amber-200">
+        <div class="flex items-center gap-2">
+          <span class="text-3xl">🗺️</span>
+          <div>
+            <h2 class="text-xl sm:text-2xl font-black text-amber-950">แผนที่ผจญภัย 20 ด่าน</h2>
+            <p class="text-xs text-amber-800 font-bold">ฝึกคิด ลองผิดลองถูก ไต่ระดับความท้าทาย!</p>
+          </div>
+        </div>
+        <button onclick="closeLevelSelect()" class="btn-3d bg-rose-400 hover:bg-rose-300 text-white font-extrabold w-9 h-9 rounded-full flex items-center justify-center border-2 border-rose-600">
+          ✕
+        </button>
+      </div>
+
+      <!-- World Filter Tabs -->
+      <div class="flex gap-1.5 my-3 overflow-x-auto pb-1">
+        <button onclick="filterWorldTab(1)" id="tabW1" class="px-3 py-1.5 rounded-xl font-black text-xs border-2 bg-emerald-500 text-white border-emerald-700 whitespace-nowrap">
+          🌱 โลกที่ 1 : สวนกระต่าย (1-4)
+        </button>
+        <button onclick="filterWorldTab(2)" id="tabW2" class="px-3 py-1.5 rounded-xl font-black text-xs border-2 bg-amber-100 text-amber-900 border-amber-300 whitespace-nowrap">
+          🍂 โลกที่ 2 : ป่ามหาสนุก (5-9)
+        </button>
+        <button onclick="filterWorldTab(3)" id="tabW3" class="px-3 py-1.5 rounded-xl font-black text-xs border-2 bg-slate-100 text-slate-800 border-slate-300 whitespace-nowrap">
+          💎 โลกที่ 3 : ถ้ำกุญแจทอง (10-14)
+        </button>
+        <button onclick="filterWorldTab(4)" id="tabW4" class="px-3 py-1.5 rounded-xl font-black text-xs border-2 bg-purple-100 text-purple-900 border-purple-300 whitespace-nowrap">
+          🏰 โลกที่ 4 : ปราสาทเซียน (15-20)
+        </button>
+      </div>
+
+      <!-- Grid of Levels for Selected Tab -->
+      <div id="levelGridContainer" class="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-y-auto clean-scroll p-1 flex-1">
+        <!-- Rendered via JS -->
+      </div>
+
+      <div class="mt-3 pt-2 border-t border-amber-200 flex justify-between items-center text-xs font-bold text-amber-900">
+        <span>⭐ ดาวรวมทั้งหมด: <span id="modalTotalStars">0</span> / 60</span>
+        <button onclick="closeLevelSelect()" class="btn-3d bg-amber-400 hover:bg-amber-300 px-4 py-1.5 rounded-xl border border-amber-600 font-black">
+          กลับสู่เกม 🚀
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MODAL: VICTORY & REWARD POPUP ================= -->
+  <div id="modalVictory" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-3">
+    <div class="bg-gradient-to-b from-amber-100 to-yellow-200 border-4 border-amber-500 rounded-3xl p-5 sm:p-7 max-w-sm w-full text-center shadow-2xl relative pop-in">
+      
+      <!-- Trophy Icon -->
+      <div class="w-20 h-20 bg-amber-300 border-4 border-amber-500 rounded-full flex items-center justify-center mx-auto -mt-14 shadow-lg text-4xl animate-bounce">
+        🏆
+      </div>
+
+      <h3 class="text-2xl font-black text-amber-950 mt-2">สำเร็จแล้วคนเก่ง!</h3>
+      <p id="victoryMessage" class="text-xs sm:text-sm font-bold text-amber-900 mt-1">
+        หนูพาเจ้ากระต่ายผ่านเขาวงกตได้สำเร็จ!
+      </p>
+
+      <!-- Star Rating Earned -->
+      <div class="my-4 bg-white/80 rounded-2xl p-3 border-2 border-amber-300 flex flex-col items-center">
+        <span class="text-xs font-bold text-slate-500 mb-1">ดาวความฉลาดรอบคอบ:</span>
+        <div id="victoryStarsContainer" class="text-3xl tracking-widest flex gap-1">
+          ⭐⭐⭐
+        </div>
+        <span id="victoryStepCountText" class="text-[11px] font-bold text-amber-800 mt-1">ใช้ความพยายาม 12 ก้าว</span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-2">
+        <button id="btnNextLevel" onclick="proceedToNextLevel()" class="btn-3d flex-1 bg-emerald-500 hover:bg-emerald-400 text-white font-extrabold py-3 rounded-2xl border-2 border-emerald-700 shadow-md text-sm sm:text-base">
+          ด่านต่อไป 🚀
+        </button>
+        <button onclick="openLevelSelect()" class="btn-3d bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold py-3 px-4 rounded-2xl border-2 border-amber-600 text-sm sm:text-base">
+          🗺️ แผนที่
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Confetti Canvas -->
+  <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-50 hidden"></canvas>
+
+  <!-- ================= JAVASCRIPT GAME ENGINE ================= -->
+  <script>
+    /* ========================================================
+       1. SYNTHESIZED WEB AUDIO API (ไม่มีการโหลดไฟล์เสียงภายนอก)
+       ======================================================== */
+    let audioCtx = null;
+    let isSoundMuted = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioClass) audioCtx = new AudioClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+    window.addEventListener('click', initAudio, { once: true });
+    window.addEventListener('touchstart', initAudio, { once: true });
+
+    function playSound(type) {
+      if (isSoundMuted) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'hop') {
+        // เสียงกระต่ายกระโดด ดึ๋งๆ นุ่มนวล
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, t);
+        osc.frequency.exponentialRampToValueAtTime(540, t + 0.09);
+        gain.gain.setValueAtTime(0.18, t);
+        gain.gain.linearRampToValueAtTime(0.01, t + 0.09);
+        osc.start(t);
+        osc.stop(t + 0.09);
+      } else if (type === 'bonk') {
+        // เสียงชนกำแพง บ๊อง ตลกๆ ไม่ลงโทษ
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(240, t);
+        osc.frequency.exponentialRampToValueAtTime(120, t + 0.16);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.linearRampToValueAtTime(0.01, t + 0.16);
+        osc.start(t);
+        osc.stop(t + 0.16);
+      } else if (type === 'carrot') {
+        // เสียงกรุบกรอบ ได้แครอท แสนสดชื่น
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, t); // D5
+        osc.frequency.setValueAtTime(880, t + 0.07); // A5
+        gain.gain.setValueAtTime(0.22, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+        osc.start(t);
+        osc.stop(t + 0.25);
+      } else if (type === 'key') {
+        // เสียงกริ๊งกุญแจทองคำ
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(987.77, t); // B5
+        osc.frequency.setValueAtTime(1318.51, t + 0.08); // E6
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+        osc.start(t);
+        osc.stop(t + 0.35);
+      } else if (type === 'door') {
+        // เสียงปลดล็อกประตูเปิดออก ชะแว๊บ
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, t);
+        osc.frequency.exponentialRampToValueAtTime(880, t + 0.18);
+        gain.gain.setValueAtTime(0.3, t);
+        gain.gain.linearRampToValueAtTime(0.01, t + 0.22);
+        osc.start(t);
+        osc.stop(t + 0.22);
+      } else if (type === 'hint') {
+        // เสียงเวทมนตร์พี่นกฮูกปิ๊งแว๊บ
+        const notes = [659.25, 830.61, 987.77];
+        notes.forEach((freq, idx) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.type = 'sine';
+          o.frequency.setValueAtTime(freq, t + idx * 0.06);
+          g.gain.setValueAtTime(0.15, t + idx * 0.06);
+          g.gain.linearRampToValueAtTime(0.001, t + idx * 0.06 + 0.15);
+          o.start(t + idx * 0.06);
+          o.stop(t + idx * 0.06 + 0.15);
+        });
+      } else if (type === 'victory') {
+        // เมโลดี้ฉลองชัยชนะ 4 โน้ตเพลงสดใส
+        const fan = [523.25, 659.25, 783.99, 1046.50];
+        fan.forEach((freq, idx) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.type = 'triangle';
+          o.frequency.setValueAtTime(freq, t + idx * 0.12);
+          g.gain.setValueAtTime(0.26, t + idx * 0.12);
+          g.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.12 + 0.4);
+          o.start(t + idx * 0.12);
+          o.stop(t + idx * 0.12 + 0.4);
+        });
+      }
+    }
+
+    function toggleAudio() {
+      isSoundMuted = !isSoundMuted;
+      document.getElementById('soundIcon').innerText = isSoundMuted ? '🔇' : '🔔';
+      if (isSoundMuted && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    }
+
+    /* ========================================================
+       2. THAI SPEECH SYNTHESIS (Web Speech API สำหรับเด็ก ป.1)
+       ======================================================== */
+    let currentInstructionText = "พากระต่ายเดินไปเก็บแครอท ถ้าติดทางตันลองถอยมาเลือกทางใหม่นะ!";
+
+    function speakInstruction(text) {
+      currentInstructionText = text;
+      document.getElementById('instructionBubble').innerText = text;
+
+      if (isSoundMuted) return;
+      if (!('speechSynthesis' in window)) return;
+
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'th-TH';
+      u.rate = 0.94; // จังหวะน่าฟัง ชัดถ้อยชัดคำ
+      u.pitch = 1.15; // โทนเสียงสดใสเป็นมิตร
+
+      const voices = window.speechSynthesis.getVoices();
+      const th = voices.find(v => v.lang.includes('th') || v.lang.includes('TH'));
+      if (th) u.voice = th;
+
+      window.speechSynthesis.speak(u);
+    }
+
+    /* ========================================================
+       3. WORLDS & 20 PROGRESSIVE LEVELS DATASET
+       Legend in maze grids:
+       0: Path (ทางเดิน)
+       1: Wall (กำแพงตามธีมโลก)
+       2: Bunny Start (จุดเริ่มกระต่าย)
+       3: Goal Burrow / Rabbit House (โพรงกระต่ายจุดหมาย)
+       4: Carrot (แครอทที่ต้องเก็บให้หมดก่อนเข้าบ้าน)
+       5: Golden Key (กุญแจทองคำ)
+       6: Wooden Locked Door (ประตูล็อก ต้องมีกุญแจ)
+       ======================================================== */
+    const WORLDS = [
+      {
+        id: 1,
+        title: "สวนกระต่ายน้อย",
+        icon: "🌱",
+        desc: "ฝึกก้าว เลี้ยว และแก้ปัญหาทางตันง่ายๆ",
+        themeClass: "bg-emerald-100 border-emerald-500",
+        wallIcon: "🌳",
+        wallClass: "bg-emerald-600 border-emerald-700 text-white",
+        pathClass: "bg-amber-100/80 border-amber-200"
+      },
+      {
+        id: 2,
+        title: "ป่ามหาสนุก",
+        icon: "🍂",
+        desc: "ทางตันซับซ้อนขึ้น และมีแครอทหลายหัวให้วางแผนเก็บ",
+        themeClass: "bg-amber-100 border-amber-600",
+        wallIcon: "🪵",
+        wallClass: "bg-amber-700 border-amber-800 text-amber-200",
+        pathClass: "bg-orange-100/80 border-orange-200"
+      },
+      {
+        id: 3,
+        title: "ถ้ำปริศนากุญแจทอง",
+        icon: "💎",
+        desc: "มีประตูล็อก ต้องสังเกตและเดินไปเก็บกุญแจก่อน",
+        themeClass: "bg-slate-200 border-indigo-600",
+        wallIcon: "🪨",
+        wallClass: "bg-slate-700 border-slate-900 text-slate-300",
+        pathClass: "bg-indigo-50 border-indigo-200"
+      },
+      {
+        id: 4,
+        title: "ปราสาทเขาวงกตขั้นเซียน",
+        icon: "🏰",
+        desc: "เขาวงกตขนาดใหญ่ กุญแจหลายดอกและทางหลอกล่อขั้นสูง",
+        themeClass: "bg-purple-100 border-purple-700",
+        wallIcon: "🧱",
+        wallClass: "bg-purple-800 border-purple-950 text-purple-200",
+        pathClass: "bg-pink-50 border-pink-200"
+      }
+    ];
+
+    const LEVELS = [
+      // === WORLD 1: สวนกระต่ายน้อย (Levels 1 - 4) Grid 5x5 - 6x6 ===
+      {
+        level: 1, world: 1, name: "ก้าวแรกของกระต่าย", size: 5, optimalSteps: 8,
+        introVoice: "ยินดีต้อนรับจ้ะ! กดปุ่มลูกศรพากระต่ายไปเก็บแครอทแล้วกลับเข้าบ้านนะ",
+        grid: [
+          [2, 0, 1, 1, 1],
+          [1, 0, 0, 0, 1],
+          [1, 1, 1, 0, 1],
+          [1, 4, 0, 0, 1],
+          [1, 1, 1, 3, 1]
+        ]
+      },
+      {
+        level: 2, world: 1, name: "ทางแยกชวนสงสัย", size: 5, optimalSteps: 10,
+        introVoice: "มีทางแยกแล้วนะ! ถ้าเจอทางตันไม่ต้องกลัว ถอยหลังมาลองอีกทางได้เลย",
+        grid: [
+          [2, 0, 0, 0, 1],
+          [1, 1, 1, 0, 1],
+          [1, 4, 0, 0, 1],
+          [1, 0, 1, 1, 1],
+          [1, 0, 0, 0, 3]
+        ]
+      },
+      {
+        level: 3, world: 1, name: "แครอทในพุ่มไม้", size: 6, optimalSteps: 12,
+        introVoice: "ลองสังเกตดูสิ แครอทซ่อนอยู่ในซอย เดินไปเก็บแล้วค่อยไปหาบ้านนะ",
+        grid: [
+          [2, 0, 1, 1, 1, 1],
+          [1, 0, 0, 0, 4, 1],
+          [1, 0, 1, 1, 1, 1],
+          [1, 0, 0, 0, 0, 1],
+          [1, 1, 1, 1, 0, 1],
+          [1, 1, 1, 1, 3, 1]
+        ]
+      },
+      {
+        level: 4, world: 1, name: "เขาวงกตรอบสระน้ำ", size: 6, optimalSteps: 14,
+        introVoice: "เก่งมาก! ด่านสุดท้ายของสวนกระต่าย เลี้ยวตามทางระวังพุ่มไม้นะจ๊ะ",
+        grid: [
+          [2, 0, 0, 1, 1, 1],
+          [1, 1, 0, 1, 4, 1],
+          [1, 0, 0, 0, 0, 1],
+          [1, 0, 1, 1, 0, 1],
+          [1, 0, 0, 1, 0, 0],
+          [1, 1, 0, 0, 0, 3]
+        ]
+      },
+
+      // === WORLD 2: ป่ามหาสนุก (Levels 5 - 9) Grid 7x7 Multiple Carrots ===
+      {
+        level: 5, world: 2, name: "เข้าสู่ป่ากว้าง", size: 7, optimalSteps: 16,
+        introVoice: "เข้าสู่ป่ามหาสนุกแล้ว! มีแครอท 2 หัว ต้องเก็บให้ครบก่อนเข้าบ้านนะ",
+        grid: [
+          [2, 0, 0, 1, 1, 1, 1],
+          [1, 1, 0, 0, 0, 4, 1],
+          [1, 4, 0, 1, 1, 0, 1],
+          [1, 1, 1, 1, 0, 0, 1],
+          [1, 0, 0, 0, 0, 1, 1],
+          [1, 0, 1, 1, 0, 0, 0],
+          [1, 1, 1, 1, 1, 1, 3]
+        ]
+      },
+      {
+        level: 6, world: 2, name: "แครอทคู่ใจ", size: 7, optimalSteps: 18,
+        introVoice: "สังเกตรอยเท้ากระต่ายนะ ถ้าเคยเดินไปแล้วมีรอยเท้า จะได้ไม่หลงทางเดิม",
+        grid: [
+          [2, 0, 1, 1, 1, 1, 1],
+          [1, 0, 0, 0, 4, 1, 1],
+          [1, 1, 1, 0, 1, 1, 1],
+          [1, 4, 0, 0, 0, 0, 1],
+          [1, 0, 1, 1, 1, 0, 1],
+          [1, 0, 0, 0, 1, 0, 1],
+          [1, 1, 1, 0, 0, 0, 3]
+        ]
+      },
+      {
+        level: 7, world: 2, name: "วงกตสามแยก", size: 7, optimalSteps: 20,
+        introVoice: "มีแครอทตั้ง 3 หัวแน่ะ ค่อยๆ ลองเดินไปเก็บทีละหัวนะคนเก่ง",
+        grid: [
+          [2, 0, 0, 0, 1, 1, 1],
+          [1, 1, 1, 0, 0, 4, 1],
+          [1, 4, 0, 0, 1, 0, 1],
+          [1, 0, 1, 1, 1, 0, 1],
+          [1, 0, 0, 4, 1, 0, 1],
+          [1, 1, 1, 0, 0, 0, 0],
+          [1, 1, 1, 1, 1, 1, 3]
+        ]
+      },
+      {
+        level: 8, world: 2, name: "สะพานซ่อนเงื่อน", size: 7, optimalSteps: 22,
+        introVoice: "ถ้าไปเจอทางตัน ให้ถอยหลังกลับมาเลือกอีกทาง นั่นคือการลองผิดลองถูกจ้ะ",
+        grid: [
+          [2, 0, 0, 1, 1, 1, 1],
+          [1, 1, 0, 0, 0, 4, 1],
+          [1, 4, 0, 1, 0, 1, 1],
+          [1, 1, 0, 1, 0, 0, 1],
+          [1, 0, 0, 1, 1, 0, 1],
+          [1, 4, 1, 1, 0, 0, 0],
+          [1, 1, 1, 1, 0, 1, 3]
+        ]
+      },
+      {
+        level: 9, world: 2, name: "งานเลี้ยงแครอทในป่า", size: 7, optimalSteps: 24,
+        introVoice: "ด่านท้าทายสุดของป่า มีแครอท 4 หัว! วางแผนเส้นทางให้ดีๆ นะ",
+        grid: [
+          [2, 0, 0, 0, 1, 4, 1],
+          [1, 1, 1, 0, 1, 0, 1],
+          [1, 4, 0, 0, 0, 0, 1],
+          [1, 0, 1, 1, 1, 0, 1],
+          [1, 0, 4, 1, 4, 0, 1],
+          [1, 1, 0, 0, 0, 1, 1],
+          [1, 1, 1, 1, 0, 0, 3]
+        ]
+      },
+
+      // === WORLD 3: ถ้ำปริศนากุญแจทอง (Levels 10 - 14) Grid 8x8 Keys & Doors ===
+      {
+        level: 10, world: 3, name: "กุญแจทองดอกแรก", size: 8, optimalSteps: 20,
+        introVoice: "ประตูบ้านถูกล็อกอยู่! ต้องเดินไปเก็บกุญแจทองคำมาเปิดประตูก่อนนะ",
+        grid: [
+          [2, 0, 0, 1, 1, 1, 1, 1],
+          [1, 1, 0, 0, 0, 0, 5, 1],
+          [1, 0, 0, 1, 1, 1, 1, 1],
+          [1, 0, 1, 1, 1, 1, 1, 1],
+          [1, 0, 0, 0, 4, 1, 1, 1],
+          [1, 1, 1, 1, 0, 1, 1, 1],
+          [1, 1, 1, 1, 6, 1, 1, 1],
+          [1, 1, 1, 1, 3, 1, 1, 1]
+        ]
+      },
+      {
+        level: 11, world: 3, name: "อุโมงค์หินสองแพร่ง", size: 8, optimalSteps: 24,
+        introVoice: "ในถ้ำมืดนิดหน่อย เก็บกุญแจ เปิดประตู แล้วอย่าลืมเก็บแครอทด้วยล่ะ",
+        grid: [
+          [2, 0, 1, 1, 1, 1, 1, 1],
+          [1, 0, 0, 0, 0, 5, 1, 1],
+          [1, 1, 1, 1, 0, 1, 1, 1],
+          [1, 4, 0, 0, 0, 0, 1, 1],
+          [1, 1, 1, 1, 1, 0, 1, 1],
+          [1, 1, 1, 1, 4, 0, 1, 1],
+          [1, 1, 1, 1, 1, 6, 1, 1],
+          [1, 1, 1, 1, 1, 3, 1, 1]
+        ]
+      },
+      {
+        level: 12, world: 3, name: "กับดักทางตันในถ้ำ", size: 8, optimalSteps: 26,
+        introVoice: "ถ้าติดทางตัน กดปุ่มพี่นกฮูกให้ช่วยส่องแสงนำทางได้นะจ๊ะ",
+        grid: [
+          [2, 0, 0, 0, 1, 1, 1, 1],
+          [1, 1, 1, 0, 1, 5, 0, 1],
+          [1, 0, 0, 0, 0, 0, 1, 1],
+          [1, 0, 1, 1, 1, 0, 1, 1],
+          [1, 4, 0, 1, 4, 0, 1, 1],
+          [1, 1, 0, 1, 1, 6, 1, 1],
+          [1, 0, 0, 0, 0, 0, 0, 1],
+          [1, 1, 1, 1, 1, 1, 3, 1]
+        ]
+      },
+      {
+        level: 13, world: 3, name: "ผลึกคริสตัลเร้นลับ", size: 8, optimalSteps: 28,
+        introVoice: "มีกุญแจอยู่ลึกมาก ลองสำรวจเส้นทางซ้ายและขวาดูสิ",
+        grid: [
+          [2, 0, 1, 1, 1, 1, 1, 1],
+          [1, 0, 0, 0, 0, 0, 4, 1],
+          [1, 1, 1, 0, 1, 1, 0, 1],
+          [1, 5, 0, 0, 1, 4, 0, 1],
+          [1, 1, 1, 1, 1, 1, 0, 1],
+          [1, 1, 0, 0, 0, 0, 0, 1],
+          [1, 1, 0, 1, 1, 6, 1, 1],
+          [1, 1, 0, 0, 0, 3, 1, 1]
+        ]
+      },
+      {
+        level: 14, world: 3, name: "หัวใจแห่งถ้ำหิน", size: 8, optimalSteps: 30,
+        introVoice: "สุดยอด! ประตูบานใหญ่ขวางทางไว้ หนูต้องเก็บทั้งกุญแจและแครอทให้ครบนะ",
+        grid: [
+          [2, 0, 0, 0, 1, 1, 1, 1],
+          [1, 1, 1, 0, 0, 0, 5, 1],
+          [1, 4, 0, 0, 1, 1, 0, 1],
+          [1, 0, 1, 1, 1, 4, 0, 1],
+          [1, 0, 0, 0, 1, 1, 0, 1],
+          [1, 1, 1, 0, 0, 0, 0, 1],
+          [1, 1, 1, 1, 1, 6, 1, 1],
+          [1, 1, 1, 1, 1, 3, 1, 1]
+        ]
+      },
+
+      // === WORLD 4: ปราสาทเขาวงกตขั้นเซียน (Levels 15 - 20) Grid 9x9 - 10x10 ===
+      {
+        level: 15, world: 4, name: "ประตูสู่ปราสาทหิน", size: 9, optimalSteps: 30,
+        introVoice: "ยินดีต้อนรับสู่ปราสาทเขาวงกตขั้นเซียน! กว้างและท้าทายมาก ใช้สมาธินะ",
+        grid: [
+          [2, 0, 0, 1, 1, 1, 1, 1, 1],
+          [1, 1, 0, 0, 0, 0, 0, 5, 1],
+          [1, 4, 0, 1, 1, 1, 1, 0, 1],
+          [1, 0, 1, 1, 0, 0, 0, 0, 1],
+          [1, 0, 0, 0, 0, 1, 1, 1, 1],
+          [1, 1, 1, 1, 4, 0, 0, 4, 1],
+          [1, 0, 0, 0, 0, 1, 1, 0, 1],
+          [1, 0, 1, 1, 1, 1, 1, 6, 1],
+          [1, 0, 0, 0, 0, 0, 0, 3, 1]
+        ]
+      },
+      {
+        level: 16, world: 4, name: "ห้องโถงวงกตคู่", size: 9, optimalSteps: 34,
+        introVoice: "มีกุญแจ 2 ดอก และประตูล็อก 2 บาน! วางแผนเปิดทีละบานนะจ๊ะ",
+        grid: [
+          [2, 0, 1, 1, 1, 1, 1, 1, 1],
+          [1, 0, 0, 0, 5, 1, 0, 5, 1],
+          [1, 1, 1, 0, 1, 1, 0, 1, 1],
+          [1, 4, 0, 0, 0, 6, 0, 0, 1],
+          [1, 0, 1, 1, 1, 1, 1, 0, 1],
+          [1, 0, 0, 0, 4, 1, 0, 0, 1],
+          [1, 1, 1, 1, 0, 1, 0, 1, 1],
+          [1, 1, 1, 1, 0, 0, 6, 1, 1],
+          [1, 1, 1, 1, 1, 1, 3, 1, 1]
+        ]
+      },
+      {
+        level: 17, world: 4, name: "หอคอยบันไดวน", size: 9, optimalSteps: 38,
+        introVoice: "ทางเดินคดเคี้ยวไปมา สังเกตรอยเท้านะ จะช่วยให้รู้ว่ากำลังเดินวนหรือเปล่า",
+        grid: [
+          [2, 0, 0, 0, 1, 1, 1, 1, 1],
+          [1, 1, 1, 0, 0, 0, 0, 4, 1],
+          [1, 5, 1, 1, 1, 1, 1, 0, 1],
+          [1, 0, 0, 0, 0, 0, 1, 0, 1],
+          [1, 1, 1, 1, 0, 4, 1, 0, 1],
+          [1, 4, 0, 1, 0, 1, 1, 0, 1],
+          [1, 0, 1, 1, 0, 0, 0, 0, 1],
+          [1, 0, 0, 0, 0, 1, 1, 6, 1],
+          [1, 1, 1, 1, 1, 1, 1, 3, 1]
+        ]
+      },
+      {
+        level: 18, world: 4, name: "ห้องปริศนากลลวง", size: 10, optimalSteps: 40,
+        introVoice: "กระดานใหญ่ 10x10 มีทางหลอกเยอะมาก นี่คือบททดสอบการลองผิดลองถูกอย่างแท้จริง!",
+        grid: [
+          [2, 0, 0, 1, 1, 1, 1, 1, 1, 1],
+          [1, 1, 0, 0, 0, 0, 5, 1, 4, 1],
+          [1, 4, 0, 1, 1, 1, 0, 1, 0, 1],
+          [1, 0, 1, 1, 0, 0, 0, 0, 0, 1],
+          [1, 0, 0, 0, 0, 1, 1, 1, 0, 1],
+          [1, 1, 1, 1, 0, 1, 5, 1, 0, 1],
+          [1, 4, 0, 1, 0, 1, 0, 1, 0, 1],
+          [1, 0, 0, 0, 0, 0, 0, 6, 0, 1],
+          [1, 1, 1, 1, 1, 1, 1, 1, 6, 1],
+          [1, 1, 1, 1, 1, 1, 1, 1, 3, 1]
+        ]
+      },
+      {
+        level: 19, world: 4, name: "ปราการด่านสุดท้าย", size: 10, optimalSteps: 44,
+        introVoice: "ใกล้ถึงเป้าหมายสูงสุดแล้ว! มีแครอททองคำ 4 หัว และกุญแจ 2 ดอก สู้ๆ นะ!",
+        grid: [
+          [2, 0, 1, 1, 1, 1, 1, 1, 1, 1],
+          [1, 0, 0, 0, 0, 0, 4, 1, 5, 1],
+          [1, 1, 1, 1, 0, 1, 1, 1, 0, 1],
+          [1, 5, 0, 0, 0, 0, 0, 0, 0, 1],
+          [1, 1, 1, 0, 1, 1, 1, 1, 6, 1],
+          [1, 4, 0, 0, 1, 4, 0, 0, 0, 1],
+          [1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
+          [1, 0, 0, 0, 0, 0, 1, 4, 0, 1],
+          [1, 1, 1, 1, 1, 0, 1, 1, 6, 1],
+          [1, 1, 1, 1, 1, 0, 0, 0, 3, 1]
+        ]
+      },
+      {
+        level: 20, world: 4, name: "ราชาแห่งเขาวงกต", size: 10, optimalSteps: 48,
+        introVoice: "ด่านที่ 20 ด่านสุดยอดของยอดนักคิด! พิชิตด่านนี้เพื่อเป็นแชมป์วิทยาการคำนวณ ป.1!",
+        grid: [
+          [2, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+          [1, 1, 1, 0, 0, 0, 5, 1, 4, 1],
+          [1, 4, 0, 0, 1, 1, 0, 1, 0, 1],
+          [1, 0, 1, 1, 1, 0, 0, 0, 0, 1],
+          [1, 0, 0, 5, 1, 0, 1, 1, 6, 1],
+          [1, 1, 1, 0, 1, 0, 1, 4, 0, 1],
+          [1, 4, 0, 0, 0, 0, 1, 1, 0, 1],
+          [1, 0, 1, 1, 1, 1, 1, 0, 0, 1],
+          [1, 0, 0, 0, 0, 0, 0, 0, 6, 1],
+          [1, 1, 1, 1, 1, 1, 1, 1, 3, 1]
+        ]
+      }
+    ];
+
+    /* ========================================================
+       4. GAME STATE & LOCAL STORAGE
+       ======================================================== */
+    let currentLevelNumber = 1;
+    let playerPos = { r: 0, c: 0 };
+    let goalPos = { r: 0, c: 0 };
+    let currentGrid = [];
+    let carrotsRemaining = 0;
+    let totalCarrotsInLevel = 0;
+    let keysHeld = 0;
+    let totalKeysInLevel = 0;
+    let stepsTaken = 0;
+    let footprints = new Set(); // บันทึกรอยเท้าที่เคยเดิน 'r,c'
+    let hintPath = []; // เส้นทางที่พี่นกฮูกแนะนำ
+
+    // โหลดประวัติผ่านด่านและดาว
+    let progressData = {
+      unlockedLevel: 1,
+      stars: {} // { 1: 3, 2: 2, ... }
+    };
+
+    function loadSavedProgress() {
+      try {
+        const saved = localStorage.getItem('bunny_maze_p1_save');
+        if (saved) {
+          progressData = JSON.parse(saved);
+        }
+      } catch (e) {
+        console.warn('Storage unavailable', e);
+      }
+      updateTopBarStats();
+    }
+
+    function saveProgress(lvl, earnedStars) {
+      if (!progressData.stars[lvl] || earnedStars > progressData.stars[lvl]) {
+        progressData.stars[lvl] = earnedStars;
+      }
+      if (lvl >= progressData.unlockedLevel && lvl < LEVELS.length) {
+        progressData.unlockedLevel = lvl + 1;
+      }
+      try {
+        localStorage.setItem('bunny_maze_p1_save', JSON.stringify(progressData));
+      } catch (e) {}
+      updateTopBarStats();
+    }
+
+    function getTotalStars() {
+      return Object.values(progressData.stars).reduce((a, b) => a + b, 0);
+    }
+
+    function updateTopBarStats() {
+      document.getElementById('topTotalStars').innerText = getTotalStars();
+      document.getElementById('modalTotalStars').innerText = getTotalStars();
+    }
+
+    /* ========================================================
+       5. LEVEL INITIALIZATION & RENDERING
+       ======================================================== */
+    function loadLevel(lvlNum) {
+      currentLevelNumber = lvlNum;
+      const lvlData = LEVELS.find(l => l.level === lvlNum);
+      const worldData = WORLDS.find(w => w.id === lvlData.world);
+
+      // Deep copy grid
+      currentGrid = JSON.parse(JSON.stringify(lvlData.grid));
+      stepsTaken = 0;
+      keysHeld = 0;
+      totalKeysInLevel = 0;
+      carrotsRemaining = 0;
+      totalCarrotsInLevel = 0;
+      footprints.clear();
+      hintPath = [];
+
+      // ปรับ UI ตามธีมของโลก
+      const mazeOuter = document.getElementById('mazeOuterWrapper');
+      mazeOuter.className = `relative p-2.5 sm:p-3.5 rounded-3xl border-4 shadow-2xl transition-all duration-300 w-full max-w-md aspect-square flex items-center justify-center ${worldData.themeClass}`;
+
+      document.getElementById('topWorldIcon').innerText = worldData.icon;
+      document.getElementById('topLevelText').innerText = `ด่าน ${lvlData.level} : ${lvlData.name}`;
+
+      // สแกนค้นหา Entity
+      for (let r = 0; r < lvlData.size; r++) {
+        for (let c = 0; c < lvlData.size; c++) {
+          const val = currentGrid[r][c];
+          if (val === 2) {
+            playerPos = { r, c };
+            footprints.add(`${r},${c}`);
+          } else if (val === 3) {
+            goalPos = { r, c };
+          } else if (val === 4) {
+            carrotsRemaining++;
+            totalCarrotsInLevel++;
+          } else if (val === 5) {
+            totalKeysInLevel++;
+          }
+        }
+      }
+
+      // แสดงแถบกุญแจหากด่านนี้มีกุญแจ
+      const keyBox = document.getElementById('keyIndicator');
+      if (totalKeysInLevel > 0) {
+        keyBox.classList.remove('hidden');
+        keyBox.classList.add('flex');
+        document.getElementById('keyCounter').innerText = `${keysHeld} / ${totalKeysInLevel}`;
+      } else {
+        keyBox.classList.add('hidden');
+        keyBox.classList.remove('flex');
+      }
+
+      updateCarrotCounterUI();
+      document.getElementById('stepCounter').innerText = stepsTaken;
+
+      // สร้างตารางกระดานเขาวงกต
+      renderBoardGrid(lvlData.size, worldData);
+
+      // อ่านเสียงแนะนำด่าน
+      speakInstruction(lvlData.introVoice);
+    }
+
+    function updateCarrotCounterUI() {
+      document.getElementById('carrotCounter').innerText = `${totalCarrotsInLevel - carrotsRemaining} / ${totalCarrotsInLevel}`;
+    }
+
+    function renderBoardGrid(size, worldData) {
+      const board = document.getElementById('mazeBoard');
+      board.innerHTML = '';
+      board.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
+      board.style.gridTemplateRows = `repeat(${size}, minmax(0, 1fr))`;
+
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          const cell = document.createElement('div');
+          cell.id = `cell-${r}-${c}`;
+          cell.className = `w-full h-full flex items-center justify-center relative select-none rounded-lg text-lg sm:text-2xl transition-all duration-150`;
+
+          const val = currentGrid[r][c];
+          if (val === 1) {
+            // กำแพงตามธีมโลก
+            cell.className += ` ${worldData.wallClass} shadow-inner font-black`;
+            cell.innerHTML = `<span class="opacity-80">${worldData.wallIcon}</span>`;
+          } else {
+            // ทางเดิน
+            cell.className += ` ${worldData.pathClass}`;
+          }
+
+          board.appendChild(cell);
+        }
+      }
+
+      updateEntitiesOnBoard();
+    }
+
+    function updateEntitiesOnBoard() {
+      const lvlData = LEVELS.find(l => l.level === currentLevelNumber);
+      const worldData = WORLDS.find(w => w.id === lvlData.world);
+
+      for (let r = 0; r < lvlData.size; r++) {
+        for (let c = 0; c < lvlData.size; c++) {
+          const cell = document.getElementById(`cell-${r}-${c}`);
+          if (!cell || currentGrid[r][c] === 1) continue;
+
+          cell.innerHTML = '';
+          const val = currentGrid[r][c];
+
+          // 1. แสดงรอยเท้ากระต่าย 🐾 เพื่อจำลองการลองถูกลองผิด
+          if (footprints.has(`${r},${c}`) && !(r === playerPos.r && c === playerPos.c)) {
+            const print = document.createElement('span');
+            print.className = 'text-[11px] sm:text-xs opacity-40 text-amber-800';
+            print.innerText = '🐾';
+            cell.appendChild(print);
+          }
+
+          // 2. แสดงแสงคำใบ้ของพี่นกฮูก
+          if (hintPath.some(h => h.r === r && h.c === c)) {
+            const spark = document.createElement('div');
+            spark.className = 'absolute inset-0 bg-yellow-300/40 rounded-lg hint-step flex items-center justify-center';
+            spark.innerHTML = '<span class="text-xs">✨</span>';
+            cell.appendChild(spark);
+          }
+
+          // 3. วาดสิ่งของในฉาก
+          if (val === 4) {
+            // แครอท
+            cell.innerHTML += '<span class="pulse-item inline-block">🥕</span>';
+          } else if (val === 5) {
+            // กุญแจทองคำ
+            cell.innerHTML += '<span class="pulse-item inline-block">🔑</span>';
+          } else if (val === 6) {
+            // ประตูล็อก
+            cell.innerHTML += '<span class="text-xl sm:text-2xl">🚪</span>';
+          } else if (val === 3) {
+            // โพรงกระต่าย / บ้าน
+            cell.innerHTML += '<span class="text-xl sm:text-2xl">🏠</span>';
+          }
+
+          // 4. วาดตัวละครกระต่ายที่ตำแหน่งปัจจุบัน
+          if (r === playerPos.r && c === playerPos.c) {
+            const rabbit = document.createElement('span');
+            rabbit.id = 'playerRabbit';
+            rabbit.className = 'text-2xl sm:text-3xl inline-block drop-shadow-md z-10 transition-transform';
+            rabbit.innerText = '🐰';
+            cell.appendChild(rabbit);
+          }
+        }
+      }
+    }
+
+    /* ========================================================
+       6. PLAYER MOVEMENT & TRIAL & ERROR LOGIC
+       ======================================================== */
+    function handleInputDirection(dc, dr) {
+      const lvlData = LEVELS.find(l => l.level === currentLevelNumber);
+      const nr = playerPos.r + dr;
+      const nc = playerPos.c + dc;
+
+      // ตรวจสอบออกนอกขอบกระดาน
+      if (nr < 0 || nr >= lvlData.size || nc < 0 || nc >= lvlData.size) {
+        triggerWallCollision();
+        return;
+      }
+
+      const dest = currentGrid[nr][nc];
+
+      // 1. ชนกำแพง (พุ่มไม้/หิน/อิฐ)
+      if (dest === 1) {
+        triggerWallCollision();
+        return;
+      }
+
+      // 2. ชนประตูที่ล็อกอยู่
+      if (dest === 6) {
+        if (keysHeld > 0) {
+          // มีกุญแจ -> ปลดล็อกประตู!
+          keysHeld--;
+          currentGrid[nr][nc] = 0; // เปลี่ยนประตูเป็นทางเดินโล่ง
+          playSound('door');
+          document.getElementById('keyCounter').innerText = `${keysHeld} / ${totalKeysInLevel}`;
+          speakInstruction("เย้! กุญแจไขประตูเปิดแล้ว เดินต่อไปได้เลย!");
+        } else {
+          // ไม่มีกุญแจ -> เตือนให้ไปหากุญแจก่อน
+          playSound('bonk');
+          const rabbit = document.getElementById('playerRabbit');
+          if (rabbit) rabbit.classList.add('bunny-bonk');
+          speakInstruction("ประตูล็อกอยู่จ้ะ ต้องไปเก็บกุญแจทองคำ 🔑 มาเปิดก่อนนะ");
+          return;
+        }
+      }
+
+      // เดินก้าวต่อไปสำเร็จ
+      playerPos.r = nr;
+      playerPos.c = nc;
+      stepsTaken++;
+      document.getElementById('stepCounter').innerText = stepsTaken;
+      footprints.add(`${nr},${nc}`);
+      playSound('hop');
+
+      // ล้างคำใบ้ถ้าเดินตามเส้นทางแล้ว
+      if (hintPath.length > 0 && hintPath[0].r === nr && hintPath[0].c === nc) {
+        hintPath.shift();
+      }
+
+      // 3. เก็บแครอท
+      if (dest === 4) {
+        currentGrid[nr][nc] = 0;
+        carrotsRemaining--;
+        playSound('carrot');
+        updateCarrotCounterUI();
+        if (carrotsRemaining > 0) {
+          speakInstruction(`อร่อยจัง! เหลือแครอทอีก ${carrotsRemaining} หัวนะจ๊ะ`);
+        } else {
+          speakInstruction("เก็บแครอทครบหมดแล้ว! รีบพากระต่ายกลับเข้าบ้านเลย 🏠");
+        }
+      }
+
+      // 4. เก็บกุญแจทองคำ
+      if (dest === 5) {
+        currentGrid[nr][nc] = 0;
+        keysHeld++;
+        playSound('key');
+        document.getElementById('keyCounter').innerText = `${keysHeld} / ${totalKeysInLevel}`;
+        speakInstruction("ได้กุญแจทองคำแล้ว! นำไปเปิดประตูที่ล็อกไว้ได้เลย");
+      }
+
+      // อัปเดตกระดาน
+      updateEntitiesOnBoard();
+
+      // แอนิเมชั่นกระโดด
+      const rEl = document.getElementById('playerRabbit');
+      if (rEl) {
+        rEl.classList.remove('bunny-hop');
+        void rEl.offsetWidth;
+        rEl.classList.add('bunny-hop');
+      }
+
+      // 5. ตรวจสอบเงื่อนไขการชนะด่าน (ถึงบ้าน + เก็บแครอทครบ)
+      if (playerPos.r === goalPos.r && playerPos.c === goalPos.c) {
+        if (carrotsRemaining === 0) {
+          triggerLevelVictory();
+        } else {
+          playSound('bonk');
+          speakInstruction(`ยังเข้าบ้านไม่ได้นะจ๊ะ ต้องเก็บแครอทให้ครบก่อน เหลืออีก ${carrotsRemaining} หัวจ้า`);
+        }
+      }
+    }
+
+    // ระบบชนกำแพงไม่ลงโทษรุนแรง (ส่ายหัวดุ๊กดิ๊ก ดึ๋งๆ ตลกๆ)
+    function triggerWallCollision() {
+      playSound('bonk');
+      const rabbit = document.getElementById('playerRabbit');
+      if (rabbit) {
+        rabbit.classList.remove('bunny-bonk');
+        void rabbit.offsetWidth;
+        rabbit.classList.add('bunny-bonk');
+      }
+      // สุ่มคำพูดสอนให้เด็กไม่ท้อแท้
+      const encouragements = [
+        "โอ๊ะ ชนพุ่มไม้ซะแล้ว ลองถอยแล้วเลือกทางใหม่นะ!",
+        "ทางนี้ตันจ้า ลองเลี้ยวไปอีกทางดูสิ",
+        "ไม่เป็นไรนะจ๊ะ ลองผิดลองถูกเดี๋ยวก็เจอทางออก!"
+      ];
+      speakInstruction(encouragements[Math.floor(Math.random() * encouragements.length)]);
+    }
+
+    function restartCurrentLevel() {
+      playSound('hop');
+      loadLevel(currentLevelNumber);
+    }
+
+    /* ========================================================
+       7. OWL HINT (พี่นกฮูกใบ้ทางด้วย Breadth-First Search: BFS)
+       ======================================================== */
+    function activateOwlHint() {
+      playSound('hint');
+      const lvlData = LEVELS.find(l => l.level === currentLevelNumber);
+      
+      // กำหนดเป้าหมายถัดไปที่ต้องเดินไปหา:
+      // 1. ถ้ายังมีประตูที่ล็อกและยังไม่มีกุญแจ -> หาตำแหน่งกุญแจทองที่ยังไม่เก็บ
+      // 2. ถ้ามีแครอทเหลือ -> หาแครอทที่ใกล้ที่สุด
+      // 3. ถ้าของครบหมดแล้ว -> หาโพรงกระต่ายเป้าหมาย (Goal)
+      let targetCoords = [];
+
+      if (totalKeysInLevel > 0 && keysHeld === 0) {
+        // หาตำแหน่งกุญแจ
+        for (let r = 0; r < lvlData.size; r++) {
+          for (let c = 0; c < lvlData.size; c++) {
+            if (currentGrid[r][c] === 5) targetCoords.push({ r, c });
+          }
+        }
+      }
+
+      if (targetCoords.length === 0 && carrotsRemaining > 0) {
+        // หาตำแหน่งแครอทที่เหลือ
+        for (let r = 0; r < lvlData.size; r++) {
+          for (let c = 0; c < lvlData.size; c++) {
+            if (currentGrid[r][c] === 4) targetCoords.push({ r, c });
+          }
+        }
+      }
+
+      if (targetCoords.length === 0) {
+        // หาบ้านเป้าหมาย
+        targetCoords.push(goalPos);
+      }
+
+      // รัน BFS หาเส้นทางสั้นที่สุดจากผู้เล่นไปยังเป้าหมาย
+      const path = findBfsPath(playerPos, targetCoords, lvlData.size);
+
+      if (path && path.length > 0) {
+        // แสดงแสงใบ้ทางข้างหน้า 3-4 ก้าว
+        hintPath = path.slice(0, 4);
+        updateEntitiesOnBoard();
+        speakInstruction("พี่นกฮูกช่วยส่องแสงทองบอกทางข้างหน้าให้แล้ว เดินตามรอยแสงไปเลยจ้า!");
+      } else {
+        speakInstruction("ลองสำรวจทางเดินรอบๆ ดูนะคนเก่ง!");
+      }
+    }
+
+    function findBfsPath(start, targets, size) {
+      const queue = [[start]];
+      const visited = new Set([`${start.r},${start.c}`]);
+      const dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+
+      while (queue.length > 0) {
+        const curPath = queue.shift();
+        const curr = curPath[curPath.length - 1];
+
+        // ตรวจสอบว่าถึงเป้าหมายใดเป้าหมายหนึ่งหรือยัง
+        if (targets.some(t => t.r === curr.r && t.c === curr.c) && curPath.length > 1) {
+          return curPath.slice(1); // ตัดจุดเริ่มต้นออก เหลือเฉพาะก้าวต่อไป
+        }
+
+        for (const [dc, dr] of dirs) {
+          const nr = curr.r + dr;
+          const nc = curr.c + dc;
+          const key = `${nr},${nc}`;
+
+          if (nr >= 0 && nr < size && nc >= 0 && nc < size && !visited.has(key)) {
+            const val = currentGrid[nr][nc];
+            // เดินผ่านได้ถ้าไม่ใช่กำแพง (1) และไม่ใช่ประตูที่ไม่มีกุญแจไข
+            const canPass = val !== 1 && !(val === 6 && keysHeld === 0);
+            if (canPass) {
+              visited.add(key);
+              queue.push([...curPath, { r: nr, c: nc }]);
+            }
+          }
+        }
+      }
+      return null;
+    }
+
+    /* ========================================================
+       8. VICTORY CELEBRATION & STAR SYSTEM
+       ======================================================== */
+    function triggerLevelVictory() {
+      playSound('victory');
+      const lvlData = LEVELS.find(l => l.level === currentLevelNumber);
+      
+      // คำนวณดาวตามจำนวนก้าว (ใจดีสำหรับเด็กประถม)
+      let stars = 1;
+      if (stepsTaken <= lvlData.optimalSteps + 3) {
+        stars = 3;
+      } else if (stepsTaken <= lvlData.optimalSteps + 10) {
+        stars = 2;
+      }
+
+      saveProgress(currentLevelNumber, stars);
+
+      document.getElementById('victoryStarsContainer').innerText = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+      document.getElementById('victoryStepCountText').innerText = `ใช้ความพยายาม ${stepsTaken} ก้าว (ยอดเยี่ยมมาก!)`;
+
+      const praise = [
+        "สุดยอดไปเลย! หนูกล้าคิด กล้าลองผิดลองถูกจนสำเร็จ!",
+        "เก่งมากๆ จ้ะ! เจ้ากระต่ายได้กินแครอทอิ่มแปล้แล้ว!",
+        "ปรบมือให้คนเก่ง! หนูเป็นนักคิดแก้ปัญหาตัวจริง!"
+      ];
+      const winTxt = praise[Math.floor(Math.random() * praise.length)];
+      document.getElementById('victoryMessage').innerText = winTxt;
+
+      // จัดการปุ่มด่านต่อไป
+      const btnNext = document.getElementById('btnNextLevel');
+      if (currentLevelNumber >= LEVELS.length) {
+        btnNext.innerText = "🏆 ชนะครบทุกด่านแล้ว!";
+      } else {
+        btnNext.innerText = "ด่านต่อไป 🚀";
+      }
+
+      document.getElementById('modalVictory').classList.remove('hidden');
+      document.getElementById('modalVictory').classList.add('flex');
+
+      startConfetti();
+      speakInstruction(`ยินดีด้วยจ้า! ${winTxt} ได้ดาว ${stars} ดวง`);
+    }
+
+    function proceedToNextLevel() {
+      closeVictoryModal();
+      if (currentLevelNumber < LEVELS.length) {
+        loadLevel(currentLevelNumber + 1);
+      } else {
+        openLevelSelect();
+      }
+    }
+
+    function closeVictoryModal() {
+      playSound('hop');
+      document.getElementById('modalVictory').classList.add('hidden');
+      document.getElementById('modalVictory').classList.remove('flex');
+      stopConfetti();
+    }
+
+    /* ========================================================
+       9. LEVEL SELECT MAP & TABS
+       ======================================================== */
+    let selectedWorldTab = 1;
+
+    function openLevelSelect() {
+      playSound('hop');
+      closeVictoryModal();
+      const curLvlData = LEVELS.find(l => l.level === currentLevelNumber);
+      filterWorldTab(curLvlData ? curLvlData.world : 1);
+
+      document.getElementById('modalLevelSelect').classList.remove('hidden');
+      document.getElementById('modalLevelSelect').classList.add('flex');
+      speakInstruction("เลือกด่านที่ต้องการเล่นได้เลยนะจ๊ะ สามารถเล่นด่านเดิมซ้ำเพื่อเก็บดาวให้ครบได้ด้วย!");
+    }
+
+    function closeLevelSelect() {
+      playSound('hop');
+      document.getElementById('modalLevelSelect').classList.add('hidden');
+      document.getElementById('modalLevelSelect').classList.remove('flex');
+    }
+
+    function filterWorldTab(wId) {
+      selectedWorldTab = wId;
+      // ปรับแต่งสไตล์แท็บ
+      for (let i = 1; i <= 4; i++) {
+        const btn = document.getElementById(`tabW${i}`);
+        if (i === wId) {
+          btn.className = "px-3 py-1.5 rounded-xl font-black text-xs border-2 bg-amber-500 text-white border-amber-700 whitespace-nowrap shadow-sm";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-xl font-black text-xs border-2 bg-white text-slate-700 border-slate-300 whitespace-nowrap";
+        }
+      }
+
+      const container = document.getElementById('levelGridContainer');
+      container.innerHTML = '';
+
+      const worldLevels = LEVELS.filter(l => l.world === wId);
+
+      worldLevels.forEach(lvl => {
+        const isUnlocked = lvl.level <= progressData.unlockedLevel;
+        const starCount = progressData.stars[lvl.level] || 0;
+        const isCurrent = lvl.level === currentLevelNumber;
+
+        const card = document.createElement('div');
+        card.className = `p-3 rounded-2xl border-2 flex flex-col justify-between transition-all ${
+          isUnlocked 
+            ? 'bg-white hover:bg-amber-50 border-amber-300 shadow-md cursor-pointer' 
+            : 'bg-slate-100 border-dashed border-slate-300 opacity-60 cursor-not-allowed'
+        } ${isCurrent ? 'ring-4 ring-amber-400' : ''}`;
+
+        if (isUnlocked) {
+          card.onclick = () => {
+            closeLevelSelect();
+            loadLevel(lvl.level);
+          };
+        }
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black px-2 py-0.5 rounded-md ${isUnlocked ? 'bg-amber-100 text-amber-900' : 'bg-slate-200 text-slate-500'}">
+              ด่าน ${lvl.level}
+            </span>
+            <span class="text-sm">${isUnlocked ? (starCount > 0 ? '⭐'.repeat(starCount) : '☆☆☆') : '🔒'}</span>
+          </div>
+          <div class="my-2">
+            <h4 class="text-xs sm:text-sm font-extrabold text-slate-800 truncate">${lvl.name}</h4>
+            <span class="text-[10px] text-slate-500 font-semibold block">ขนาด ${lvl.size}x${lvl.size} ช่อง</span>
+          </div>
+          <div class="mt-auto">
+            <span class="text-[11px] font-bold ${isUnlocked ? 'text-emerald-700' : 'text-slate-400'}">
+              ${isUnlocked ? 'แตะเพื่อเล่น ▶' : 'ยังไม่ปลดล็อก'}
+            </span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    /* ========================================================
+       10. CONFETTI ANIMATION (เฉลิมฉลองชัยชนะ)
+       ======================================================== */
+    let confettiActive = false;
+    let confettiParticles = [];
+
+    function startConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      canvas.classList.remove('hidden');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const ctx = canvas.getContext('2d');
+
+      confettiParticles = [];
+      const colors = ['#f59e0b', '#ec4899', '#10b981', '#3b82f6', '#8b5cf6', '#ef4444', '#fbbf24'];
+      for (let i = 0; i < 90; i++) {
+        confettiParticles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * -canvas.height,
+          size: Math.random() * 8 + 5,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: (Math.random() - 0.5) * 3,
+          vy: Math.random() * 4 + 3,
+          rot: Math.random() * 360,
+          vrot: (Math.random() - 0.5) * 8
+        });
+      }
+
+      confettiActive = true;
+      function loop() {
+        if (!confettiActive) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        confettiParticles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.vrot;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rot * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          ctx.restore();
+
+          if (p.y > canvas.height) {
+            p.y = -20;
+            p.x = Math.random() * canvas.width;
+          }
+        });
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    }
+
+    function stopConfetti() {
+      confettiActive = false;
+      const canvas = document.getElementById('confettiCanvas');
+      canvas.classList.add('hidden');
+    }
+
+    window.addEventListener('resize', () => {
+      const canvas = document.getElementById('confettiCanvas');
+      if (canvas && confettiActive) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+    });
+
+    /* ========================================================
+       11. KEYBOARD CONTROLS (ลูกศร และ W A S D)
+       ======================================================== */
+    window.addEventListener('keydown', (e) => {
+      // ป้องกันการเลื่อนหน้าจอ
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', ' '].includes(e.key)) {
+        e.preventDefault();
+      }
+
+      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') handleInputDirection(0, -1);
+      if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') handleInputDirection(0, 1);
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') handleInputDirection(-1, 0);
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') handleInputDirection(1, 0);
+      if (e.key === 'r' || e.key === 'R') restartCurrentLevel();
+      if (e.key === 'h' || e.key === 'H') activateOwlHint();
+    });
+
+    /* ========================================================
+       12. INITIAL BOOTSTRAP
+       ======================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedProgress();
+      loadLevel(1);
+    });
+  </script>
+</body>
+</html>
