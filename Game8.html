@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mini Mart Junior — แคชเชียร์นักคำนวณ & บริหารร้านค้า</title>
+
+    <!-- Google Fonts: Mali & Kanit & Orbitron -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700;800;900&family=Mali:wght@500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS & Canvas Confetti CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            overflow: hidden !important;
+            font-family: 'Kanit', sans-serif;
+            background: radial-gradient(circle at 50% 12%, #fdf4ff 0%, #fae8ff 40%, #e0e7ff 100%);
+            color: #1e1b4b;
+            font-size: 16px;
+        }
+        .mali-font { font-family: 'Mali', cursive, sans-serif; }
+        .pos-font { font-family: 'Orbitron', monospace; }
+
+        /* 3D Toy-Style Buttons */
+        .btn-3d {
+            transition: all 0.08s ease;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+        }
+        .btn-3d:hover { transform: translateY(-2px); filter: brightness(1.05); }
+        .btn-3d:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.18); }
+
+        /* Big Money Buttons */
+        .money-btn-big {
+            transition: all 0.08s ease;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+        }
+        .money-btn-big:hover { transform: translateY(-2px); filter: brightness(1.06); }
+        .money-btn-big:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,0.2); }
+
+        /* Laser Animation */
+        @keyframes sweepLaser {
+            0% { top: 0%; opacity: 0; }
+            50% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        .laser-beam { animation: sweepLaser 0.3s ease-in-out; }
+
+        /* Screen Shake */
+        @keyframes shakeAnim {
+            0%, 100% { transform: translate(0, 0); }
+            20% { transform: translate(-8px, 6px); }
+            40% { transform: translate(8px, -6px); }
+            60% { transform: translate(-5px, 4px); }
+            80% { transform: translate(5px, -4px); }
+        }
+        .screen-shake { animation: shakeAnim 0.35s ease-in-out; }
+
+        /* Receipt Paper Styling */
+        .receipt-paper {
+            background: #fffdf5;
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 8px 8px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .receipt-paper::after {
+            content: "";
+            position: absolute;
+            bottom: -8px; left: 0; right: 0; height: 8px;
+            background: radial-gradient(circle, transparent, transparent 50%, #fffdf5 50%, #fffdf5 100%);
+            background-size: 14px 14px;
+        }
+
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #c084fc; border-radius: 10px; }
+    </style>
+</head>
+<body class="flex flex-col h-screen w-screen p-2 sm:p-2.5 justify-between">
+
+    <!-- TOP BAR: Store Branding, Day Tracker & Financial Stats -->
+    <header class="bg-white/95 backdrop-blur-md rounded-2xl p-2 sm:p-2.5 border-2 border-purple-200 shadow-md flex items-center justify-between gap-2 shrink-0">
+        <!-- Store Name & Edit Button -->
+        <div class="flex items-center gap-2 cursor-pointer hover:opacity-90" onclick="editStoreName()" title="คลิกเพื่อเปลี่ยนชื่อร้านค้า">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-400 via-orange-500 to-pink-500 flex items-center justify-center text-2xl shadow">
+                🏪
+            </div>
+            <div>
+                <div class="flex items-center gap-1.5">
+                    <h1 id="storeNameDisplay" class="text-sm sm:text-lg font-black text-purple-950 mali-font leading-tight">ร้านมินิมาร์ทน้องนักคิด</h1>
+                    <span class="text-sm text-purple-400">✏️</span>
+                </div>
+                <div class="text-xs text-purple-600 font-bold flex items-center gap-1.5">
+                    <span>ผู้จัดการ: <b id="managerNameDisplay" class="text-purple-900 font-black">หนูน้อยแคชเชียร์</b></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day Tracker & Financial Indicators -->
+        <div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+            <!-- Day & Customer Indicator -->
+            <div class="bg-indigo-50 border-2 border-indigo-200 px-3 py-1 rounded-2xl text-indigo-950 flex flex-col items-center">
+                <span class="text-[10px] text-indigo-600 font-bold" id="dayNumberLabel">วันที่ 1</span>
+                <span class="font-black text-xs sm:text-base text-indigo-900" id="customerProgressDisplay">ลูกค้า 1/8</span>
+            </div>
+            <!-- Current Capital -->
+            <div class="bg-emerald-50 border-2 border-emerald-200 px-3 py-1 rounded-2xl text-emerald-950 flex flex-col items-center">
+                <span class="text-[10px] text-emerald-600 font-bold">เงินทุนร้านค้า</span>
+                <span class="font-black text-xs sm:text-base text-emerald-700" id="storeCapitalDisplay">1,000 ฿</span>
+            </div>
+            <!-- Accumulated Profit -->
+            <div class="bg-amber-50 border-2 border-amber-200 px-3 py-1 rounded-2xl text-amber-950 flex flex-col items-center">
+                <span class="text-[10px] text-amber-600 font-bold">กำไรสะสม</span>
+                <span class="font-black text-xs sm:text-base text-amber-700" id="storeProfitDisplay">+0 ฿</span>
+            </div>
+            <!-- Store Reputation Stars -->
+            <div class="bg-purple-50 border-2 border-purple-200 px-2.5 py-1 rounded-2xl text-purple-950 flex flex-col items-center">
+                <span class="text-[10px] text-purple-600 font-bold">ชื่อเสียงร้าน</span>
+                <span class="font-black text-xs sm:text-sm text-amber-500" id="storeStarsDisplay">⭐⭐⭐⭐⭐</span>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+            <!-- Auto Restock Sold Items (With 7% Surcharge) -->
+            <button onclick="promptAutoRestock()" class="btn-3d bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black px-3 py-2 rounded-xl text-xs sm:text-sm shadow flex items-center gap-1.5 mali-font border border-amber-300" title="สั่งซื้อสินค้าเติมสต็อกตามที่ลูกค้าเพิ่งซื้อไปแบบอัตโนมัติ (มีค่าบริการ 7%)">
+                <span class="text-base">⚡</span>
+                <span>เติมของด่วน (+7%)</span>
+            </button>
+            <button onclick="openRestockModal()" class="btn-3d bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black px-2.5 sm:px-3 py-2 rounded-xl text-xs sm:text-sm shadow flex items-center gap-1 mali-font" title="เลือกสั่งซื้อสินค้าเข้าร้านเอง">
+                <span>🚚 ตลาดค้าส่ง</span>
+            </button>
+            <button onclick="openDecorModal()" class="btn-3d bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-black px-2.5 sm:px-3 py-2 rounded-xl text-xs sm:text-sm shadow flex items-center gap-1 mali-font" title="แต่งร้านเพิ่มบัฟ">
+                <span>🎨 แต่งร้าน</span>
+            </button>
+            <button onclick="toggleAudio()" id="audioToggleBtn" class="bg-purple-100 hover:bg-purple-200 text-purple-800 p-2 rounded-xl text-sm font-bold border border-purple-300 transition active:scale-95" title="เปิด/ปิดเสียง">
+                <span id="audioIcon">🔊</span>
+            </button>
+            <!-- Fullscreen Toggle Button -->
+            <button onclick="toggleFullscreen()" id="fullscreenBtn" class="btn-3d bg-slate-800 hover:bg-slate-700 text-yellow-300 px-3 py-2 rounded-xl text-xs sm:text-sm font-black border border-slate-600 flex items-center gap-1" title="เล่นแบบเต็มหน้าจอ">
+                <span id="fsIcon">⛶</span>
+                <span class="hidden md:inline">เต็มจอ</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN ARENA -->
+    <main id="mainGameStage" class="grid grid-cols-1 md:grid-cols-12 gap-2 sm:gap-2.5 flex-1 my-1.5 min-h-0">
+
+        <!-- LEFT COLUMN: Customer, Conveyor & Large Cash Drawer (7.5 Cols) -->
+        <section class="md:col-span-7 flex flex-col justify-between gap-1.5 min-h-0">
+
+            <!-- Customer & Conveyor Box -->
+            <div class="bg-white/90 rounded-2xl p-2.5 border-2 border-purple-200 shadow-sm flex flex-col justify-between flex-1 min-h-0 relative">
+                
+                <!-- Daily Event & Weather Ticker -->
+                <div id="dailyEventBanner" class="bg-gradient-to-r from-amber-100 to-orange-100 border border-amber-300 px-3 py-1 rounded-xl text-xs font-bold text-amber-900 flex items-center justify-between shrink-0 mb-1">
+                    <span id="dailyEventText" class="truncate">☀️ วันนี้อากาศดี! ลูกค้าแวะมาช้อปปิ้งกันอย่างคึกคัก</span>
+                    <span class="text-[11px] text-amber-700 bg-white/80 px-2 py-0.5 rounded-md font-semibold shrink-0 ml-2">สถานการณ์วันนี้</span>
+                </div>
+
+                <!-- Customer Info Bar -->
+                <div class="flex items-center justify-between gap-2 pb-1.5 border-b border-purple-100 shrink-0">
+                    <div class="flex items-center gap-2.5">
+                        <div id="customerAvatar" class="w-12 h-12 rounded-2xl bg-cyan-100 border-2 border-cyan-400 flex items-center justify-center text-3xl shadow-sm transition-transform duration-300">
+                            🐧
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span id="customerName" class="font-black text-sm sm:text-base text-purple-950 mali-font">น้องเพนกวิน</span>
+                                <span id="customerMoodTag" class="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold">อารมณ์ดี 😊</span>
+                            </div>
+                            <div class="text-xs sm:text-sm text-purple-800 font-bold mali-font" id="customerSpeech">
+                                "สแกนสินค้าแล้วหนูจะจ่ายเงินให้นะฮะ!"
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step Badge -->
+                    <div id="stepGuideBadge" class="bg-amber-100 border-2 border-amber-300 text-amber-900 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-black mali-font shadow-xs">
+                        ขั้นที่ 1: แตะสแกนสินค้าให้ครบ แล้วบวกเลข
+                    </div>
+                </div>
+
+                <!-- Conveyor Belt with Stock Badges -->
+                <div class="flex-1 flex items-center justify-around gap-2 bg-gradient-to-b from-slate-100 to-slate-200 rounded-xl border-2 border-dashed border-slate-300 p-2 my-1 relative overflow-hidden min-h-0">
+                    <!-- Scanner Laser FX -->
+                    <div id="scannerLaserFx" class="hidden absolute inset-0 pointer-events-none z-10">
+                        <div class="w-full h-1.5 bg-red-500 shadow-[0_0_15px_red] absolute laser-beam"></div>
+                    </div>
+
+                    <!-- Conveyor Belt Items Container -->
+                    <div id="conveyorItems" class="flex items-center justify-center gap-2 sm:gap-4 w-full">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Counter Customer Cash Tray (Prominently displayed) -->
+                <div id="counterCashTrayBox" class="bg-emerald-50 border-2 border-emerald-300 p-2 rounded-xl flex items-center justify-between shrink-0 shadow-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl animate-bounce">💵</span>
+                        <div>
+                            <div class="text-[11px] text-emerald-700 font-bold mali-font">เงินที่ลูกค้ายื่นวางบนเคาน์เตอร์:</div>
+                            <div class="text-base sm:text-xl font-black text-emerald-900 font-mono" id="customerCashBill">
+                                รอลูกค้าจ่ายเงิน...
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-emerald-700 font-bold mali-font bg-white/80 px-2.5 py-1 rounded-lg border border-emerald-200 inline-block">
+                            💡 คิดเงินทอน แล้วหยิบจากลิ้นชักด้านล่าง
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ENLARGED CASH DRAWER & CHANGE TRAY -->
+            <div class="bg-white/95 rounded-2xl p-2.5 sm:p-3 border-2 border-purple-200 shadow-sm flex flex-col sm:flex-row gap-2.5 shrink-0">
+                <!-- Large Cash Drawer -->
+                <div class="flex-1 space-y-1.5">
+                    <div class="text-xs sm:text-sm font-black text-purple-950 mali-font flex items-center justify-between">
+                        <span>💵 ลิ้นชักเงินสดร้านค้า (แตะหยิบเงินทอนใส่ถาด):</span>
+                        <span class="text-slate-500 text-xs font-normal">แตะได้หลายใบ/เหรียญ</span>
+                    </div>
+
+                    <!-- 2 Rows of Big Buttons -->
+                    <div class="grid grid-cols-4 gap-2 text-center">
+                        <!-- Banknotes Row -->
+                        <button onclick="addChangeMoney(500)" class="money-btn-big bg-purple-100 hover:bg-purple-200 text-purple-900 border-2 border-purple-300 rounded-2xl py-2 flex items-center justify-center gap-1">
+                            <span class="text-sm sm:text-base font-black">500</span><span class="text-xs">บาท</span>
+                        </button>
+                        <button onclick="addChangeMoney(100)" class="money-btn-big bg-red-100 hover:bg-red-200 text-red-900 border-2 border-red-300 rounded-2xl py-2 flex items-center justify-center gap-1">
+                            <span class="text-sm sm:text-base font-black">100</span><span class="text-xs">บาท</span>
+                        </button>
+                        <button onclick="addChangeMoney(50)" class="money-btn-big bg-blue-100 hover:bg-blue-200 text-blue-900 border-2 border-blue-300 rounded-2xl py-2 flex items-center justify-center gap-1">
+                            <span class="text-sm sm:text-base font-black">50</span><span class="text-xs">บาท</span>
+                        </button>
+                        <button onclick="addChangeMoney(20)" class="money-btn-big bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border-2 border-emerald-300 rounded-2xl py-2 flex items-center justify-center gap-1">
+                            <span class="text-sm sm:text-base font-black">20</span><span class="text-xs">บาท</span>
+                        </button>
+
+                        <!-- Coins Row -->
+                        <button onclick="addChangeMoney(10)" class="money-btn-big bg-amber-100 hover:bg-amber-200 text-amber-950 border-2 border-amber-400 rounded-2xl py-1.5 flex items-center justify-center gap-1">
+                            <span class="text-sm sm:text-base font-black">10</span><span class="text-xs">เหรียญ</span>
+                        </button>
+                        <button onclick="addChangeMoney(5)" class="money-btn-big bg-slate-200 hover:bg-slate-300 text-slate-800 border-2 border-slate-400 rounded-2xl py-1.5 flex items-center justify-center gap-1">
+                            <span class="text-sm sm:text-base font-black">5</span><span class="text-xs">เหรียญ</span>
+                        </button>
+                        <button onclick="addChangeMoney(2)" class="money-btn-big bg-yellow-100 hover:bg-yellow-200 text-yellow-950 border-2 border-yellow-400 rounded-2xl py-1.5 flex items-center justify-center gap-1">
+                            <span class="text-sm sm:text-base font-black">2</span><span class="text-xs">เหรียญ</span>
+                        </button>
+                        <button onclick="addChangeMoney(1)" class="money-btn-big bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 rounded-2xl py-1.5 flex items-center justify-center gap-1">
+                            <span class="text-sm sm:text-base font-black">1</span><span class="text-xs">เหรียญ</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Change Tray -->
+                <div class="w-full sm:w-64 bg-purple-50 p-2.5 rounded-2xl border-2 border-purple-200 flex flex-col justify-between space-y-1">
+                    <div class="flex items-center justify-between text-xs sm:text-sm">
+                        <span class="font-black text-purple-950 mali-font">ถาดเงินทอน:</span>
+                        <button onclick="clearChangeTray()" class="text-xs text-rose-600 font-black hover:underline bg-rose-50 px-2 py-0.5 rounded border border-rose-200">ล้างถาด</button>
+                    </div>
+                    <!-- Money tokens -->
+                    <div id="changeTrayVisual" class="min-h-[30px] max-h-[36px] flex items-center gap-1.5 overflow-x-auto custom-scroll py-0.5">
+                        <span class="text-xs text-purple-400 italic">ยังไม่ได้หยิบเงินทอน...</span>
+                    </div>
+                    <div class="flex items-center justify-between border-t border-purple-200 pt-1 text-xs sm:text-sm">
+                        <span class="text-purple-900 font-bold">รวมเงินทอน:</span>
+                        <span class="font-black text-base text-purple-900"><span id="trayTotalDisplay">0</span> บาท</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT COLUMN: COMPACT POS TERMINAL & COMPACT NUMPAD (4.5 Cols) -->
+        <section class="md:col-span-5 bg-slate-900 text-white rounded-2xl p-2.5 sm:p-3 border-4 border-slate-700 shadow-xl flex flex-col justify-between min-h-0 font-mono">
+            
+            <!-- Terminal Header -->
+            <div class="flex items-center justify-between border-b border-slate-700 pb-1 text-xs text-slate-400">
+                <span class="text-emerald-400 font-bold mali-font flex items-center gap-1.5 text-xs sm:text-sm">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span>POS Terminal เครื่องคิดเงิน</span>
+                </span>
+                <span class="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">คิดเลขเอง</span>
+            </div>
+
+            <!-- Scanned Items List -->
+            <div class="bg-slate-950 rounded-xl p-2 border border-slate-800 space-y-1 my-1 flex-1 max-h-[17vh] overflow-y-auto custom-scroll">
+                <div class="text-[11px] text-slate-400 border-b border-slate-800 pb-0.5 flex justify-between">
+                    <span>สินค้าที่สแกนแล้ว</span>
+                    <span>ราคาขาย</span>
+                </div>
+                <div id="posScannedList" class="space-y-1 text-xs sm:text-sm">
+                    <div class="text-slate-500 italic text-xs py-3 text-center">แตะสแกนสินค้าบนสายพานเพื่อดูราคา</div>
+                </div>
+            </div>
+
+            <!-- Compact Input Box -->
+            <div class="space-y-0.5 bg-slate-950 p-1.5 sm:p-2 rounded-xl border border-slate-800">
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-amber-300 font-bold mali-font text-xs sm:text-sm" id="numpadInputLabel">1. ป้อนราคารวมทั้งหมด:</span>
+                    <span class="text-[10px] text-slate-400">(คิดเลขเองนะ)</span>
+                </div>
+                <div class="bg-slate-900 p-1.5 rounded-lg border border-slate-700 text-right">
+                    <span id="numpadDisplay" class="pos-font text-xl sm:text-2xl text-emerald-400 font-black tracking-widest">0</span>
+                    <span class="text-xs text-slate-400 ml-1">บาท</span>
+                </div>
+            </div>
+
+            <!-- Compact NumPad Buttons -->
+            <div class="grid grid-cols-3 gap-1 pt-1">
+                <button onclick="pressNum(1)" class="btn-3d py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black text-sm sm:text-base">1</button>
+                <button onclick="pressNum(2)" class="btn-3d py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black text-sm sm:text-base">2</button>
+                <button onclick="pressNum(3)" class="btn-3d py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black text-sm sm:text-base">3</button>
+
+                <button onclick="pressNum(4)" class="btn-3d py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black text-sm sm:text-base">4</button>
+                <button onclick="pressNum(5)" class="btn-3d py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black text-sm sm:text-base">5</button>
+                <button onclick="pressNum(6)" class="btn-3d py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black text-sm sm:text-base">6</button>
+
+                <button onclick="pressNum(7)" class="btn-3d py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black text-sm sm:text-base">7</button>
+                <button onclick="pressNum(8)" class="btn-3d py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black text-sm sm:text-base">8</button>
+                <button onclick="pressNum(9)" class="btn-3d py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black text-sm sm:text-base">9</button>
+
+                <button onclick="clearNum()" class="btn-3d py-1 rounded-lg bg-rose-900 hover:bg-rose-800 text-rose-200 font-black text-xs">C ล้าง</button>
+                <button onclick="pressNum(0)" class="btn-3d py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black text-sm sm:text-base">0</button>
+                <button onclick="backspaceNum()" class="btn-3d py-1 rounded-lg bg-amber-900 hover:bg-amber-800 text-amber-200 font-black text-xs">⌫ ลบ</button>
+            </div>
+
+            <!-- Master Action Button -->
+            <div class="pt-1.5">
+                <button id="mainActionButton" onclick="handlePrimaryAction()" class="btn-3d w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black text-sm sm:text-base shadow-md flex items-center justify-center gap-1.5 mali-font">
+                    <span>1. ยืนยันราคารวมที่คิดได้ ➔</span>
+                </button>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- FOOTER STATUS TIP -->
+    <footer class="text-center text-xs text-purple-700 font-medium py-0.5 shrink-0 mali-font flex items-center justify-center gap-3">
+        <span>🏪 คลังสินค้าค้าส่ง: 110 รายการ</span>
+        <span>•</span>
+        <span>ระบบจำลองธุรกิจ & ฝึกทักษะการคิดคำนวณการเงินระดับประถม</span>
+    </footer>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- MODAL 1: RECEIPT & AUDIT EVALUATION (RESULT / PROFIT / LOSS / SCOLDING) -->
+    <div id="receiptModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 hidden">
+        <div class="receipt-paper max-w-sm w-full rounded-2xl p-4 sm:p-5 text-slate-800 font-mono text-xs sm:text-sm space-y-2.5 relative border-t-8 border-purple-600">
+            
+            <div class="text-center space-y-0.5 border-b-2 border-dashed border-slate-300 pb-1.5">
+                <div class="text-2xl">🧾</div>
+                <h3 class="font-black text-base sm:text-lg text-purple-950 mali-font" id="receiptStoreTitle">ร้านมินิมาร์ทน้องนักคิด</h3>
+                <div class="text-xs text-slate-500">ใบเสร็จรับเงิน & ตรวจสอบต้นทุน-กำไร</div>
+            </div>
+
+            <!-- Customer Reaction Banner -->
+            <div id="receiptReactionBox" class="p-2.5 rounded-xl text-center space-y-0.5">
+                <div id="receiptReactionIcon" class="text-3xl">😊</div>
+                <div id="receiptReactionTitle" class="font-black text-sm sm:text-base mali-font">คิดเงินถูกต้อง 100%!</div>
+                <div id="receiptReactionSpeech" class="text-xs italic">"คิดเงินเป๊ะมากจ้า ขอบคุณนะ!"</div>
+            </div>
+
+            <!-- Calculation Audit Comparison Table -->
+            <div class="space-y-1.5 bg-slate-100 p-2.5 rounded-xl text-xs">
+                <div class="flex justify-between">
+                    <span class="text-slate-600">ราคาสินค้าจริง (ขาย):</span>
+                    <span class="font-black" id="receiptActualTotal">0 บาท</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-600">ราคารวมที่หนูคิด:</span>
+                    <span class="font-black text-purple-900" id="receiptStudentTotal">0 บาท</span>
+                </div>
+                <div class="flex justify-between text-indigo-800">
+                    <span>ต้นทุนสินค้ารวม (Cost):</span>
+                    <span class="font-black" id="receiptCostTotal">0 บาท</span>
+                </div>
+                <div class="flex justify-between border-t border-slate-300 pt-1">
+                    <span class="text-slate-600">ลูกค้ายื่นเงินให้:</span>
+                    <span class="font-black" id="receiptCustomerCash">0 บาท</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-600">เงินทอนที่ถูกต้อง:</span>
+                    <span class="font-black" id="receiptActualChange">0 บาท</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-600">เงินทอนที่หนูทอนจริง:</span>
+                    <span class="font-black text-purple-900" id="receiptStudentChange">0 บาท</span>
+                </div>
+            </div>
+
+            <!-- Profit/Loss Financial Impact -->
+            <div id="receiptFinancialImpact" class="p-2 rounded-xl text-center font-bold text-xs sm:text-sm">
+                <!-- Injected dynamically -->
+            </div>
+
+            <!-- Advance Button -->
+            <button onclick="closeReceiptAndNextCustomer()" class="btn-3d w-full py-2.5 rounded-xl bg-purple-700 hover:bg-purple-600 text-white font-black text-xs sm:text-sm mali-font shadow">
+                รับลูกค้าคนต่อไป ➔
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 2: AUTO RESTOCK CONFIRMATION (WITH 7% FEE MATH) -->
+    <div id="autoRestockModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 hidden">
+        <div class="bg-white max-w-md w-full rounded-3xl p-5 text-purple-950 space-y-3.5 border-4 border-amber-400 shadow-2xl">
+            <div class="text-center space-y-1 border-b pb-2">
+                <div class="text-4xl animate-bounce">⚡🚚</div>
+                <h2 class="text-lg sm:text-xl font-black text-purple-950 mali-font">
+                    สั่งซื้อสินค้าเติมสต็อกอัตโนมัติ
+                </h2>
+                <p class="text-xs text-slate-500 mali-font">เติมของตามที่ลูกค้าเพิ่งซื้อไปแบบรวดเร็วทันใจ</p>
+            </div>
+
+            <div class="space-y-2 bg-amber-50 p-3 rounded-2xl border border-amber-200 text-xs sm:text-sm">
+                <div class="flex justify-between">
+                    <span class="text-slate-700">จำนวนสินค้าที่ต้องเติม:</span>
+                    <span class="font-bold text-purple-900" id="autoRestockItemCount">0 ชิ้น</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-700">ราคาทุนสินค้าปกติ:</span>
+                    <span class="font-bold" id="autoRestockBaseCost">0 บาท</span>
+                </div>
+                <div class="flex justify-between text-amber-800 font-bold border-t border-amber-200 pt-1">
+                    <span>ค่าบริการจัดส่งด่วน (7%):</span>
+                    <span id="autoRestockFee">+0 บาท</span>
+                </div>
+                <div class="flex justify-between text-sm sm:text-base font-black text-rose-600 border-t border-amber-300 pt-1">
+                    <span>ยอดเงินทุนที่ต้องจ่ายทั้งหมด:</span>
+                    <span id="autoRestockTotalCharge">0 บาท</span>
+                </div>
+            </div>
+
+            <div class="text-xs text-amber-900 bg-amber-100/70 p-2.5 rounded-xl mali-font leading-relaxed">
+                💡 <b>ข้อคิดการเงิน:</b> ระบบเติมของด่วนช่วยประหยัดเวลามาก ไม่ต้องเสียเวลาเลือกของ แต่ร้านต้องจ่ายค่าบริการ 7% จึงทำให้เหลือกำไรน้อยลงจ้า!
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <button onclick="closeAutoRestockModal()" class="btn-3d py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs mali-font">
+                    ยกเลิก
+                </button>
+                <button onclick="confirmAutoRestock()" class="btn-3d py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs sm:text-sm mali-font shadow">
+                    ตกลงสั่งเติมของทันที
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: DAILY CLOSING & BILL SETTLEMENT -->
+    <div id="dayClosingModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 hidden">
+        <div class="bg-white max-w-md w-full rounded-3xl p-5 text-purple-950 space-y-3.5 border-4 border-indigo-400 shadow-2xl">
+            <div class="text-center space-y-1 border-b pb-2">
+                <div class="text-3xl">🌙</div>
+                <h2 class="text-lg sm:text-xl font-black text-indigo-950 mali-font" id="closingDayTitle">
+                    สรุปบัญชีปิดร้านประจำวัน
+                </h2>
+                <p class="text-xs text-slate-500 mali-font">สรุปยอดขาย กำไร และชำระค่าใช้จ่ายประจำวัน</p>
+            </div>
+
+            <div class="space-y-1.5 bg-indigo-50 p-3 rounded-2xl text-xs sm:text-sm">
+                <div class="flex justify-between">
+                    <span class="text-indigo-800">ลูกค้าที่ให้บริการวันนี้:</span>
+                    <span class="font-bold text-indigo-950" id="closingCustomerCount">8 คน</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-indigo-800">กำไรขั้นต้นจากการขาย:</span>
+                    <span class="font-black text-emerald-700" id="closingGrossProfit">+0 บาท</span>
+                </div>
+            </div>
+
+            <div class="space-y-1.5 bg-rose-50 p-3 rounded-2xl border border-rose-200 text-xs sm:text-sm">
+                <div class="font-bold text-rose-900 mali-font">บิลค่าใช้จ่ายที่ต้องชำระประจำวัน:</div>
+                <div class="flex justify-between text-rose-800">
+                    <span>💡 ค่าไฟฟ้า (แสงสว่าง & ตู้แช่):</span>
+                    <span class="font-bold" id="billElectricity">-25 บาท</span>
+                </div>
+                <div class="flex justify-between text-rose-800">
+                    <span>🚰 ค่าน้ำประปา & ทำความสะอาด:</span>
+                    <span class="font-bold" id="billWater">-15 บาท</span>
+                </div>
+                <div class="flex justify-between text-rose-800">
+                    <span>🏛️ ภาษีร้านค้า / บำรุงท้องถิ่น:</span>
+                    <span class="font-bold" id="billTax">-20 บาท</span>
+                </div>
+                <div class="border-t border-rose-200 pt-1 flex justify-between font-black text-rose-950">
+                    <span>รวมค่าใช้จ่ายทั้งหมด:</span>
+                    <span id="billTotalExpense">-60 บาท</span>
+                </div>
+            </div>
+
+            <div class="p-2.5 rounded-xl text-center text-xs sm:text-sm font-black" id="closingNetResultBox">
+                กำไรสุทธิคงเหลือเข้ากระเป๋าร้านค้า: +0 บาท
+            </div>
+
+            <button onclick="startNextDaySession()" class="btn-3d w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black text-sm sm:text-base mali-font shadow">
+                เริ่มเปิดร้านวันถัดไป ➔
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 4: DAILY MORNING EVENT ANNOUNCEMENT -->
+    <div id="morningEventModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 hidden">
+        <div class="bg-white max-w-sm w-full rounded-3xl p-5 text-center space-y-3 border-4 border-amber-300 shadow-2xl">
+            <div id="eventModalIcon" class="text-4xl animate-bounce">☀️</div>
+            <div>
+                <div class="text-xs font-bold text-amber-600 uppercase tracking-wider">เหตุการณ์เช้าวันใหม่</div>
+                <h3 id="eventModalTitle" class="text-lg sm:text-xl font-black text-purple-950 mali-font mt-0.5">วันเด็กแห่งชาติ!</h3>
+            </div>
+            <p id="eventModalDesc" class="text-xs sm:text-sm text-slate-700 leading-relaxed mali-font bg-amber-50 p-3 rounded-xl border border-amber-200">
+                เด็กๆ มาซื้อขนมและของเล่นกันเพียบ วันนี้ลูกค้าเข้าร้านเยอะเป็นพิเศษ!
+            </p>
+            <div class="text-xs sm:text-sm font-bold text-indigo-900 bg-indigo-50 p-2.5 rounded-xl" id="eventCustomerNotice">
+                คาดว่าวันนี้จะมีลูกค้า: <b>9 คน</b>
+            </div>
+            <button onclick="closeMorningEventModal()" class="btn-3d w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm mali-font shadow">
+                เปิดประตูต้อนรับลูกค้าเลย!
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 5: WHOLESALE RESTOCK HUB (110 PRODUCTS) -->
+    <div id="restockModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 hidden">
+        <div class="bg-white max-w-2xl w-full rounded-3xl p-4 sm:p-5 text-purple-950 space-y-3 border-4 border-blue-400 shadow-2xl flex flex-col max-h-[92vh]">
+            <div class="flex items-center justify-between border-b pb-2 shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">🚚</span>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-black text-blue-950 mali-font">ตลาดค้าส่ง: สั่งสินค้ามาเติมสต็อกในร้าน</h3>
+                        <div class="text-xs text-slate-500">เงินทุนร้านค้าคงเหลือ: <b id="restockCapitalDisplay" class="text-emerald-700">1,000 บาท</b></div>
+                    </div>
+                </div>
+                <button onclick="closeRestockModal()" class="w-8 h-8 rounded-full bg-slate-100 font-bold text-sm">✕</button>
+            </div>
+
+            <!-- Categories Filter -->
+            <div class="flex items-center gap-1.5 overflow-x-auto custom-scroll pb-1 shrink-0" id="restockCategoryTabs">
+                <!-- Injected by JS -->
+            </div>
+
+            <!-- Products List with Order Controls -->
+            <div id="restockItemsList" class="space-y-2 overflow-y-auto custom-scroll pr-1 flex-1 text-xs sm:text-sm">
+                <!-- Injected by JS -->
+            </div>
+
+            <!-- Restock Footer & Confirm Bill -->
+            <div class="border-t pt-2 flex items-center justify-between gap-3 shrink-0">
+                <div class="text-xs sm:text-sm">
+                    <div>ยอดสั่งซื้อรวม: <b id="restockTotalBill" class="text-base font-black text-rose-600">0 บาท</b></div>
+                    <div class="text-[11px] text-slate-500">เงินทุนจะถูกหักออกทันทีเมื่อรถส่งของมาถึง</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="promptAutoRestock()" class="btn-3d py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs mali-font">
+                        ⚡ เติมของด่วน (+7%)
+                    </button>
+                    <button onclick="confirmRestockOrder()" class="btn-3d py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs sm:text-sm mali-font shadow">
+                        🚚 ยืนยันสั่งของ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: STORE DECORATION & BUFFS SHOP -->
+    <div id="decorModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 hidden">
+        <div class="bg-white max-w-md w-full rounded-3xl p-5 text-purple-950 space-y-3 border-4 border-pink-300 shadow-2xl">
+            <div class="flex items-center justify-between border-b pb-2">
+                <h3 class="text-base sm:text-lg font-black text-purple-950 mali-font flex items-center gap-1.5">
+                    <span>🎨 ร้านค้าของตกแต่ง (ช่วยเพิ่มบัฟให้ร้าน)</span>
+                </h3>
+                <button onclick="closeDecorModal()" class="w-8 h-8 rounded-full bg-slate-100 font-bold text-sm">✕</button>
+            </div>
+
+            <div class="text-xs sm:text-sm text-purple-700 mali-font">
+                นำกำไรสะสมมาอัปเกรดร้าน! ของแต่ละชิ้นจะช่วยให้ลูกค้าใจเย็นขึ้น หรือให้เงินทิปเพิ่มขึ้น
+            </div>
+
+            <div id="decorItemsList" class="space-y-2 max-h-[48vh] overflow-y-auto custom-scroll pr-1 text-xs sm:text-sm">
+                <!-- Injected by JS -->
+            </div>
+
+            <button onclick="closeDecorModal()" class="btn-3d w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs sm:text-sm mali-font">
+                ปิดหน้าต่าง
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 7: PRODUCT CATALOG (110 ITEMS VIEW) -->
+    <div id="catalogModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 hidden">
+        <div class="bg-white max-w-lg w-full rounded-3xl p-5 text-purple-950 space-y-3 border-4 border-indigo-300 shadow-2xl">
+            <div class="flex items-center justify-between border-b pb-2">
+                <h3 class="text-base sm:text-lg font-black text-indigo-950 mali-font flex items-center gap-1.5">
+                    <span>📦 คลังสินค้า 110 รายการในมินิมาร์ท</span>
+                </h3>
+                <button onclick="closeCatalogModal()" class="w-8 h-8 rounded-full bg-slate-100 font-bold text-sm">✕</button>
+            </div>
+
+            <div class="flex items-center gap-1.5 overflow-x-auto custom-scroll pb-1 text-xs" id="catalogCategoryTabs">
+                <!-- Tabs by JS -->
+            </div>
+
+            <div id="catalogGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[50vh] overflow-y-auto custom-scroll pr-1 text-xs">
+                <!-- Injected by JS -->
+            </div>
+
+            <button onclick="closeCatalogModal()" class="btn-3d w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold rounded-xl text-xs sm:text-sm mali-font">
+                ปิดคลังสินค้า
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+    <script>
+        /* ========================================================
+           1. FULLSCREEN TOGGLE
+           ======================================================== */
+        function toggleFullscreen() {
+            AudioFX.playCashClick();
+            const icon = document.getElementById('fsIcon');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+                if (icon) icon.innerText = "⤢";
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                if (icon) icon.innerText = "⛶";
+            }
+        }
+
+        /* ========================================================
+           2. WEB AUDIO API SYNTHESIZER
+           ======================================================== */
+        let audioEnabled = true;
+        const AudioFX = {
+            ctx: null,
+            init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+            playTone(freq, type, duration, gainVal = 0.08) {
+                if (!audioEnabled) return;
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const g = this.ctx.createGain();
+                    osc.type = type || 'sine';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    g.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+                    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    osc.connect(g); g.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + duration);
+                } catch(e){}
+            },
+            playScan() { this.playTone(1900, 'sine', 0.08, 0.14); },
+            playCashClick() { this.playTone(950, 'triangle', 0.04, 0.08); },
+            playKaChing() {
+                this.playTone(600, 'triangle', 0.1, 0.12);
+                setTimeout(() => this.playTone(1200, 'sine', 0.25, 0.15), 90);
+            },
+            playAngryCustomer() { this.playTone(130, 'sawtooth', 0.4, 0.2); },
+            playTruckHorn() {
+                this.playTone(320, 'sawtooth', 0.18, 0.15);
+                setTimeout(() => this.playTone(320, 'sawtooth', 0.25, 0.15), 180);
+            },
+            playSuccess() {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, idx) => {
+                    setTimeout(() => this.playTone(f, 'triangle', 0.14, 0.09), idx * 60);
+                });
+            }
+        };
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            document.getElementById('audioIcon').innerText = audioEnabled ? '🔊' : '🔇';
+            if (audioEnabled) AudioFX.playCashClick();
+        }
+
+        /* ========================================================
+           3. THAI SPEECH SYNTHESIS
+           ======================================================== */
+        function speakThai(text) {
+            if (!('speechSynthesis' in window) || !audioEnabled) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'th-TH';
+            utterance.rate = 0.88;
+            utterance.pitch = 1.1;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        /* ========================================================
+           4. 110 PRODUCTS DATABASE (WITH COST & STOCK)
+           ======================================================== */
+        const MASTER_PRODUCTS = [
+            // อาหารอุ่นร้อน (16)
+            { id: 1, cat: 'อาหารอุ่นร้อน', name: 'ข้าวเหนียวหมูปิ้ง', cost: 12, price: 20, icon: '🍢', stock: 6 },
+            { id: 2, cat: 'อาหารอุ่นร้อน', name: 'ข้าวไข่เจียวทรงเครื่อง', cost: 15, price: 25, icon: '🍳', stock: 5 },
+            { id: 3, cat: 'อาหารอุ่นร้อน', name: 'ข้าวผัดไส้กรอก', cost: 18, price: 30, icon: '🍛', stock: 5 },
+            { id: 4, cat: 'อาหารอุ่นร้อน', name: 'ข้าวกะเพราหมูสับ', cost: 22, price: 35, icon: '🍲', stock: 4 },
+            { id: 5, cat: 'อาหารอุ่นร้อน', name: 'แซนด์วิชแฮมชีส', cost: 15, price: 25, icon: '🥪', stock: 6 },
+            { id: 6, cat: 'อาหารอุ่นร้อน', name: 'เบอร์เกอร์ไก่ชีส', cost: 20, price: 32, icon: '🍔', stock: 4 },
+            { id: 7, cat: 'อาหารอุ่นร้อน', name: 'ไส้กรอกชีสไบท์', cost: 10, price: 18, icon: '🌭', stock: 8 },
+            { id: 8, cat: 'อาหารอุ่นร้อน', name: 'ขนมจีบกุ้ง', cost: 14, price: 22, icon: '🥟', stock: 5 },
+            { id: 9, cat: 'อาหารอุ่นร้อน', name: 'ซาลาเปาหมูแดง', cost: 9, price: 15, icon: '🥟', stock: 6 },
+            { id: 10, cat: 'อาหารอุ่นร้อน', name: 'ซาลาเปาครีมคัสตาร์ด', cost: 9, price: 15, icon: '🥟', stock: 6 },
+            { id: 11, cat: 'อาหารอุ่นร้อน', name: 'บะหมี่กึ่งสำเร็จรูปคัพ', cost: 11, price: 16, icon: '🍜', stock: 10 },
+            { id: 12, cat: 'อาหารอุ่นร้อน', name: 'โจ๊กคัพหมูสับไข่', cost: 12, price: 18, icon: '🥣', stock: 6 },
+            { id: 13, cat: 'อาหารอุ่นร้อน', name: 'ไข่ต้มยางมะตูม (คู่)', cost: 10, price: 16, icon: '🥚', stock: 8 },
+            { id: 14, cat: 'อาหารอุ่นร้อน', name: 'ไข่ตุ๋นเนื้อเนียน', cost: 12, price: 19, icon: '🍮', stock: 5 },
+            { id: 15, cat: 'อาหารอุ่นร้อน', name: 'นักเก็ตไก่ทอด', cost: 16, price: 25, icon: '🍗', stock: 5 },
+            { id: 16, cat: 'อาหารอุ่นร้อน', name: 'ข้าวโพดหวานคลุกเนย', cost: 12, price: 20, icon: '🌽', stock: 5 },
+
+            // เบเกอรี่ (16)
+            { id: 17, cat: 'เบเกอรี่', name: 'ขนมปังแผ่นแถว', cost: 16, price: 24, icon: '🍞', stock: 5 },
+            { id: 18, cat: 'เบเกอรี่', name: 'โดนัทช็อกโกแลต', cost: 9, price: 15, icon: '🍩', stock: 6 },
+            { id: 19, cat: 'เบเกอรี่', name: 'โดนัทสายรุ้งสปริงเคิล', cost: 9, price: 15, icon: '🍩', stock: 6 },
+            { id: 20, cat: 'เบเกอรี่', name: 'ครัวซองต์เนยสด', cost: 14, price: 22, icon: '🥐', stock: 5 },
+            { id: 21, cat: 'เบเกอรี่', name: 'พายสับปะรด', cost: 11, price: 18, icon: '🥧', stock: 5 },
+            { id: 22, cat: 'เบเกอรี่', name: 'พายไก่เห็ดหอม', cost: 12, price: 20, icon: '🥧', stock: 5 },
+            { id: 23, cat: 'เบเกอรี่', name: 'ขนมปังไส้ครีมนมฮอกไกโด', cost: 11, price: 18, icon: '🥯', stock: 5 },
+            { id: 24, cat: 'เบเกอรี่', name: 'ขนมปังไส้สังขยาใบเตย', cost: 10, price: 16, icon: '🍞', stock: 5 },
+            { id: 25, cat: 'เบเกอรี่', name: 'เค้กโรลสตรอว์เบอร์รี', cost: 13, price: 20, icon: '🍰', stock: 4 },
+            { id: 26, cat: 'เบเกอรี่', name: 'คัพเค้กวานิลลา', cost: 11, price: 18, icon: '🧁', stock: 5 },
+            { id: 27, cat: 'เบเกอรี่', name: 'ชิฟฟอนใบเตย', cost: 8, price: 14, icon: '🍰', stock: 6 },
+            { id: 28, cat: 'เบเกอรี่', name: 'วาฟเฟิลเนยสด', cost: 12, price: 20, icon: '🧇', stock: 5 },
+            { id: 29, cat: 'เบเกอรี่', name: 'แพนเค้กราดน้ำผึ้ง', cost: 14, price: 22, icon: '🥞', stock: 4 },
+            { id: 30, cat: 'เบเกอรี่', name: 'บราวนี่อัลมอนด์หนึบ', cost: 16, price: 25, icon: '🍫', stock: 5 },
+            { id: 31, cat: 'เบเกอรี่', name: 'คุกกี้เนยสดกรอบ', cost: 9, price: 15, icon: '🍪', stock: 7 },
+            { id: 32, cat: 'เบเกอรี่', name: 'คุกกี้ช็อกโกแลตชิป', cost: 9, price: 15, icon: '🍪', stock: 7 },
+
+            // เครื่องดื่ม (20)
+            { id: 33, cat: 'เครื่องดื่ม', name: 'นมสดพาสเจอไรซ์', cost: 8, price: 12, icon: '🥛', stock: 10 },
+            { id: 34, cat: 'เครื่องดื่ม', name: 'นมรสช็อกโกแลต', cost: 8, price: 13, icon: '🥛', stock: 8 },
+            { id: 35, cat: 'เครื่องดื่ม', name: 'นมรสสตรอว์เบอร์รี', cost: 8, price: 13, icon: '🥛', stock: 8 },
+            { id: 36, cat: 'เครื่องดื่ม', name: 'นมถั่วเหลืองไวตามิ้ลค์', cost: 6, price: 10, icon: '🥛', stock: 10 },
+            { id: 37, cat: 'เครื่องดื่ม', name: 'นมเปรี้ยวรสส้ม', cost: 8, price: 12, icon: '🧃', stock: 8 },
+            { id: 38, cat: 'เครื่องดื่ม', name: 'โยเกิร์ตผสมวุ้นมะพร้าว', cost: 9, price: 14, icon: '🥣', stock: 6 },
+            { id: 39, cat: 'เครื่องดื่ม', name: 'น้ำส้มคั้น 100%', cost: 11, price: 18, icon: '🍊', stock: 6 },
+            { id: 40, cat: 'เครื่องดื่ม', name: 'น้ำแอปเปิ้ลฟูจิ', cost: 11, price: 18, icon: '🍎', stock: 6 },
+            { id: 41, cat: 'เครื่องดื่ม', name: 'น้ำผลไม้รวมกล่อง', cost: 9, price: 15, icon: '🧃', stock: 8 },
+            { id: 42, cat: 'เครื่องดื่ม', name: 'น้ำดื่มใส 600 มล.', cost: 4, price: 7, icon: '💧', stock: 15 },
+            { id: 43, cat: 'เครื่องดื่ม', name: 'น้ำแร่ธรรมชาติ', cost: 6, price: 10, icon: '🧊', stock: 10 },
+            { id: 44, cat: 'เครื่องดื่ม', name: 'น้ำมะพร้าวน้ำหอม', cost: 13, price: 20, icon: '🥥', stock: 5 },
+            { id: 45, cat: 'เครื่องดื่ม', name: 'ชามะนาวหวานเย็น', cost: 9, price: 15, icon: '🧋', stock: 7 },
+            { id: 46, cat: 'เครื่องดื่ม', name: 'ชาเขียวมะลิกล่อง', cost: 10, price: 16, icon: '🍵', stock: 6 },
+            { id: 47, cat: 'เครื่องดื่ม', name: 'น้ำอัดลมโคล่า', cost: 9, price: 15, icon: '🥤', stock: 10 },
+            { id: 48, cat: 'เครื่องดื่ม', name: 'น้ำสไปรท์มะนาวซ่า', cost: 9, price: 15, icon: '🥤', stock: 8 },
+            { id: 49, cat: 'เครื่องดื่ม', name: 'ช็อกโกแลตมอลต์ร้อน', cost: 11, price: 18, icon: '☕', stock: 5 },
+            { id: 50, cat: 'เครื่องดื่ม', name: 'เกลือแร่สปอร์ต', cost: 9, price: 15, icon: '⚡', stock: 6 },
+            { id: 51, cat: 'เครื่องดื่ม', name: 'สมูทตี้มะม่วงปั่นแก้ว', cost: 15, price: 25, icon: '🥭', stock: 4 },
+            { id: 52, cat: 'เครื่องดื่ม', name: 'ชาไทยเย็นใส่นม', cost: 12, price: 20, icon: '🧋', stock: 6 },
+
+            // ขนมคบเคี้ยว (18)
+            { id: 53, cat: 'ขนมคบเคี้ยว', name: 'มันฝรั่งทอดกรอบรสเกลือ', cost: 12, price: 20, icon: '🥔', stock: 8 },
+            { id: 54, cat: 'ขนมคบเคี้ยว', name: 'มันฝรั่งแท่งบาร์บีคิว', cost: 12, price: 20, icon: '🍟', stock: 8 },
+            { id: 55, cat: 'ขนมคบเคี้ยว', name: 'ข้าวโพดอบกรอบรสชีส', cost: 6, price: 10, icon: '🍿', stock: 10 },
+            { id: 56, cat: 'ขนมคบเคี้ยว', name: 'ป๊อปคอร์นเนยคาราเมล', cost: 9, price: 15, icon: '🍿', stock: 6 },
+            { id: 57, cat: 'ขนมคบเคี้ยว', name: 'ปลาหมึกอบทรงเครื่อง', cost: 14, price: 22, icon: '🦑', stock: 5 },
+            { id: 58, cat: 'ขนมคบเคี้ยว', name: 'สาหร่ายทอดกรอบแผ่นใหญ่', cost: 9, price: 15, icon: '🌿', stock: 8 },
+            { id: 59, cat: 'ขนมคบเคี้ยว', name: 'ถั่วลิสงเคลือบกาแฟ', cost: 7, price: 12, icon: '🥜', stock: 6 },
+            { id: 60, cat: 'ขนมคบเคี้ยว', name: 'เยลลี่หมีกัมมี่หลากสี', cost: 6, price: 10, icon: '🍬', stock: 10 },
+            { id: 61, cat: 'ขนมคบเคี้ยว', name: 'อมยิ้มสตรอว์เบอร์รี', cost: 3, price: 5, icon: '🍭', stock: 15 },
+            { id: 62, cat: 'ขนมคบเคี้ยว', name: 'มาร์ชแมลโลว์นุ่มฟู', cost: 7, price: 12, icon: '🍡', stock: 6 },
+            { id: 63, cat: 'ขนมคบเคี้ยว', name: 'ช็อกโกแลตแท่งข้าวพอง', cost: 9, price: 15, icon: '🍫', stock: 8 },
+            { id: 64, cat: 'ขนมคบเคี้ยว', name: 'ช็อกโกแลตบอลกรอบ', cost: 6, price: 10, icon: '🍫', stock: 8 },
+            { id: 65, cat: 'ขนมคบเคี้ยว', name: 'ไอศกรีมโคนช็อกโกแลต', cost: 11, price: 18, icon: '🍦', stock: 6 },
+            { id: 66, cat: 'ขนมคบเคี้ยว', name: 'ไอศกรีมแท่งผลไม้รวม', cost: 7, price: 12, icon: '🍧', stock: 8 },
+            { id: 67, cat: 'ขนมคบเคี้ยว', name: 'ไอศกรีมถ้วยสตรอว์เบอร์รี', cost: 12, price: 20, icon: '🍨', stock: 5 },
+            { id: 68, cat: 'ขนมคบเคี้ยว', name: 'บิสกิตแท่งจิ้มช็อกโกแลต', cost: 10, price: 16, icon: '🥨', stock: 6 },
+            { id: 69, cat: 'ขนมคบเคี้ยว', name: 'เวเฟอร์วานิลลา', cost: 6, price: 10, icon: '🧇', stock: 8 },
+            { id: 70, cat: 'ขนมคบเคี้ยว', name: 'ลูกอมรสมินต์เย็น', cost: 3, price: 5, icon: '🍬', stock: 12 },
+
+            // ผลไม้สด (14)
+            { id: 71, cat: 'ผลไม้สด', name: 'แอปเปิ้ลฟูจิผลแดง', cost: 7, price: 12, icon: '🍎', stock: 6 },
+            { id: 72, cat: 'ผลไม้สด', name: 'กล้วยหอมทองเกรดเอ', cost: 5, price: 9, icon: '🍌', stock: 8 },
+            { id: 73, cat: 'ผลไม้สด', name: 'ส้มสายน้ำผึ้งแกะกลีบ', cost: 9, price: 15, icon: '🍊', stock: 5 },
+            { id: 74, cat: 'ผลไม้สด', name: 'แตงโมหั่นชิ้นหวานเย็น', cost: 12, price: 20, icon: '🍉', stock: 5 },
+            { id: 75, cat: 'ผลไม้สด', name: 'สับปะรดภูแลเสียบไม้', cost: 9, price: 15, icon: '🍍', stock: 5 },
+            { id: 76, cat: 'ผลไม้สด', name: 'ฝรั่งกิมจูพร้อมพริกเกลือ', cost: 12, price: 20, icon: '🍈', stock: 5 },
+            { id: 77, cat: 'ผลไม้สด', name: 'มะม่วงน้ำดอกไม้สุก', cost: 15, price: 25, icon: '🥭', stock: 4 },
+            { id: 78, cat: 'ผลไม้สด', name: 'องุ่นไร้เมล็ดถ้วย', cost: 18, price: 28, icon: '🍇', stock: 4 },
+            { id: 79, cat: 'ผลไม้สด', name: 'เมลอนญี่ปุ่นหวานฉ่ำ', cost: 19, price: 30, icon: '🍈', stock: 3 },
+            { id: 80, cat: 'ผลไม้สด', name: 'สลัดผักรวมน้ำสลัดครีม', cost: 22, price: 35, icon: '🥗', stock: 3 },
+            { id: 81, cat: 'ผลไม้สด', name: 'สลัดโรลปูอัดเพื่อสุขภาพ', cost: 22, price: 35, icon: '🌯', stock: 3 },
+            { id: 82, cat: 'ผลไม้สด', name: 'มะเขือเทศราชินีถ้วย', cost: 12, price: 20, icon: '🍅', stock: 4 },
+            { id: 83, cat: 'ผลไม้สด', name: 'แครอทเบบี้พร้อมดิป', cost: 11, price: 18, icon: '🥕', stock: 4 },
+            { id: 84, cat: 'ผลไม้สด', name: 'สตรอว์เบอร์รีสดกล่องเล็ก', cost: 25, price: 40, icon: '🍓', stock: 3 },
+
+            // เครื่องเขียน (14)
+            { id: 85, cat: 'เครื่องเขียน', name: 'ดินสอดำ 2B ลายการ์ตูน', cost: 3, price: 5, icon: '✏️', stock: 12 },
+            { id: 86, cat: 'เครื่องเขียน', name: 'ปากกาลูกลื่นหมึกน้ำเงิน', cost: 6, price: 10, icon: '🖊️', stock: 10 },
+            { id: 87, cat: 'เครื่องเขียน', name: 'ยางลบดินสอเนื้อนุ่ม', cost: 3, price: 5, icon: '🧼', stock: 10 },
+            { id: 88, cat: 'เครื่องเขียน', name: 'ไม้บรรทัดพลาสติก 30 ซม.', cost: 5, price: 8, icon: '📏', stock: 8 },
+            { id: 89, cat: 'เครื่องเขียน', name: 'กบเหลาดินสอมีกระปุก', cost: 7, price: 12, icon: '🪒', stock: 6 },
+            { id: 90, cat: 'เครื่องเขียน', name: 'สมุดคัดลายมือเส้นบรรทัด', cost: 9, price: 15, icon: '📓', stock: 8 },
+            { id: 91, cat: 'เครื่องเขียน', name: 'สมุดวาดเขียนเล่มบาง', cost: 11, price: 18, icon: '🎨', stock: 6 },
+            { id: 92, cat: 'เครื่องเขียน', name: 'สีไม้ 12 สีกล่องสั้น', cost: 22, price: 35, icon: '🖍️', stock: 4 },
+            { id: 93, cat: 'เครื่องเขียน', name: 'กาวแท่งแห้งเร็วสำหรับเด็ก', cost: 9, price: 15, icon: '🧴', stock: 6 },
+            { id: 94, cat: 'เครื่องเขียน', name: 'กรรไกรปลายมนปลอดภัย', cost: 12, price: 20, icon: '✂️', stock: 5 },
+            { id: 95, cat: 'เครื่องเขียน', name: 'ไฮไลต์สีพาสเทล', cost: 9, price: 15, icon: '🖊️', stock: 6 },
+            { id: 96, cat: 'เครื่องเขียน', name: 'โพสต์อิทโน้ตสีสะท้อนแสง', cost: 7, price: 12, icon: '📑', stock: 6 },
+            { id: 97, cat: 'เครื่องเขียน', name: 'ดินน้ำมันปลอดสารพิษ', cost: 12, price: 20, icon: '🧱', stock: 5 },
+            { id: 98, cat: 'เครื่องเขียน', name: 'กล่องดินสอพลาสติกใส', cost: 18, price: 30, icon: '👝', stock: 4 },
+
+            // ของใช้ & ของเล่น (12)
+            { id: 99, cat: 'ของใช้ & ของเล่น', name: 'หน้ากากอนามัยลายการ์ตูน', cost: 6, price: 10, icon: '😷', stock: 10 },
+            { id: 100, cat: 'ของใช้ & ของเล่น', name: 'เจลแอลกอฮอล์พกพา', cost: 15, price: 25, icon: '🧴', stock: 6 },
+            { id: 101, cat: 'ของใช้ & ของเล่น', name: 'ทิชชูเปียกสูตรอ่อนโยน', cost: 9, price: 15, icon: '🧻', stock: 8 },
+            { id: 102, cat: 'ของใช้ & ของเล่น', name: 'พลาสเตอร์ปิดแผลไดโนเสาร์', cost: 7, price: 12, icon: '🩹', stock: 8 },
+            { id: 103, cat: 'ของใช้ & ของเล่น', name: 'แปรงสีฟันเด็กขนนุ่ม', cost: 12, price: 20, icon: '🪥', stock: 5 },
+            { id: 104, cat: 'ของใช้ & ของเล่น', name: 'ยาสีฟันรสส้มผสมฟลูออไรด์', cost: 14, price: 22, icon: '🧴', stock: 5 },
+            { id: 105, cat: 'ของใช้ & ของเล่น', name: 'สติกเกอร์การ์ตูนเรืองแสง', cost: 6, price: 10, icon: '⭐', stock: 10 },
+            { id: 106, cat: 'ของใช้ & ของเล่น', name: 'พวงกุญแจตุ๊กตาห้อยกระเป๋า', cost: 17, price: 29, icon: '🧸', stock: 4 },
+            { id: 107, cat: 'ของใช้ & ของเล่น', name: 'ลูกโป่งเป่าลมสีนีออน', cost: 3, price: 5, icon: '🎈', stock: 15 },
+            { id: 108, cat: 'ของใช้ & ของเล่น', name: 'รถของเล่นไขลานมินิ', cost: 24, price: 39, icon: '🚗', stock: 3 },
+            { id: 109, cat: 'ของใช้ & ของเล่น', name: 'การ์ดเกมพลังฮีโร่', cost: 12, price: 20, icon: '🃏', stock: 6 },
+            { id: 110, cat: 'ของใช้ & ของเล่น', name: 'ฟองสบู่เป่าลูกโป่งยักษ์', cost: 15, price: 25, icon: '🫧', stock: 5 }
+        ];
+
+        /* Daily Events */
+        const RANDOM_EVENTS = [
+            { id: 'E1', icon: '☀️', title: 'วันนี้อากาศร้อนอบอ้าว!', desc: 'ลูกค้ากระหายน้ำ แวะมาซื้อเครื่องดื่มและไอศกรีมกันเพียบ!', customerBonus: 2, bannerText: '☀️ อากาศร้อนจัด! เครื่องดื่มขายดีเป็นพิเศษ' },
+            { id: 'E2', icon: '🎉', title: 'วันหยุดสุดสัปดาห์ / เทศกาลขนม!', desc: 'เด็กๆ ปิดเทอม แวะมาซื้อขนมและของเล่นคึกคักทั้งวัน!', customerBonus: 3, bannerText: '🎉 วันหยุดสุดสัปดาห์ ลูกค้ามาอุดหนุนแน่นร้าน' },
+            { id: 'E3', icon: '🐭', title: 'หนูแอบมากัดกล่องขนม!', desc: 'สต็อกขนมปังในร้านเสียหายไปบางส่วน ต้องตรวจเช็กของบนชั้นวางนะ', customerBonus: 0, bannerText: '⚠️ มีหนูแอบกัดกล่องขนม เสียหาย 1 ชิ้น' },
+            { id: 'E4', icon: '🏆', title: 'เทศบาลมอบรางวัลร้านสะอาด!', desc: 'ได้รับเงินรางวัลสนับสนุนร้านค้าชุมชนน่ารัก +50 บาท!', customerBonus: 1, grantCash: 50, bannerText: '🏆 ได้รับรางวัลร้านค้าชุมชนดีเด่น +50 บาท' },
+            { id: 'E5', icon: '🌧️', title: 'ฝนตกพรำๆ บรรยากาศสบาย', desc: 'ลูกค้าแวะเข้ามาหลบฝนและซื้อของอุ่นร้อนกินในร้าน', customerBonus: 1, bannerText: '🌧️ ฝนตกพรำๆ ลูกค้าแวะซื้อบะหมี่และอาหารอุ่นร้อน' }
+        ];
+
+        /* Customers Database */
+        const CUSTOMERS_DB = [
+            { name: 'น้องเพนกวิน', avatar: '🐧', speech: 'คิดเงินให้หนูหน่อยฮะ!', scoldMsg: 'ฮือๆ พี่คิดเงินเกินหนูไปตั้ง {diff} บาทนะ! หนูกินไอติมไม่ได้เลย!' },
+            { name: 'คุณกระต่ายน้อย', avatar: '🐰', speech: 'วันนี้ซื้อขนมไปปิกนิกจ้า!', scoldMsg: 'นี่คิดเลขยังไงคะเนี่ย! คิดเงินเกินฉันไป {diff} บาทแบบนี้ไม่ถูกต้องนะ!' },
+            { name: 'พี่หมีบราวนี่', avatar: '🐻', speech: 'ขออร่อยๆ เพิ่มพลังหน่อยครับ!', scoldMsg: 'โฮก! พี่คิดเงินเกินผมไป {diff} บาทนะน้องแคชเชียร์! อย่ามาเนียน!' },
+            { name: 'เจ้าหมาคอร์กี้', avatar: '🐶', speech: 'วิ่งเล่นมาเหนื่อย ขอน้ำดื่มเย็นๆ!', scoldMsg: 'โฮ่ง! ทอนเงินไม่ครบ ขาดไป {diff} บาท! เรียกผู้จัดการมาคุยเดี๋ยวนี้!' },
+            { name: 'คุณแมวเหมียว', avatar: '🐱', speech: 'เหมียว~ รีบคิดนะ จะไปนอนกลางวัน', scoldMsg: 'เหมียววว! โกงเงินฉันไป {diff} บาทหรือเปล่าเนี่ย! คิดเลขใหม่เลย!' }
+        ];
+
+        /* Store Decor Catalog */
+        const DECOR_CATALOG = [
+            { id: 'buff_ac', name: 'เครื่องปรับอากาศเย็นฉ่ำ', cost: 120, icon: '❄️', desc: 'ลูกค้ารอนานขึ้น ไม่โมโหแม้หนูจะคิดเลขช้า' },
+            { id: 'buff_music', name: 'ลำโพงเปิดเพลงชิลล์ๆ', cost: 80, icon: '🎵', desc: 'ลูกค้าอารมณ์ดี มีโอกาสให้เงินทิปเพิ่ม +3 ถึง +5 บาท' },
+            { id: 'buff_cat', name: 'แมวกวักนำโชคสีทอง', cost: 100, icon: '🐱', desc: 'เรียกลูกค้า VIP ซื้อสินค้าครั้งละ 3-4 ชิ้น' },
+            { id: 'buff_icecream', name: 'ตู้แช่ไอศกรีมเรนโบว์', cost: 150, icon: '🍦', desc: 'เพิ่มชื่อเสียงร้าน 1 ดาว และปลดล็อกขายของกำไรสูง' }
+        ];
+
+        /* ========================================================
+           5. GAME STATE
+           ======================================================== */
+        let storeData = {
+            name: 'ร้านมินิมาร์ทน้องนักคิด',
+            manager: 'หนูน้อยแคชเชียร์',
+            capital: 1000,
+            profit: 0,
+            stars: 5,
+            ownedDecors: []
+        };
+
+        // Day Management
+        let currentDay = 1;
+        let dayCustomerTarget = 8;
+        let dayCustomerIndex = 0;
+        let dayGrossProfitAccumulated = 0;
+        let activeDailyEvent = null;
+
+        // Current Transaction
+        let currentCustomer = null;
+        let currentBasket = [];
+        let actualSumPrice = 0;
+        let actualSumCost = 0;
+        let customerCash = 0;
+        let actualChange = 0;
+
+        let numpadValue = "0";
+        let studentTotalCalculated = null;
+        let changeTray = [];
+
+        // Log of sold items for Auto-Restock feature
+        let soldItemsHistory = [];
+
+        // Temporary Wholesale Cart
+        let wholesaleCart = {};
+
+        function initGame() {
+            loadSavedData();
+            startNewDay();
+        }
+
+        function loadSavedData() {
+            const saved = localStorage.getItem('minimart_master_v4');
+            if (saved) {
+                try { storeData = JSON.parse(saved); } catch(e){}
+            }
+            updateStoreHUD();
+        }
+
+        function saveData() {
+            localStorage.setItem('minimart_master_v4', JSON.stringify(storeData));
+            updateStoreHUD();
+        }
+
+        function updateStoreHUD() {
+            document.getElementById('storeNameDisplay').innerText = storeData.name;
+            document.getElementById('receiptStoreTitle').innerText = storeData.name;
+            document.getElementById('managerNameDisplay').innerText = storeData.manager;
+            document.getElementById('storeCapitalDisplay').innerText = `${storeData.capital} ฿`;
+            document.getElementById('storeProfitDisplay').innerText = `${storeData.profit >= 0 ? '+' : ''}${storeData.profit} ฿`;
+            
+            let stars = '';
+            for (let i = 0; i < Math.max(1, Math.min(5, storeData.stars)); i++) stars += '⭐';
+            document.getElementById('storeStarsDisplay').innerText = stars;
+        }
+
+        function editStoreName() {
+            AudioFX.playCashClick();
+            const n = prompt("ตั้งชื่อร้านค้าในฝันของหนู:", storeData.name);
+            if (n && n.trim() !== '') {
+                storeData.name = n.trim().substring(0, 20);
+                saveData();
+            }
+        }
+
+        /* ========================================================
+           6. DAY CYCLE & EVENT LAUNCHER
+           ======================================================== */
+        function startNewDay() {
+            const baseCustomers = Math.floor(Math.random() * 6) + 6;
+            activeDailyEvent = RANDOM_EVENTS[Math.floor(Math.random() * RANDOM_EVENTS.length)];
+            dayCustomerTarget = baseCustomers + (activeDailyEvent.customerBonus || 0);
+            dayCustomerIndex = 0;
+            dayGrossProfitAccumulated = 0;
+
+            if (activeDailyEvent.grantCash) {
+                storeData.capital += activeDailyEvent.grantCash;
+                saveData();
+            }
+
+            document.getElementById('dayNumberLabel').innerText = `วันที่ ${currentDay}`;
+            document.getElementById('dailyEventBanner').classList.remove('hidden');
+            document.getElementById('dailyEventText').innerText = activeDailyEvent.bannerText;
+
+            document.getElementById('eventModalIcon').innerText = activeDailyEvent.icon;
+            document.getElementById('eventModalTitle').innerText = activeDailyEvent.title;
+            document.getElementById('eventModalDesc').innerText = activeDailyEvent.desc;
+            document.getElementById('eventCustomerNotice').innerHTML = `คาดว่าวันนี้จะมีลูกค้า: <b>${dayCustomerTarget} คน</b> (สุ่มตามสถานการณ์)`;
+            document.getElementById('morningEventModal').classList.remove('hidden');
+        }
+
+        function closeMorningEventModal() {
+            AudioFX.playCashClick();
+            document.getElementById('morningEventModal').classList.add('hidden');
+            serveNextCustomer();
+        }
+
+        /* ========================================================
+           7. CUSTOMER TRANSACTION & BASKET
+           ======================================================== */
+        function serveNextCustomer() {
+            if (dayCustomerIndex >= dayCustomerTarget) {
+                triggerDayClosing();
+                return;
+            }
+
+            dayCustomerIndex++;
+            document.getElementById('customerProgressDisplay').innerText = `ลูกค้า ${dayCustomerIndex}/${dayCustomerTarget}`;
+
+            AudioFX.playKaChing();
+            currentCustomer = CUSTOMERS_DB[Math.floor(Math.random() * CUSTOMERS_DB.length)];
+
+            const hasCatBuff = storeData.ownedDecors.includes('buff_cat');
+            const itemCount = hasCatBuff && Math.random() > 0.4 ? 4 : (Math.floor(Math.random() * 2) + 2);
+            
+            const availableItems = MASTER_PRODUCTS.filter(p => p.stock > 0);
+            const shuffledPool = availableItems.length >= 4 
+                ? [...availableItems].sort(() => 0.5 - Math.random()) 
+                : [...MASTER_PRODUCTS].sort(() => 0.5 - Math.random());
+
+            currentBasket = shuffledPool.slice(0, itemCount).map((item, idx) => ({
+                ...item,
+                uniqueId: idx,
+                isScanned: false,
+                isOutOfStock: item.stock <= 0
+            }));
+
+            // Deduct stock for in-stock items
+            currentBasket.forEach(b => {
+                const master = MASTER_PRODUCTS.find(m => m.id === b.id);
+                if (master && master.stock > 0) {
+                    master.stock -= 1;
+                    // Add to sold history for auto-restock feature
+                    soldItemsHistory.push(master.id);
+                }
+            });
+
+            const validItems = currentBasket.filter(i => !i.isOutOfStock);
+            actualSumPrice = validItems.reduce((sum, item) => sum + item.price, 0);
+            actualSumCost = validItems.reduce((sum, item) => sum + item.cost, 0);
+
+            // Determine customer cash given
+            if (actualSumPrice <= 0) {
+                customerCash = 50;
+            } else if (actualSumPrice <= 20) {
+                customerCash = 50;
+            } else if (actualSumPrice <= 50) {
+                customerCash = Math.random() > 0.4 ? 50 : 100;
+                if (customerCash < actualSumPrice) customerCash = 100;
+            } else if (actualSumPrice <= 100) {
+                customerCash = Math.random() > 0.5 ? 100 : 500;
+            } else {
+                customerCash = 500;
+            }
+
+            actualChange = Math.max(0, customerCash - actualSumPrice);
+
+            // Reset interaction states
+            studentTotalCalculated = null;
+            changeTray = [];
+            numpadValue = "0";
+
+            renderCustomerHeader();
+            renderConveyorBelt();
+            renderPOSScreen();
+            renderChangeTray();
+            updateNumpadDisplay();
+
+            // Set counter cash display
+            document.getElementById('customerCashBill').innerText = "รอลูกค้าจ่ายเงิน...";
+
+            const btn = document.getElementById('mainActionButton');
+            btn.className = "btn-3d w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black text-sm sm:text-base shadow-md flex items-center justify-center gap-1.5 mali-font";
+            btn.innerHTML = `<span>1. ยืนยันราคารวมที่คิดได้ ➔</span>`;
+
+            document.getElementById('stepGuideBadge').innerText = "ขั้นที่ 1: แตะสแกนสินค้าให้ครบ แล้วบวกเลข";
+
+            speakThai(`${currentCustomer.name} มาซื้อของจ้า!`);
+        }
+
+        function renderCustomerHeader() {
+            document.getElementById('customerAvatar').innerText = currentCustomer.avatar;
+            document.getElementById('customerName').innerText = currentCustomer.name;
+            document.getElementById('customerSpeech').innerText = `"${currentCustomer.speech}"`;
+            document.getElementById('customerMoodTag').innerText = "อารมณ์ดี 😊";
+            document.getElementById('customerMoodTag').className = "text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold";
+        }
+
+        function renderConveyorBelt() {
+            const container = document.getElementById('conveyorItems');
+            container.innerHTML = '';
+
+            currentBasket.forEach(item => {
+                const itemEl = document.createElement('div');
+                const outOfStock = item.isOutOfStock;
+
+                itemEl.className = `p-2 sm:p-2.5 rounded-2xl border-2 flex flex-col items-center gap-1 cursor-pointer transition ${
+                    outOfStock 
+                    ? 'bg-rose-50 border-rose-300 opacity-60 cursor-not-allowed'
+                    : (item.isScanned 
+                        ? 'bg-slate-200 border-slate-300 opacity-40 scale-95' 
+                        : 'bg-white border-purple-300 hover:scale-105 shadow hover:border-purple-500')
+                }`;
+
+                if (!outOfStock) {
+                    itemEl.onclick = () => scanItem(item.uniqueId);
+                }
+
+                itemEl.innerHTML = `
+                    <div class="text-3xl sm:text-4xl">${item.icon}</div>
+                    <div class="text-xs sm:text-sm font-bold text-purple-950 text-center leading-tight truncate max-w-[90px]">${item.name}</div>
+                    <div class="text-xs sm:text-sm font-black text-amber-600">${item.price} บาท</div>
+                    <div class="text-[10px] ${outOfStock ? 'text-rose-600 font-bold' : (item.isScanned ? 'text-emerald-600 font-bold' : 'text-purple-600 font-black')}">
+                        ${outOfStock ? '❌ สินค้าหมด' : (item.isScanned ? '✓ สแกนแล้ว' : '🔴 แตะยิงสแกน')}
+                    </div>
+                `;
+                container.appendChild(itemEl);
+            });
+        }
+
+        function scanItem(uniqueId) {
+            const item = currentBasket.find(i => i.uniqueId === uniqueId);
+            if (!item || item.isScanned || item.isOutOfStock) return;
+
+            AudioFX.playScan();
+
+            const laser = document.getElementById('scannerLaserFx');
+            laser.classList.remove('hidden');
+            setTimeout(() => laser.classList.add('hidden'), 280);
+
+            item.isScanned = true;
+            renderConveyorBelt();
+            renderPOSScreen();
+
+            const scannableItems = currentBasket.filter(i => !i.isOutOfStock);
+            const allScanned = scannableItems.every(i => i.isScanned);
+            if (allScanned) {
+                document.getElementById('stepGuideBadge').innerText = "ขั้นที่ 2: บวกราคาแล้วกดตัวเลขใส่เครื่อง POS";
+                speakThai("สแกนครบแล้วจ้า รวมราคาบนเครื่องคิดเงินได้เลย!");
+            }
+        }
+
+        function renderPOSScreen() {
+            const listEl = document.getElementById('posScannedList');
+            const scannedItems = currentBasket.filter(i => i.isScanned && !i.isOutOfStock);
+
+            if (scannedItems.length === 0) {
+                listEl.innerHTML = '<div class="text-slate-500 italic text-xs py-3 text-center">แตะสแกนสินค้าบนสายพานเพื่อดูราคา</div>';
+                return;
+            }
+
+            listEl.innerHTML = scannedItems.map((item, idx) => `
+                <div class="flex justify-between items-center text-xs sm:text-sm py-0.5 border-b border-slate-800">
+                    <span class="text-slate-200 truncate max-w-[150px]">${idx + 1}. ${item.name}</span>
+                    <span class="font-black text-amber-400">${item.price} ฿</span>
+                </div>
+            `).join('');
+        }
+
+        /* ========================================================
+           8. NUMPAD & MATH INPUT SYSTEM
+           ======================================================== */
+        function pressNum(digit) {
+            AudioFX.playCashClick();
+            if (numpadValue === "0") {
+                numpadValue = digit.toString();
+            } else if (numpadValue.length < 5) {
+                numpadValue += digit.toString();
+            }
+            updateNumpadDisplay();
+        }
+
+        function clearNum() {
+            AudioFX.playCashClick();
+            numpadValue = "0";
+            updateNumpadDisplay();
+        }
+
+        function backspaceNum() {
+            AudioFX.playCashClick();
+            if (numpadValue.length > 1) {
+                numpadValue = numpadValue.slice(0, -1);
+            } else {
+                numpadValue = "0";
+            }
+            updateNumpadDisplay();
+        }
+
+        function updateNumpadDisplay() {
+            document.getElementById('numpadDisplay').innerText = numpadValue;
+        }
+
+        /* ========================================================
+           9. CASH DRAWER & CHANGE TRAY
+           ======================================================== */
+        function addChangeMoney(val) {
+            AudioFX.playCashClick();
+            changeTray.push(val);
+            renderChangeTray();
+        }
+
+        function clearChangeTray() {
+            AudioFX.playCashClick();
+            changeTray = [];
+            renderChangeTray();
+        }
+
+        function renderChangeTray() {
+            const visualEl = document.getElementById('changeTrayVisual');
+            const totalEl = document.getElementById('trayTotalDisplay');
+            const sum = changeTray.reduce((a, b) => a + b, 0);
+
+            totalEl.innerText = sum;
+
+            if (changeTray.length === 0) {
+                visualEl.innerHTML = '<span class="text-xs text-purple-400 italic">ยังไม่ได้หยิบเงินทอน...</span>';
+                return;
+            }
+
+            visualEl.innerHTML = changeTray.map(val => `
+                <span class="px-2.5 py-1 rounded-xl text-xs font-black shrink-0 ${
+                    val >= 20 ? 'bg-indigo-600 text-white shadow-xs' : 'bg-amber-400 text-amber-950 shadow-xs'
+                }">
+                    ${val >= 20 ? '💵' : '🪙'} ${val}บ.
+                </span>
+            `).join('');
+        }
+
+        /* ========================================================
+           10. TRANSACTION & AUDIT EVALUATION (RECEIPT)
+           ======================================================== */
+        function handlePrimaryAction() {
+            const scannableItems = currentBasket.filter(i => !i.isOutOfStock);
+            const allScanned = scannableItems.every(i => i.isScanned);
+            if (!allScanned && scannableItems.length > 0) {
+                alert("กรุณาสแกนสินค้าให้ครบทุกชิ้นก่อนนะจ๊ะ!");
+                return;
+            }
+
+            if (studentTotalCalculated === null) {
+                // STEP 1: Confirm Total Price
+                const inputPrice = parseInt(numpadValue, 10);
+                if (isNaN(inputPrice) || (inputPrice <= 0 && actualSumPrice > 0)) {
+                    alert("กรุณากดตัวเลขราคาที่หนูคิดได้ก่อนนะจ๊ะ!");
+                    return;
+                }
+
+                studentTotalCalculated = inputPrice;
+                AudioFX.playKaChing();
+
+                document.getElementById('numpadInputLabel').innerText = "2. ยืนยันเงินทอนและส่งมอบ:";
+                document.getElementById('customerCashBill').innerText = `💵 ${customerCash} บาท`;
+                document.getElementById('customerSpeech').innerText = `"หนูยื่นเงินให้ ${customerCash} บาท ทอนให้ครบนะฮะ!"`;
+                document.getElementById('stepGuideBadge').innerText = "ขั้นที่ 3: แตะเงินจากลิ้นชักใส่ถาดทอนเงิน";
+
+                const btn = document.getElementById('mainActionButton');
+                btn.className = "btn-3d w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-black text-sm sm:text-base shadow-md flex items-center justify-center gap-1.5 mali-font";
+                btn.innerHTML = `<span>2. ตรวจสอบเงินทอน & พิมพ์ใบเสร็จ ➔</span>`;
+
+                speakThai(`ลูกค้ายื่นเงินให้ ${customerCash} บาท ทอนเงินให้ครบนะ!`);
+
+            } else {
+                // STEP 2: Verify & Audit Receipt
+                processTransactionAudit();
+            }
+        }
+
+        function processTransactionAudit() {
+            const studentChangeGiven = changeTray.reduce((a, b) => a + b, 0);
+
+            // Populate Receipt Table
+            document.getElementById('receiptActualTotal').innerText = `${actualSumPrice} บาท`;
+            document.getElementById('receiptStudentTotal').innerText = `${studentTotalCalculated} บาท`;
+            document.getElementById('receiptCostTotal').innerText = `${actualSumCost} บาท`;
+            document.getElementById('receiptCustomerCash').innerText = `${customerCash} บาท`;
+            document.getElementById('receiptActualChange').innerText = `${actualChange} บาท`;
+            document.getElementById('receiptStudentChange').innerText = `${studentChangeGiven} บาท`;
+
+            const reactionBox = document.getElementById('receiptReactionBox');
+            const reactionIcon = document.getElementById('receiptReactionIcon');
+            const reactionTitle = document.getElementById('receiptReactionTitle');
+            const reactionSpeech = document.getElementById('receiptReactionSpeech');
+            const financialBox = document.getElementById('receiptFinancialImpact');
+
+            const isTotalCorrect = (studentTotalCalculated === actualSumPrice);
+            const isChangeCorrect = (studentChangeGiven === actualChange);
+
+            const difference = (customerCash - studentChangeGiven) - actualSumPrice;
+
+            if (isTotalCorrect && isChangeCorrect) {
+                // 100% CORRECT
+                AudioFX.playSuccess();
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+
+                const baseProfit = actualSumPrice - actualSumCost;
+                const hasMusicBuff = storeData.ownedDecors.includes('buff_music');
+                const tip = hasMusicBuff ? Math.floor(Math.random() * 3) + 3 : 2;
+                const earnedTotal = baseProfit + tip;
+
+                storeData.capital += earnedTotal;
+                storeData.profit += earnedTotal;
+                dayGrossProfitAccumulated += earnedTotal;
+                storeData.stars = Math.min(5, storeData.stars + 1);
+
+                reactionBox.className = "p-2.5 rounded-xl text-center space-y-0.5 bg-emerald-100 border border-emerald-300 text-emerald-950";
+                reactionIcon.innerText = "🌟";
+                reactionTitle.innerText = "คิดเงินถูกต้องสมบูรณ์แบบ!";
+                reactionSpeech.innerText = `"${currentCustomer.name}: คิดเลขเก่งมากเลยฮะ ได้ของครบ เงินทอนเป๊ะ ให้ทิป +${tip} บาทเลย!"`;
+
+                financialBox.className = "p-2 rounded-xl text-center font-bold text-xs sm:text-sm bg-emerald-50 text-emerald-800 border border-emerald-200";
+                financialBox.innerHTML = `💰 กำไรสุทธิจากบิลนี้: <b>+${earnedTotal} บาท</b> (กำไรสินค้า ${baseProfit} + ทิป ${tip}฿)`;
+
+                speakThai("ถูกต้องสมบูรณ์แบบจ้า! รับกำไรเต็มจำนวนไปเลย!");
+
+            } else if (difference > 0) {
+                // OVERCHARGED OR SHORTCHANGED (CUSTOMER GETS ANGRY)
+                AudioFX.playAngryCustomer();
+                document.getElementById('mainGameStage').classList.add('screen-shake');
+                setTimeout(() => document.getElementById('mainGameStage').classList.remove('screen-shake'), 350);
+
+                const penalty = difference;
+                storeData.capital = Math.max(0, storeData.capital - penalty);
+                storeData.stars = Math.max(1, storeData.stars - 1);
+
+                const angrySpeech = currentCustomer.scoldMsg.replace('{diff}', difference);
+
+                reactionBox.className = "p-2.5 rounded-xl text-center space-y-0.5 bg-rose-100 border-2 border-rose-400 text-rose-950";
+                reactionIcon.innerText = "😡💢";
+                reactionTitle.innerText = "ลูกค้าโมโห! คิดเงินเกิน/ทอนเงินขาด!";
+                reactionSpeech.innerText = `"${currentCustomer.name}: ${angrySpeech}"`;
+
+                financialBox.className = "p-2 rounded-xl text-center font-bold text-xs sm:text-sm bg-rose-50 text-rose-800 border border-rose-200";
+                financialBox.innerHTML = `⚠️ คืนเงินส่วนเกินให้ลูกค้า: <b>-${penalty} บาท</b> และชื่อเสียงร้านลดลง!`;
+
+                speakThai(`ลูกค้าโวยวายว่าคิดเงินเกินไป ${difference} บาท ต้องคืนเงินลูกค้านะ!`);
+
+            } else {
+                // UNDERCHARGED OR OVER-GIVEN CHANGE (STORE LOSS)
+                AudioFX.playAngryCustomer();
+                const lossAmount = Math.abs(difference);
+                storeData.capital = Math.max(0, storeData.capital - lossAmount);
+                storeData.profit -= lossAmount;
+
+                reactionBox.className = "p-2.5 rounded-xl text-center space-y-0.5 bg-amber-100 border border-amber-400 text-amber-950";
+                reactionIcon.innerText = "💸";
+                reactionTitle.innerText = "ร้านค้าขาดทุน! คิดเงินขาดหรือทอนเกิน";
+                reactionSpeech.innerText = `"${currentCustomer.name}: เอ๊ะ... ขอบคุณนะฮะที่แถมเงินให้เยอะจนร้านตัวเองขาดทุน!"`;
+
+                financialBox.className = "p-2 rounded-xl text-center font-bold text-xs sm:text-sm bg-amber-50 text-amber-900 border border-amber-300";
+                financialBox.innerHTML = `📉 ขาดทุนบิลนี้: <b>-${lossAmount} บาท</b> (เงินทุนในลิ้นชักลดลง)`;
+
+                speakThai(`ร้านค้าขาดทุนไป ${lossAmount} บาทนะจ๊ะ คราวหน้าค่อยๆ คิดนะ!`);
+            }
+
+            saveData();
+            document.getElementById('receiptModal').classList.remove('hidden');
+        }
+
+        function closeReceiptAndNextCustomer() {
+            AudioFX.playCashClick();
+            document.getElementById('receiptModal').classList.add('hidden');
+            serveNextCustomer();
+        }
+
+        /* ========================================================
+           11. AUTO RESTOCK SYSTEM (WITH 7% SURCHARGE)
+           ======================================================== */
+        function promptAutoRestock() {
+            AudioFX.playCashClick();
+            
+            // Collect unique items sold from history or depleted items
+            if (soldItemsHistory.length === 0) {
+                alert("ยังไม่มีสินค้าที่ขายไป หรือสต็อกสินค้ายังเต็มอยู่จ้า!");
+                return;
+            }
+
+            // Calculate replenishment base cost
+            let baseCost = 0;
+            soldItemsHistory.forEach(id => {
+                const item = MASTER_PRODUCTS.find(p => p.id === id);
+                if (item) baseCost += item.cost;
+            });
+
+            // 7% Service Surcharge Fee
+            const serviceFee = Math.ceil(baseCost * 0.07);
+            const totalCharge = baseCost + serviceFee;
+
+            document.getElementById('autoRestockItemCount').innerText = `${soldItemsHistory.length} ชิ้น`;
+            document.getElementById('autoRestockBaseCost').innerText = `${baseCost} บาท`;
+            document.getElementById('autoRestockFee').innerText = `+${serviceFee} บาท (7%)`;
+            document.getElementById('autoRestockTotalCharge').innerText = `${totalCharge} บาท`;
+
+            document.getElementById('autoRestockModal').classList.remove('hidden');
+        }
+
+        function closeAutoRestockModal() {
+            document.getElementById('autoRestockModal').classList.add('hidden');
+        }
+
+        function confirmAutoRestock() {
+            let baseCost = 0;
+            soldItemsHistory.forEach(id => {
+                const item = MASTER_PRODUCTS.find(p => p.id === id);
+                if (item) baseCost += item.cost;
+            });
+
+            const serviceFee = Math.ceil(baseCost * 0.07);
+            const totalCharge = baseCost + serviceFee;
+
+            if (storeData.capital < totalCharge) {
+                alert("เงินทุนไม่พอจ่ายค่าสินค้าและค่าบริการจัดส่งด่วน 7% จ้า!");
+                return;
+            }
+
+            AudioFX.playTruckHorn();
+            storeData.capital -= totalCharge;
+
+            // Restock items in inventory
+            soldItemsHistory.forEach(id => {
+                const item = MASTER_PRODUCTS.find(p => p.id === id);
+                if (item) item.stock += 1;
+            });
+
+            // Clear sold history
+            soldItemsHistory = [];
+
+            saveData();
+            closeAutoRestockModal();
+            closeRestockModal();
+            renderConveyorBelt();
+
+            speakThai("รถส่งของด่วนมาถึงแล้วจ้า! สต็อกสินค้าได้รับการเติมเต็มเรียบร้อยแล้ว!");
+        }
+
+        /* ========================================================
+           12. DAY CLOSING & OPERATING BILLS SETTLEMENT
+           ======================================================== */
+        function triggerDayClosing() {
+            AudioFX.playKaChing();
+            
+            const electricity = 25;
+            const water = 15;
+            const tax = Math.max(10, Math.round(Math.max(0, dayGrossProfitAccumulated) * 0.1));
+            const totalBills = electricity + water + tax;
+
+            const netDailyProfit = dayGrossProfitAccumulated - totalBills;
+            storeData.capital = Math.max(0, storeData.capital - totalBills);
+            saveData();
+
+            document.getElementById('closingDayTitle').innerText = `สรุปบัญชีปิดร้านสิ้นสุด วันที่ ${currentDay}`;
+            document.getElementById('closingCustomerCount').innerText = `${dayCustomerTarget} คน`;
+            document.getElementById('closingGrossProfit').innerText = `${dayGrossProfitAccumulated >= 0 ? '+' : ''}${dayGrossProfitAccumulated} บาท`;
+            
+            document.getElementById('billElectricity').innerText = `-${electricity} บาท`;
+            document.getElementById('billWater').innerText = `-${water} บาท`;
+            document.getElementById('billTax').innerText = `-${tax} บาท`;
+            document.getElementById('billTotalExpense').innerText = `-${totalBills} บาท`;
+
+            const netBox = document.getElementById('closingNetResultBox');
+            if (netDailyProfit >= 0) {
+                netBox.className = "p-2.5 rounded-xl text-center text-xs sm:text-sm font-black bg-emerald-100 text-emerald-800 border border-emerald-300";
+                netBox.innerText = `🎉 กำไรสุทธิเข้ากระเป๋าหลังหักค่าน้ำ ค่าไฟ ภาษี: +${netDailyProfit} บาท!`;
+            } else {
+                netBox.className = "p-2.5 rounded-xl text-center text-xs sm:text-sm font-black bg-rose-100 text-rose-800 border border-rose-300";
+                netBox.innerText = `⚠️ วันนี้หักค่าใช้จ่ายแล้วติดลบ: ${netDailyProfit} บาท พรุ่งนี้สู้ใหม่นะ!`;
+            }
+
+            document.getElementById('dayClosingModal').classList.remove('hidden');
+            speakThai(`ปิดร้านวันที่ ${currentDay} เรียบร้อยแล้วจ้า! มาสรุปบัญชีกัน`);
+        }
+
+        function startNextDaySession() {
+            AudioFX.playCashClick();
+            document.getElementById('dayClosingModal').classList.add('hidden');
+            currentDay++;
+            startNewDay();
+        }
+
+        /* ========================================================
+           13. WHOLESALE RESTOCK HUB (MANUAL ORDER)
+           ======================================================== */
+        function openRestockModal() {
+            AudioFX.playCashClick();
+            wholesaleCart = {};
+            document.getElementById('restockCapitalDisplay').innerText = `${storeData.capital} บาท`;
+            renderRestockCategoryTabs('อาหารอุ่นร้อน');
+            document.getElementById('restockModal').classList.remove('hidden');
+        }
+
+        function renderRestockCategoryTabs(activeCat) {
+            const categories = ['อาหารอุ่นร้อน', 'เบเกอรี่', 'เครื่องดื่ม', 'ขนมคบเคี้ยว', 'ผลไม้สด', 'เครื่องเขียน', 'ของใช้ & ของเล่น'];
+            const container = document.getElementById('restockCategoryTabs');
+            container.innerHTML = categories.map(cat => `
+                <button onclick="renderRestockCategoryTabs('${cat}')" class="px-3 py-1 rounded-xl text-xs sm:text-sm font-bold shrink-0 transition ${
+                    cat === activeCat ? 'bg-blue-600 text-white shadow' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }">
+                    ${cat}
+                </button>
+            `).join('');
+
+            renderRestockItemsList(activeCat);
+        }
+
+        function renderRestockItemsList(cat) {
+            const listEl = document.getElementById('restockItemsList');
+            const items = MASTER_PRODUCTS.filter(p => p.cat === cat);
+
+            listEl.innerHTML = items.map(item => {
+                const qty = wholesaleCart[item.id] || 0;
+                return `
+                    <div class="flex items-center justify-between p-2.5 rounded-2xl border ${item.stock <= 2 ? 'bg-rose-50 border-rose-300' : 'bg-slate-50 border-slate-200'}">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-3xl">${item.icon}</span>
+                            <div>
+                                <div class="font-bold text-slate-900 text-xs sm:text-sm">${item.name}</div>
+                                <div class="text-xs text-slate-600">
+                                    ทุน: <b class="text-blue-700">${item.cost}฿</b> | ขาย: <b class="text-amber-600">${item.price}฿</b> (กำไร +${item.price - item.cost}฿)
+                                </div>
+                                <div class="text-[11px] ${item.stock <= 2 ? 'text-rose-600 font-black' : 'text-slate-500'}">
+                                    สต็อกในร้านปัจจุบัน: ${item.stock} ชิ้น
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button onclick="adjustWholesaleItem(${item.id}, -1)" class="w-7 h-7 rounded-lg bg-slate-200 hover:bg-slate-300 font-black text-sm flex items-center justify-center">-</button>
+                            <span class="font-black text-base w-6 text-center">${qty}</span>
+                            <button onclick="adjustWholesaleItem(${item.id}, 1)" class="w-7 h-7 rounded-lg bg-blue-600 text-white hover:bg-blue-500 font-black text-sm flex items-center justify-center">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            updateRestockBill();
+        }
+
+        function adjustWholesaleItem(id, delta) {
+            AudioFX.playCashClick();
+            const cur = wholesaleCart[id] || 0;
+            const updated = Math.max(0, cur + delta);
+            if (updated === 0) delete wholesaleCart[id];
+            else wholesaleCart[id] = updated;
+
+            const activeCatBtn = document.querySelector('#restockCategoryTabs .bg-blue-600');
+            const cat = activeCatBtn ? activeCatBtn.innerText.trim() : 'อาหารอุ่นร้อน';
+            renderRestockItemsList(cat);
+        }
+
+        function updateRestockBill() {
+            let total = 0;
+            Object.keys(wholesaleCart).forEach(id => {
+                const item = MASTER_PRODUCTS.find(p => p.id === parseInt(id));
+                if (item) total += item.cost * wholesaleCart[id];
+            });
+            document.getElementById('restockTotalBill').innerText = `${total} บาท`;
+        }
+
+        function confirmRestockOrder() {
+            let totalBill = 0;
+            Object.keys(wholesaleCart).forEach(id => {
+                const item = MASTER_PRODUCTS.find(p => p.id === parseInt(id));
+                if (item) totalBill += item.cost * wholesaleCart[id];
+            });
+
+            if (totalBill === 0) {
+                alert("กรุณากดเลือกจำนวนสินค้าที่ต้องการสั่งก่อนนะจ๊ะ!");
+                return;
+            }
+
+            if (storeData.capital < totalBill) {
+                alert("เงินทุนไม่พอจ่ายค่าสินค้าค้าส่งจ้า! ลองลดจำนวนสินค้าลงนะ");
+                return;
+            }
+
+            AudioFX.playTruckHorn();
+            storeData.capital -= totalBill;
+
+            Object.keys(wholesaleCart).forEach(id => {
+                const item = MASTER_PRODUCTS.find(p => p.id === parseInt(id));
+                if (item) item.stock += wholesaleCart[id];
+            });
+
+            saveData();
+            closeRestockModal();
+            speakThai("รถส่งของมาถึงแล้วจ้า! สต็อกสินค้าพร้อมขายแล้ว!");
+            renderConveyorBelt();
+        }
+
+        function closeRestockModal() {
+            document.getElementById('restockModal').classList.add('hidden');
+        }
+
+        /* ========================================================
+           14. STORE DECORATION & BUFFS SHOP
+           ======================================================== */
+        function openDecorModal() {
+            AudioFX.playCashClick();
+            const listEl = document.getElementById('decorItemsList');
+            listEl.innerHTML = DECOR_CATALOG.map(item => {
+                const isOwned = storeData.ownedDecors.includes(item.id);
+                return `
+                    <div class="flex items-center justify-between p-2.5 rounded-2xl border-2 ${isOwned ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-purple-200'}">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-3xl">${item.icon}</span>
+                            <div>
+                                <div class="font-black text-purple-950 text-xs sm:text-sm">${item.name}</div>
+                                <div class="text-[11px] text-slate-500">${item.desc}</div>
+                            </div>
+                        </div>
+                        ${isOwned 
+                            ? `<span class="px-3 py-1 rounded-full bg-emerald-200 text-emerald-800 font-bold text-xs">✓ ซื้อแล้ว</span>`
+                            : `<button onclick="buyDecorItem('${item.id}', ${item.cost})" class="btn-3d px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-xs sm:text-sm">
+                                ซื้อ ${item.cost} ฿
+                               </button>`
+                        }
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('decorModal').classList.remove('hidden');
+        }
+
+        function buyDecorItem(id, cost) {
+            if (storeData.capital < cost) {
+                alert("เงินทุนไม่พอจ้า! ต้องสะสมกำไรจากการคิดเงินให้ถูกต้องก่อนนะ");
+                return;
+            }
+
+            AudioFX.playKaChing();
+            storeData.capital -= cost;
+            storeData.ownedDecors.push(id);
+            storeData.stars = Math.min(5, storeData.stars + 1);
+            saveData();
+            openDecorModal();
+            speakThai("ยินดีด้วยจ้า! ร้านค้าได้รับบัฟเพิ่มความสามารถแล้ว!");
+        }
+
+        function closeDecorModal() {
+            document.getElementById('decorModal').classList.add('hidden');
+        }
+
+        /* ========================================================
+           15. CATALOG VIEWER (110 ITEMS)
+           ======================================================== */
+        function openCatalogModal() {
+            AudioFX.playCashClick();
+            renderCatalogTabs('อาหารอุ่นร้อน');
+            document.getElementById('catalogModal').classList.remove('hidden');
+        }
+
+        function renderCatalogTabs(activeCat) {
+            const categories = ['อาหารอุ่นร้อน', 'เบเกอรี่', 'เครื่องดื่ม', 'ขนมคบเคี้ยว', 'ผลไม้สด', 'เครื่องเขียน', 'ของใช้ & ของเล่น'];
+            const tabContainer = document.getElementById('catalogCategoryTabs');
+            tabContainer.innerHTML = categories.map(cat => `
+                <button onclick="renderCatalogTabs('${cat}')" class="px-2.5 py-1 rounded-xl text-xs sm:text-sm font-bold shrink-0 transition ${
+                    cat === activeCat ? 'bg-indigo-600 text-white shadow' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }">
+                    ${cat}
+                </button>
+            `).join('');
+
+            const grid = document.getElementById('catalogGrid');
+            const filtered = MASTER_PRODUCTS.filter(p => p.cat === activeCat);
+            grid.innerHTML = filtered.map(item => `
+                <div class="p-2 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2">
+                    <span class="text-2xl">${item.icon}</span>
+                    <div class="truncate">
+                        <div class="font-bold text-slate-800 text-xs sm:text-sm truncate">${item.name}</div>
+                        <div class="text-[11px] text-slate-500">ทุน: ${item.cost}฿ | ขาย: <b class="text-amber-600">${item.price}฿</b></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function closeCatalogModal() {
+            document.getElementById('catalogModal').classList.add('hidden');
+        }
+
+        /* ========================================================
+           16. INIT ON WINDOW LOAD
+           ======================================================== */
+        window.onload = () => {
+            initGame();
+        };
+    </script>
+</body>
+</html>
