@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full w-full overflow-hidden select-none">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Monster Diner: มินิเกมครัวป่วน ฝึก 5 ทักษะเมาส์</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Prompt & Itim (น่ารัก อ่านง่าย สำหรับเด็ก) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Itim&family=Prompt:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Prompt', 'Itim', sans-serif;
+      touch-action: manipulation;
+      -webkit-user-drag: none;
+      user-select: none;
+    }
+    .font-kid {
+      font-family: 'Itim', cursive, sans-serif;
+    }
+
+    /* Zero-Scroll Guarantee */
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #0f172a;
+    }
+
+    /* Diner Kitchen Checkered Tile Floor */
+    .diner-floor {
+      background-color: #fed7aa;
+      background-image: 
+        linear-gradient(45deg, #fdba74 25%, transparent 25%),
+        linear-gradient(-45deg, #fdba74 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #fdba74 75%),
+        linear-gradient(-45deg, transparent 75%, #fdba74 75%);
+      background-size: 40px 40px;
+      background-position: 0 0, 0 20px, 20px -20px, -20px 0;
+    }
+
+    /* Giant Wooden Cutting Board */
+    .cutting-board-giant {
+      background: radial-gradient(circle at 50% 30%, #fef3c7 0%, #fde68a 45%, #f59e0b 90%, #d97706 100%);
+      border: 10px solid #92400e;
+      box-shadow: 0 20px 40px rgba(146, 64, 14, 0.45), inset 0 4px 15px rgba(255, 255, 255, 0.6);
+    }
+
+    /* Giant BBQ Grill Grate */
+    .grill-grate-giant {
+      background: repeating-linear-gradient(
+        0deg,
+        #1e293b,
+        #1e293b 12px,
+        #090d16 12px,
+        #090d16 28px
+      );
+      box-shadow: inset 0 0 50px #dc2626, 0 20px 40px rgba(0,0,0,0.6);
+      border: 10px solid #334155;
+    }
+
+    /* Animations */
+    @keyframes pulseGlowGreen {
+      0%, 100% { filter: drop-shadow(0 0 3px #22c55e); fill: #22c55e; }
+      50% { filter: drop-shadow(0 0 12px #4ade80); fill: #4ade80; }
+    }
+    @keyframes pulseGlowOrange {
+      0%, 100% { filter: drop-shadow(0 0 3px #f97316); fill: #f97316; }
+      50% { filter: drop-shadow(0 0 12px #fb923c); fill: #fb923c; }
+    }
+    @keyframes rippleCircle {
+      0% { r: 5; opacity: 1; }
+      100% { r: 24; opacity: 0; }
+    }
+    .mouse-pulse-green { animation: pulseGlowGreen 1s infinite ease-in-out; }
+    .mouse-pulse-orange { animation: pulseGlowOrange 1s infinite ease-in-out; }
+    .ripple-active { animation: rippleCircle 0.8s infinite ease-out; }
+
+    /* Knife Chop Animation */
+    @keyframes knifeChopAnim {
+      0% { transform: translate(60px, -60px) rotate(25deg); opacity: 0; }
+      20% { opacity: 1; }
+      50% { transform: translate(0px, 0px) rotate(-15deg); }
+      75% { transform: translate(-10px, -20px) rotate(-5deg); }
+      100% { transform: translate(0px, 0px) rotate(0deg); opacity: 1; }
+    }
+    .knife-slashing { animation: knifeChopAnim 0.25s ease-out; }
+
+    /* Smoke drift */
+    @keyframes smokeFloat {
+      0% { transform: translateY(0) scale(0.7); opacity: 0.8; }
+      100% { transform: translateY(-70px) scale(1.6); opacity: 0; }
+    }
+    .smoke-anim { animation: smokeFloat 1.4s infinite ease-out; }
+
+    /* Splash pop */
+    @keyframes splatPop {
+      0% { transform: scale(0.2); opacity: 0; }
+      70% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .splat-pop { animation: splatPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+    /* Target Ring Pulse */
+    @keyframes ringPulse {
+      0%, 100% { transform: scale(1); opacity: 0.85; }
+      50% { transform: scale(1.12); opacity: 1; }
+    }
+    .target-pulse { animation: ringPulse 1.2s infinite ease-in-out; }
+
+    /* Dragging ghost appearance */
+    .drag-item {
+      cursor: grab;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .drag-item:active {
+      cursor: grabbing;
+      transform: scale(1.08) rotate(-2deg);
+      box-shadow: 0 15px 25px rgba(0,0,0,0.35);
+    }
+  </style>
+</head>
+<body class="h-full w-full bg-slate-950 text-slate-100 flex flex-col justify-between overflow-hidden relative select-none">
+
+  <!-- ================= 1. ULTRA-SLIM TOP HEADER (~7vh / ~48px) ================= -->
+  <header class="w-full h-[7vh] min-h-[46px] max-h-[58px] px-2 sm:px-4 bg-amber-500/95 border-b-2 border-amber-600 flex items-center justify-between z-30 shrink-0 shadow-md backdrop-blur-sm">
+    
+    <!-- Left: Compact Brand & Current Game Title -->
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-xl bg-white p-1 shadow flex items-center justify-center border-2 border-amber-700 transform -rotate-3 shrink-0">
+        <span class="text-xl">🍔</span>
+      </div>
+      <div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs sm:text-sm font-black text-amber-950 tracking-wide font-kid leading-none">
+            MONSTER DINER
+          </span>
+          <span id="activeGamePill" class="text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-full bg-amber-900 text-amber-100 font-kid">
+            เกม 1: สับผัก
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Instant 5 Mini-Game Switcher Tabs (Direct One-Click Switch) -->
+    <nav class="flex items-center gap-1 sm:gap-1.5 bg-amber-600/40 p-1 rounded-2xl border border-amber-400/60 shadow-inner max-w-[620px]">
+      <button onclick="Game.switchMiniGame(1)" id="tab_g1" class="px-2 sm:px-3 py-1 rounded-xl bg-white text-amber-950 font-black text-[11px] sm:text-xs shadow flex items-center gap-1 transition-all">
+        <span>🔪</span><span class="hidden md:inline">1. สับผัก</span>
+      </button>
+      <button onclick="Game.switchMiniGame(2)" id="tab_g2" class="px-2 sm:px-3 py-1 rounded-xl bg-amber-700/60 hover:bg-amber-700 text-amber-100 font-bold text-[11px] sm:text-xs transition-all flex items-center gap-1">
+        <span>🥩</span><span class="hidden md:inline">2. พลิกเนื้อ</span>
+      </button>
+      <button onclick="Game.switchMiniGame(3)" id="tab_g3" class="px-2 sm:px-3 py-1 rounded-xl bg-amber-700/60 hover:bg-amber-700 text-amber-100 font-bold text-[11px] sm:text-xs transition-all flex items-center gap-1">
+        <span>🍞</span><span class="hidden md:inline">3. รับขนมปัง</span>
+      </button>
+      <button onclick="Game.switchMiniGame(4)" id="tab_g4" class="px-2 sm:px-3 py-1 rounded-xl bg-amber-700/60 hover:bg-amber-700 text-amber-100 font-bold text-[11px] sm:text-xs transition-all flex items-center gap-1">
+        <span>🥫</span><span class="hidden md:inline">4. บีบซอส</span>
+      </button>
+      <button onclick="Game.switchMiniGame(5)" id="tab_g5" class="px-2 sm:px-3 py-1 rounded-xl bg-amber-700/60 hover:bg-amber-700 text-amber-100 font-bold text-[11px] sm:text-xs transition-all flex items-center gap-1">
+        <span>🍔</span><span class="hidden md:inline">5. รวมร่าง</span>
+      </button>
+    </nav>
+
+    <!-- Right: Mini Stats + Sound + Fullscreen -->
+    <div class="flex items-center gap-1 sm:gap-2">
+      <!-- Stars badge -->
+      <div class="hidden sm:flex items-center gap-1 bg-amber-700/60 px-2 py-0.5 rounded-xl border border-amber-400/50 text-xs font-black text-yellow-300">
+        <i class="fa-solid fa-star"></i>
+        <span id="starDisplay">0</span>
+      </div>
+
+      <!-- Audio SFX -->
+      <button id="sfxBtn" onclick="AudioEngine.toggleSFX()" title="เปิด/ปิด เสียงเอฟเฟกต์" class="w-8 h-8 rounded-xl bg-amber-700 hover:bg-amber-800 text-white flex items-center justify-center border border-amber-600 active:scale-95 transition-all shadow">
+        <i id="sfxIconOn" class="fa-solid fa-volume-high text-xs"></i>
+        <i id="sfxIconOff" class="fa-solid fa-volume-xmark text-xs hidden text-amber-300"></i>
+      </button>
+
+      <!-- Thai Voice -->
+      <button id="voiceBtn" onclick="AudioEngine.toggleVoice()" title="เปิด/ปิด เสียงอ่านคำสั่งภาษาไทย" class="w-8 h-8 rounded-xl bg-amber-700 hover:bg-amber-800 text-white flex items-center justify-center border border-amber-600 active:scale-95 transition-all shadow">
+        <i id="voiceIconOn" class="fa-solid fa-comment-dots text-xs"></i>
+        <i id="voiceIconOff" class="fa-solid fa-comment-slash text-xs hidden text-amber-300"></i>
+      </button>
+
+      <!-- Fullscreen -->
+      <button onclick="Game.toggleFullscreen()" title="เต็มจอ (Fullscreen)" class="w-8 h-8 rounded-xl bg-amber-900 hover:bg-amber-950 text-white flex items-center justify-center border border-amber-600 active:scale-95 transition-all shadow">
+        <i class="fa-solid fa-expand text-xs"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= 2. GIANT GAMEPLAY ARENA (~93vh - 90%+ OF SCREEN) ================= -->
+  <main class="w-full flex-1 min-h-0 diner-floor relative overflow-hidden flex items-center justify-center p-2 sm:p-4">
+    
+    <!-- 2.1 FLOATING MOUSE GUIDE (Compact Top-Right Badge - Non-Intrusive) -->
+    <aside class="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 bg-slate-900/90 border-2 border-cyan-400 rounded-2xl px-2.5 py-1.5 shadow-2xl flex items-center gap-2 backdrop-blur-md pointer-events-none">
+      <div class="relative w-8 h-11 sm:w-9 sm:h-12 flex items-center justify-center">
+        <svg id="mouseSvg" class="w-full h-full" viewBox="0 0 60 90">
+          <rect x="5" y="5" width="50" height="80" rx="25" fill="#1e293b" stroke="#38bdf8" stroke-width="3"/>
+          <line x1="30" y1="5" x2="30" y2="42" stroke="#475569" stroke-width="2"/>
+          <rect x="26" y="16" width="8" height="14" rx="4" fill="#64748b" stroke="#94a3b8" stroke-width="1.5"/>
+          <!-- Left Click Button -->
+          <path id="guideBtnLeft" d="M 8 30 C 8 16 16 8 28 6 L 28 40 L 8 40 Z" fill="#334155" class="transition-all duration-300"/>
+          <!-- Right Click Button -->
+          <path id="guideBtnRight" d="M 52 30 C 52 16 44 8 32 6 L 32 40 L 52 40 Z" fill="#334155" class="transition-all duration-300"/>
+          <!-- Active Ripple Circles -->
+          <circle id="guideRippleLeft" cx="18" cy="24" r="8" fill="none" stroke="#22c55e" stroke-width="3" class="hidden"/>
+          <circle id="guideRippleRight" cx="42" cy="24" r="8" fill="none" stroke="#f97316" stroke-width="3" class="hidden"/>
+        </svg>
+      </div>
+      <div class="text-left pr-0.5">
+        <div class="text-[9px] text-cyan-300 font-bold uppercase tracking-wider font-kid">ท่าทางเมาส์:</div>
+        <div id="guideActionTitle" class="text-xs sm:text-sm font-black text-white font-kid leading-none">ดับเบิลคลิกซ้าย</div>
+        <div id="guideFingerHint" class="text-[9px] sm:text-[10px] text-emerald-400 font-semibold mt-0.5">นิ้วชี้กด 2 ครั้งเร็วๆ</div>
+      </div>
+    </aside>
+
+    <!-- 2.2 FLOATING MINI CUSTOMER BADGE (Compact Top-Left Badge - Non-Intrusive) -->
+    <aside class="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 bg-amber-950/85 border-2 border-amber-400 rounded-2xl px-2.5 py-1.5 shadow-2xl flex items-center gap-2 backdrop-blur-md">
+      <div id="customerAvatarMini" class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-amber-100 flex items-center justify-center p-0.5 shadow shrink-0">
+        <!-- Rendered by JS -->
+      </div>
+      <div>
+        <div class="flex items-center gap-1.5">
+          <span id="customerNameMini" class="text-xs font-black text-amber-200 font-kid">น้องบลู๊ปปี้</span>
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        </div>
+        <div id="customerSpeechMini" class="text-[10px] sm:text-xs text-white font-bold leading-tight max-w-[170px] sm:max-w-[220px] truncate font-kid">
+          สับผักใส่เบอร์เกอร์ให้หน่อยงับ!
+        </div>
+      </div>
+      <!-- Repeat Speech Button -->
+      <button onclick="Game.speakCurrentTask()" title="ฟังเสียงคุณครูพูดคำสั่งอีกครั้ง" class="w-7 h-7 rounded-lg bg-amber-500 hover:bg-amber-400 text-amber-950 flex items-center justify-center shadow font-bold text-xs shrink-0 ml-1 active:scale-95">
+        <i class="fa-solid fa-volume-high"></i>
+      </button>
+    </aside>
+
+    <!-- 2.3 THE GIANT INTERACTIVE PLAYGROUND (Fills entire central canvas) -->
+    <div id="giantStageArea" class="w-full h-full max-w-6xl flex items-center justify-center relative p-1 sm:p-4">
+      <!-- Injected dynamically by active mini-game -->
+    </div>
+
+    <!-- 2.4 FLOATING SLIM STATUS BAR (Bottom Center Float - Non-Blocking) -->
+    <footer class="absolute bottom-3 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-20 bg-slate-900/90 border border-slate-700 rounded-full px-4 sm:px-6 py-2 shadow-2xl flex items-center justify-between sm:gap-6 backdrop-blur-md">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping shrink-0"></span>
+        <span id="stageHintNotice" class="text-xs sm:text-sm font-black text-slate-100 font-kid truncate max-w-[220px] sm:max-w-md">
+          ดับเบิลคลิกที่ผัก 2 ครั้งเร็วๆ นะจ๊ะ
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-4 shrink-0">
+        <!-- Progress Counter -->
+        <span id="stageProgressPill" class="text-xs font-black px-2.5 py-1 rounded-full bg-amber-500 text-slate-950 font-kid shadow">
+          คืบหน้า: 0/3
+        </span>
+        <!-- Restart Button -->
+        <button onclick="Game.restartMiniGame()" title="เริ่มเกมนี้ใหม่" class="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs active:scale-95 transition-all border border-slate-600">
+          <i class="fa-solid fa-rotate-left mr-1"></i> เริ่มใหม่
+        </button>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- ================= 3. POPUPS & WIN MODALS ================= -->
+  
+  <!-- MINI-GAME CLEAR CELEBRATION MODAL -->
+  <div id="gameClearModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-gradient-to-b from-amber-400 via-amber-500 to-orange-500 border-4 border-white rounded-3xl p-6 max-w-sm w-full text-center text-amber-950 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+      <div class="w-20 h-20 mx-auto -mt-14 bg-white rounded-3xl p-1 shadow-2xl flex items-center justify-center text-4xl border-4 border-amber-600 animate-bounce">
+        ✨
+      </div>
+      <h2 id="modalClearTitle" class="text-2xl font-black mt-2 font-kid">ยอดเยี่ยมมาก!</h2>
+      <p id="modalClearDesc" class="text-xs sm:text-sm font-bold text-amber-950 mt-1">
+        คุณผ่านทักษะเมาส์นี้ได้อย่างแม่นยำ!
+      </p>
+
+      <div class="flex justify-center gap-2 my-3 text-3xl">
+        <span class="text-yellow-200 drop-shadow">⭐</span>
+        <span class="text-yellow-200 drop-shadow">⭐</span>
+        <span class="text-yellow-200 drop-shadow">⭐</span>
+      </div>
+
+      <div class="bg-amber-900/30 rounded-2xl p-2.5 my-2 border border-amber-300/60 flex justify-around text-white font-black text-sm">
+        <div>
+          <div class="text-[10px] text-amber-200">เหรียญรางวัล</div>
+          <div>+20 🪙</div>
+        </div>
+        <div class="w-[1px] h-7 bg-amber-300/40"></div>
+        <div>
+          <div class="text-[10px] text-amber-200">ความแม่นยำ</div>
+          <div>100% 🎯</div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 mt-4">
+        <button onclick="Game.closeModal('gameClearModal'); Game.restartMiniGame();" class="flex-1 py-2.5 rounded-xl bg-amber-800 hover:bg-amber-900 text-white font-black text-xs font-kid transition-all">
+          เล่นซ้ำ 🔄
+        </button>
+        <button onclick="Game.advanceToNextGame()" class="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-black text-sm font-kid shadow-lg shadow-emerald-700/40 transition-all">
+          มินิเกมถัดไป ➔
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 4. JAVASCRIPT ENGINE ================= -->
+  <script>
+    /**
+     * MONSTER DINER - 5 EXPANDED MOUSE MINI-GAMES
+     * 100vw/100vh Zero-Scroll Architecture
+     */
+
+    // --- 1. WEB AUDIO SYNTHESIZER ---
+    const AudioEngine = (() => {
+      let ctx = null;
+      let sfx = true;
+      let speech = true;
+      let voice = null;
+
+      function getCtx() {
+        if (!ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) ctx = new AudioContextClass();
+        }
+        if (ctx && ctx.state === 'suspended') ctx.resume();
+        return ctx;
+      }
+
+      function initVoices() {
+        if ('speechSynthesis' in window) {
+          const load = () => {
+            const voices = window.speechSynthesis.getVoices();
+            voice = voices.find(v => v.lang.startsWith('th')) || null;
+          };
+          load();
+          if (window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = load;
+          }
+        }
+      }
+
+      return {
+        init: () => initVoices(),
+        toggleSFX: () => {
+          sfx = !sfx;
+          document.getElementById('sfxIconOn').classList.toggle('hidden', !sfx);
+          document.getElementById('sfxIconOff').classList.toggle('hidden', sfx);
+          if (sfx) AudioEngine.playPop();
+        },
+        toggleVoice: () => {
+          speech = !speech;
+          document.getElementById('voiceIconOn').classList.toggle('hidden', !speech);
+          document.getElementById('voiceIconOff').classList.toggle('hidden', speech);
+          if (speech) AudioEngine.speak("เปิดเสียงคุณครูแล้วจ้ะ");
+        },
+        speak: (text) => {
+          if (!speech || !('speechSynthesis' in window)) return;
+          try {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'th-TH';
+            if (voice) u.voice = voice;
+            u.rate = 1.02;
+            u.pitch = 1.2;
+            window.speechSynthesis.speak(u);
+          } catch(e) {}
+        },
+        playPop: () => {
+          if (!sfx) return;
+          try {
+            const c = getCtx(); if (!c) return;
+            const o = c.createOscillator();
+            const g = c.createGain();
+            o.type = 'sine';
+            o.frequency.setValueAtTime(650, c.currentTime);
+            o.frequency.exponentialRampToValueAtTime(320, c.currentTime + 0.06);
+            g.gain.setValueAtTime(0.2, c.currentTime);
+            g.gain.linearRampToValueAtTime(0.01, c.currentTime + 0.06);
+            o.connect(g); g.connect(c.destination);
+            o.start(); o.stop(c.currentTime + 0.06);
+          } catch(e) {}
+        },
+        playChop: () => {
+          if (!sfx) return;
+          try {
+            const c = getCtx(); if (!c) return;
+            const o = c.createOscillator();
+            const g = c.createGain();
+            o.type = 'triangle';
+            o.frequency.setValueAtTime(480, c.currentTime);
+            o.frequency.exponentialRampToValueAtTime(100, c.currentTime + 0.09);
+            g.gain.setValueAtTime(0.35, c.currentTime);
+            g.gain.linearRampToValueAtTime(0.01, c.currentTime + 0.09);
+            o.connect(g); g.connect(c.destination);
+            o.start(); o.stop(c.currentTime + 0.09);
+          } catch(e) {}
+        },
+        playFlip: () => {
+          if (!sfx) return;
+          try {
+            const c = getCtx(); if (!c) return;
+            const o = c.createOscillator();
+            const g = c.createGain();
+            o.type = 'sine';
+            o.frequency.setValueAtTime(240, c.currentTime);
+            o.frequency.exponentialRampToValueAtTime(700, c.currentTime + 0.12);
+            g.gain.setValueAtTime(0.3, c.currentTime);
+            g.gain.linearRampToValueAtTime(0.01, c.currentTime + 0.12);
+            o.connect(g); g.connect(c.destination);
+            o.start(); o.stop(c.currentTime + 0.12);
+          } catch(e) {}
+        },
+        playCatch: () => {
+          if (!sfx) return;
+          try {
+            const c = getCtx(); if (!c) return;
+            [523.25, 783.99].forEach((freq, idx) => {
+              const o = c.createOscillator();
+              const g = c.createGain();
+              o.type = 'sine';
+              o.frequency.value = freq;
+              g.gain.setValueAtTime(0.2, c.currentTime + idx * 0.05);
+              g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + idx * 0.05 + 0.2);
+              o.connect(g); g.connect(c.destination);
+              o.start(c.currentTime + idx * 0.05);
+              o.stop(c.currentTime + idx * 0.05 + 0.22);
+            });
+          } catch(e) {}
+        },
+        playSquirt: () => {
+          if (!sfx) return;
+          try {
+            const c = getCtx(); if (!c) return;
+            const o = c.createOscillator();
+            const g = c.createGain();
+            o.type = 'sawtooth';
+            o.frequency.setValueAtTime(350, c.currentTime);
+            o.frequency.linearRampToValueAtTime(850, c.currentTime + 0.06);
+            o.frequency.exponentialRampToValueAtTime(180, c.currentTime + 0.14);
+            g.gain.setValueAtTime(0.25, c.currentTime);
+            g.gain.linearRampToValueAtTime(0.01, c.currentTime + 0.14);
+            o.connect(g); g.connect(c.destination);
+            o.start(); o.stop(c.currentTime + 0.14);
+          } catch(e) {}
+        },
+        playFanfare: () => {
+          if (!sfx) return;
+          try {
+            const c = getCtx(); if (!c) return;
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            const now = c.currentTime;
+            notes.forEach((f, i) => {
+              const o = c.createOscillator();
+              const g = c.createGain();
+              o.type = 'triangle';
+              o.frequency.value = f;
+              g.gain.setValueAtTime(0.2, now + i * 0.08);
+              g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.35);
+              o.connect(g); g.connect(c.destination);
+              o.start(now + i * 0.08);
+              o.stop(now + i * 0.08 + 0.4);
+            });
+          } catch(e) {}
+        }
+      };
+    })();
+
+    // --- 2. MONSTER CUSTOMERS ---
+    const MONSTERS = [
+      {
+        name: 'น้องบลู๊ปปี้',
+        quote: 'สับผักใส่เบอร์เกอร์ให้หน่อยงับ! 🍅',
+        svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="55" r="38" fill="#f472b6" stroke="#db2777" stroke-width="3"/><circle cx="40" cy="46" r="6" fill="white"/><circle cx="41" cy="46" r="3.5" fill="#0f172a"/><circle cx="60" cy="46" r="6" fill="white"/><circle cx="59" cy="46" r="3.5" fill="#0f172a"/><path d="M 42 62 Q 50 70 58 62" stroke="#be185d" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`
+      },
+      {
+        name: 'กัปตันการ์เกิล',
+        quote: 'ขอเบอร์เกอร์ชิ้นโต สุกหอมๆ นะฮะ! 🥩',
+        svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="18" y="22" width="64" height="60" rx="22" fill="#34d399" stroke="#059669" stroke-width="3"/><circle cx="50" cy="46" r="12" fill="white" stroke="#059669" stroke-width="2"/><circle cx="50" cy="46" r="6" fill="#0284c7"/><path d="M 40 66 Q 50 76 60 66" stroke="#047857" stroke-width="3" fill="#064e3b" stroke-linecap="round"/></svg>`
+      },
+      {
+        name: 'น้องส้มฟลัฟฟี่',
+        quote: 'ขอซอสฉ่ำๆ ขนมปังนุ่มๆ เลยจ้า! 🍞',
+        svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="55" r="38" fill="#f97316" stroke="#c2410c" stroke-width="3"/><ellipse cx="26" cy="30" rx="9" ry="14" fill="#fb923c"/><ellipse cx="74" cy="30" rx="9" ry="14" fill="#fb923c"/><circle cx="38" cy="48" r="5" fill="white"/><circle cx="39" cy="48" r="2.5" fill="#0f172a"/><circle cx="62" cy="48" r="5" fill="white"/><circle cx="61" cy="48" r="2.5" fill="#0f172a"/><path d="M 42 63 Q 50 71 58 63" stroke="#7c2d12" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`
+      }
+    ];
+
+    // --- 3. MAIN GAME CONTROLLER ---
+    const Game = (() => {
+      let state = {
+        currentGame: 1,
+        progress: 0,
+        goal: 3,
+        stars: 0,
+        lastClickTime: 0,
+        bunTimer: null,
+        sauceTargetsLeft: 3,
+        stackedBurgerLayers: 0
+      };
+
+      function loadStorage() {
+        try {
+          const raw = localStorage.getItem('monster_diner_stars_v2');
+          if (raw) state.stars = parseInt(raw) || 0;
+        } catch(e) {}
+      }
+
+      function saveStorage() {
+        try {
+          localStorage.setItem('monster_diner_stars_v2', state.stars.toString());
+        } catch(e) {}
+      }
+
+      function init() {
+        AudioEngine.init();
+        loadStorage();
+        document.getElementById('starDisplay').textContent = state.stars;
+
+        // Prevent browser right click context menu everywhere
+        window.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+        });
+
+        switchMiniGame(1);
+      }
+
+      function switchMiniGame(id) {
+        state.currentGame = id;
+        state.progress = 0;
+
+        // Clear active intervals
+        if (state.bunTimer) {
+          clearInterval(state.bunTimer);
+          state.bunTimer = null;
+        }
+
+        // Highlight header buttons
+        for (let i = 1; i <= 5; i++) {
+          const tab = document.getElementById(`tab_g${i}`);
+          if (i === id) {
+            tab.className = "px-2 sm:px-3 py-1 rounded-xl bg-white text-amber-950 font-black text-[11px] sm:text-xs shadow flex items-center gap-1 scale-105 transition-all";
+          } else {
+            tab.className = "px-2 sm:px-3 py-1 rounded-xl bg-amber-700/60 hover:bg-amber-700 text-amber-100 font-bold text-[11px] sm:text-xs transition-all flex items-center gap-1";
+          }
+        }
+
+        // Set customer avatar
+        const monster = MONSTERS[(id - 1) % MONSTERS.length];
+        document.getElementById('customerAvatarMini').innerHTML = monster.svg;
+        document.getElementById('customerNameMini').textContent = monster.name;
+        document.getElementById('customerSpeechMini').textContent = monster.quote;
+
+        // Route to respective mini-game
+        switch(id) {
+          case 1: setupGame1_DoubleChop(); break;
+          case 2: setupGame2_RightGrill(); break;
+          case 3: setupGame3_HoverCatch(); break;
+          case 4: setupGame4_SingleSauce(); break;
+          case 5: setupGame5_DragBurger(); break;
+        }
+      }
+
+      function updateGuide(action, title, hint, pillLabel) {
+        const leftBtn = document.getElementById('guideBtnLeft');
+        const rightBtn = document.getElementById('guideBtnRight');
+        const ripL = document.getElementById('guideRippleLeft');
+        const ripR = document.getElementById('guideRippleRight');
+
+        // Reset
+        leftBtn.setAttribute('fill', '#334155');
+        rightBtn.setAttribute('fill', '#334155');
+        leftBtn.classList.remove('mouse-pulse-green');
+        rightBtn.classList.remove('mouse-pulse-orange');
+        ripL.classList.add('hidden');
+        ripR.classList.add('hidden');
+
+        if (action === 'double' || action === 'single' || action === 'drag') {
+          leftBtn.setAttribute('fill', '#22c55e');
+          leftBtn.classList.add('mouse-pulse-green');
+          ripL.classList.remove('hidden');
+          ripL.classList.add('ripple-active');
+        } else if (action === 'right') {
+          rightBtn.setAttribute('fill', '#f97316');
+          rightBtn.classList.add('mouse-pulse-orange');
+          ripR.classList.remove('hidden');
+          ripR.classList.add('ripple-active');
+        } else if (action === 'hover') {
+          leftBtn.setAttribute('fill', '#38bdf8');
+          rightBtn.setAttribute('fill', '#38bdf8');
+        }
+
+        document.getElementById('guideActionTitle').textContent = title;
+        document.getElementById('guideFingerHint').textContent = hint;
+        document.getElementById('activeGamePill').textContent = pillLabel;
+        AudioEngine.speak(title + " " + hint);
+      }
+
+      function speakCurrentTask() {
+        const title = document.getElementById('guideActionTitle').textContent;
+        const hint = document.getElementById('guideFingerHint').textContent;
+        AudioEngine.speak(title + " " + hint);
+      }
+
+      // =========================================================================
+      // มินิเกม 1: 🔪 สับผักซิ่ง (Double-Click) - เขียงไม้ยักษ์ ผักเด้งกลางจอ สับฉับๆ
+      // =========================================================================
+      function setupGame1_DoubleChop() {
+        state.goal = 3;
+        state.progress = 0;
+        updateGuide('double', 'ดับเบิลคลิกซ้าย 2 ครั้ง', 'ใช้นิ้วชี้กด 2 ครั้งติดกันเร็วๆ', 'เกม 1: สับผัก (Double-Click)');
+        document.getElementById('stageHintNotice').textContent = "เลื่อนมีดมาชี้ที่ผัก แล้วกดคลิกซ้าย 2 ครั้งติดกันเร็วๆ จ้ะ!";
+        document.getElementById('stageProgressPill').textContent = `สับแล้ว: 0/${state.goal} ชิ้น`;
+
+        const stage = document.getElementById('giantStageArea');
+        stage.innerHTML = `
+          <!-- Giant Wooden Board (85% Arena Space) -->
+          <div id="boardTarget" class="cutting-board-giant w-[95%] h-[92%] rounded-[40px] flex flex-col items-center justify-center relative cursor-pointer overflow-hidden">
+            
+            <div class="absolute top-4 text-xs sm:text-sm font-black text-amber-950 font-kid bg-white/60 px-4 py-1 rounded-full shadow">
+              🔪 ชี้ที่ผักแล้วกดดับเบิลคลิก (คลิก 2 ครั้งติดกัน)
+            </div>
+
+            <!-- Veggie Sprite Container -->
+            <div id="veggieContainer" class="relative w-56 h-56 sm:w-80 sm:h-80 flex items-center justify-center transition-transform duration-200">
+              
+              <!-- Giant SVG Tomato / Cabbage -->
+              <svg id="veggieGraphic" viewBox="0 0 100 100" class="w-full h-full filter drop-shadow-2xl">
+                <!-- Leaf Stem -->
+                <path d="M 50 18 Q 44 4 36 2 Q 46 8 50 18 Q 54 4 64 2 Q 54 8 50 18 Z" fill="#15803d"/>
+                <path d="M 50 18 L 50 6" stroke="#16a34a" stroke-width="5" stroke-linecap="round"/>
+                <!-- Tomato Body -->
+                <circle cx="50" cy="56" r="38" fill="#ef4444" stroke="#b91c1c" stroke-width="3.5"/>
+                <ellipse cx="36" cy="42" rx="10" ry="6" fill="#fca5a5" opacity="0.65" transform="rotate(-30 36 42)"/>
+                <!-- Dotted Cutting Guide Line -->
+                <line x1="50" y1="20" x2="50" y2="92" stroke="#fef08a" stroke-width="4.5" stroke-dasharray="6,4" class="animate-pulse"/>
+              </svg>
+
+              <!-- Animated Knife Cursor Overlay -->
+              <div id="knifeActor" class="absolute -top-8 -right-8 text-7xl sm:text-8xl pointer-events-none transition-transform filter drop-shadow-xl">
+                🔪
+              </div>
+
+            </div>
+
+            <!-- Double click assist prompt -->
+            <div id="chopNotice" class="absolute bottom-6 bg-slate-950/80 text-yellow-300 px-4 py-1.5 rounded-full text-xs sm:text-sm font-black font-kid hidden animate-bounce">
+              คลิกอีกทีเร็วๆ จ้ะ! ⚡
+            </div>
+
+          </div>
+        `;
+
+        const board = document.getElementById('boardTarget');
+
+        // Custom kid-friendly double-click listener (< 680ms window)
+        board.addEventListener('click', (e) => {
+          const now = Date.now();
+          const delta = now - state.lastClickTime;
+
+          const knife = document.getElementById('knifeActor');
+          knife.classList.remove('knife-slashing');
+          void knife.offsetWidth;
+          knife.classList.add('knife-slashing');
+
+          if (delta > 0 && delta < 680) {
+            // DOUBLE CLICK SUCCESS!
+            state.lastClickTime = 0;
+            document.getElementById('chopNotice').classList.add('hidden');
+            handleDoubleChopSuccess();
+          } else {
+            // First click
+            AudioEngine.playPop();
+            state.lastClickTime = now;
+            const notice = document.getElementById('chopNotice');
+            notice.classList.remove('hidden');
+            setTimeout(() => notice.classList.add('hidden'), 900);
+          }
+        });
+      }
+
+      function handleDoubleChopSuccess() {
+        AudioEngine.playChop();
+        state.progress++;
+        document.getElementById('stageProgressPill').textContent = `สับแล้ว: ${state.progress}/${state.goal} ชิ้น`;
+
+        const vg = document.getElementById('veggieContainer');
+        vg.style.transform = `scale(0.85) rotate(${state.progress * 25}deg)`;
+
+        if (state.progress >= state.goal) {
+          AudioEngine.playFanfare();
+          vg.style.transform = `scale(0.4) rotate(90deg)`;
+          vg.style.opacity = '0';
+          setTimeout(() => {
+            showClearModal("สับผักสำเร็จ!", "คุณฝึกทักษะดับเบิลคลิกได้คล่องแคล่วมาก!");
+          }, 400);
+        } else {
+          AudioEngine.speak("ฉับ! เยี่ยมมาก สับอีกชิ้นนะจ๊ะ");
+          setTimeout(() => {
+            vg.style.transform = `scale(1) rotate(0deg)`;
+          }, 250);
+        }
+      }
+
+      // =========================================================================
+      // มินิเกม 2: 🥩 เตาย่างพลิกเนื้อ (Right-Click) - เตาย่างบาร์บีคิวยักษ์ พลิกเนื้อ
+      // =========================================================================
+      function setupGame2_RightGrill() {
+        state.goal = 3;
+        state.progress = 0;
+        updateGuide('right', 'คลิกขวา (Right-Click)', 'ใช้นิ้วกลางกดปุ่มขวา 1 ครั้ง', 'เกม 2: พลิกเนื้อ (Right-Click)');
+        document.getElementById('stageHintNotice').textContent = "สังเกตควันลอย แล้วใช้นิ้วกลางกดคลิกขวาที่ชิ้นเนื้อเพื่อพลิกนะจ๊ะ!";
+        document.getElementById('stageProgressPill').textContent = `พลิกเนื้อแล้ว: 0/${state.goal} ครั้ง`;
+
+        const stage = document.getElementById('giantStageArea');
+        stage.innerHTML = `
+          <!-- Giant BBQ Grill (85% Arena Space) -->
+          <div id="grillTarget" class="grill-grate-giant w-[95%] h-[92%] rounded-[40px] flex flex-col items-center justify-center relative cursor-context-menu overflow-hidden">
+            
+            <div class="absolute top-4 text-xs sm:text-sm font-black text-white font-kid bg-red-950/80 px-4 py-1 rounded-full border border-red-500 shadow">
+              🔥 ใช้นิ้วกลางคลิกขวาเพื่อใช้ตะหลิวพลิกเนื้อ
+            </div>
+
+            <!-- Rising Smoke Particles -->
+            <div class="absolute top-12 flex gap-10 pointer-events-none">
+              <span class="text-4xl sm:text-5xl opacity-70 smoke-anim">💨</span>
+              <span class="text-3xl sm:text-4xl opacity-80 smoke-anim" style="animation-delay: 0.5s;">💨</span>
+              <span class="text-4xl sm:text-5xl opacity-70 smoke-anim" style="animation-delay: 0.9s;">💨</span>
+            </div>
+
+            <!-- Giant Juicy Patty -->
+            <div id="pattyContainer" class="relative w-72 h-44 sm:w-96 sm:h-56 flex items-center justify-center transition-transform duration-300">
+              <svg id="pattySvg" viewBox="0 0 160 90" class="w-full h-full filter drop-shadow-2xl transition-transform duration-500">
+                <ellipse cx="80" cy="45" rx="74" ry="38" fill="#78350f" stroke="#451a03" stroke-width="5"/>
+                <!-- Grill Marks -->
+                <path d="M 32 30 L 65 62 M 65 22 L 98 62 M 98 22 L 130 58" stroke="#1c0a00" stroke-width="6" stroke-linecap="round"/>
+                <ellipse cx="80" cy="45" rx="60" ry="26" fill="#92400e" opacity="0.45"/>
+              </svg>
+
+              <!-- Spatula Overlay -->
+              <div id="spatulaActor" class="absolute -bottom-6 -left-8 text-7xl sm:text-8xl pointer-events-none transition-transform">
+                🍳
+              </div>
+            </div>
+
+            <!-- Right-click hint banner -->
+            <div class="absolute bottom-6 bg-amber-500 text-slate-950 px-5 py-2 rounded-full text-xs sm:text-sm font-black font-kid shadow-lg flex items-center gap-2">
+              <span>👉 คลิกขวาที่เนื้อเลยจ้ะ! (Right-Click)</span>
+            </div>
+
+          </div>
+        `;
+
+        const grill = document.getElementById('grillTarget');
+
+        // Context Menu Handler
+        grill.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          handleRightClickPatty();
+        });
+
+        // Mouseup button 2 handler
+        grill.addEventListener('mouseup', (e) => {
+          if (e.button === 2) {
+            handleRightClickPatty();
+          }
+        });
+      }
+
+      function handleRightClickPatty() {
+        AudioEngine.playFlip();
+        state.progress++;
+        document.getElementById('stageProgressPill').textContent = `พลิกเนื้อแล้ว: ${state.progress}/${state.goal} ครั้ง`;
+
+        const patty = document.getElementById('pattySvg');
+        patty.style.transform = `rotateX(${state.progress * 180}deg) scale(1.15)`;
+        setTimeout(() => {
+          patty.style.transform = `rotateX(${state.progress * 180}deg) scale(1)`;
+        }, 300);
+
+        if (state.progress >= state.goal) {
+          AudioEngine.playFanfare();
+          setTimeout(() => {
+            showClearModal("เนื้อสุกหอมกรุ่น!", "คุณใช้นิ้วกลางคลิกขวาได้แม่นยำมาก!");
+          }, 400);
+        } else {
+          AudioEngine.speak("ฟิ้ว! พลิกเนื้อสำเร็จแล้ว คลิกขวาอีกครั้งนะจ๊ะ");
+        }
+      }
+
+      // =========================================================================
+      // มินิเกม 3: 🍞 จานบินรับขนมปัง (Move & Hover) - ลอยจากฟ้า จานยักษ์เลื่อนตามเมาส์
+      // =========================================================================
+      function setupGame3_HoverCatch() {
+        state.goal = 3;
+        state.progress = 0;
+        updateGuide('hover', 'เลื่อนเมาส์ตาม (Move & Hover)', 'ไม่ต้องกดปุ่ม! เพียงเลื่อนเมาส์พาจานไปรับ', 'เกม 3: รับขนมปัง (Move & Hover)');
+        document.getElementById('stageHintNotice').textContent = "ไม่ต้องกดคลิก! เลื่อนเมาส์พาจานไปซ้าย-ขวาเพื่อรับขนมปังนะจ๊ะ";
+        document.getElementById('stageProgressPill').textContent = `รับขนมปังแล้ว: 0/${state.goal} ชิ้น`;
+
+        const stage = document.getElementById('giantStageArea');
+        stage.innerHTML = `
+          <!-- Giant Sky / Counter Catching Zone (85% Arena Space) -->
+          <div id="catchArena" class="w-[95%] h-[92%] rounded-[40px] bg-gradient-to-b from-sky-900 via-slate-900 to-amber-950 border-8 border-slate-700 flex flex-col justify-between items-center relative overflow-hidden shadow-2xl">
+            
+            <!-- Top Chute -->
+            <div class="w-48 h-8 bg-slate-800 rounded-b-2xl border-x-4 border-b-4 border-slate-600 shadow flex items-center justify-center">
+              <span class="text-[11px] font-black text-amber-300 font-kid">🍞 ท่อปล่อยขนมปัง</span>
+            </div>
+
+            <!-- Falling Giant Bun -->
+            <div id="fallingBunSprite" class="absolute w-28 h-20 sm:w-36 sm:h-24 flex items-center justify-center transition-transform" style="top: 30px; left: 50%;">
+              <span class="text-6xl sm:text-7xl filter drop-shadow-2xl">🍞</span>
+            </div>
+
+            <!-- Giant Catcher Plate (Directly follows Mouse X) -->
+            <div id="giantPlateActor" class="absolute bottom-6 w-52 h-14 sm:w-72 sm:h-18 bg-gradient-to-r from-slate-200 via-white to-slate-300 rounded-full border-4 border-slate-400 shadow-2xl flex items-center justify-center pointer-events-none transition-all duration-75">
+              <div class="w-40 sm:w-56 h-8 bg-slate-100 rounded-full border-2 border-slate-300 flex items-center justify-center text-xs font-black text-slate-600 font-kid">
+                🍽️ จานรองรับขนมปัง
+              </div>
+            </div>
+
+          </div>
+        `;
+
+        const arena = document.getElementById('catchArena');
+        const plate = document.getElementById('giantPlateActor');
+        const bun = document.getElementById('fallingBunSprite');
+
+        let bunX = arena.clientWidth / 2;
+        let bunY = 30;
+        let bunSpeed = 2.4;
+        let bunDrift = (Math.random() - 0.5) * 2.5;
+        let plateX = arena.clientWidth / 2;
+
+        arena.addEventListener('mousemove', (e) => {
+          const rect = arena.getBoundingClientRect();
+          plateX = e.clientX - rect.left;
+          plateX = Math.max(90, Math.min(rect.width - 90, plateX));
+          plate.style.left = `${plateX - plate.clientWidth / 2}px`;
+        });
+
+        // Touch fallback
+        arena.addEventListener('touchmove', (e) => {
+          if (e.touches.length > 0) {
+            const rect = arena.getBoundingClientRect();
+            plateX = e.touches[0].clientX - rect.left;
+            plateX = Math.max(90, Math.min(rect.width - 90, plateX));
+            plate.style.left = `${plateX - plate.clientWidth / 2}px`;
+          }
+        }, { passive: true });
+
+        state.bunTimer = setInterval(() => {
+          bunY += bunSpeed;
+          bunX += bunDrift;
+
+          const rect = arena.getBoundingClientRect();
+          if (bunX < 60 || bunX > rect.width - 60) bunDrift *= -1;
+
+          bun.style.top = `${bunY}px`;
+          bun.style.left = `${bunX - 50}px`;
+
+          // Catch collision test
+          const plateTop = rect.height - 90;
+          if (bunY >= plateTop - 30 && bunY <= plateTop + 25) {
+            if (Math.abs(bunX - plateX) < 100) {
+              // CAUGHT!
+              AudioEngine.playCatch();
+              state.progress++;
+              document.getElementById('stageProgressPill').textContent = `รับขนมปังแล้ว: ${state.progress}/${state.goal} ชิ้น`;
+
+              if (state.progress >= state.goal) {
+                clearInterval(state.bunTimer);
+                state.bunTimer = null;
+                AudioEngine.playFanfare();
+                setTimeout(() => {
+                  showClearModal("รับขนมปังครบแล้ว!", "คุณควบคุมการเลื่อนเมาส์ได้อย่างนิ่งและแม่นยำมาก!");
+                }, 400);
+                return;
+              } else {
+                AudioEngine.speak("ยอดเยี่ยม! รับชิ้นต่อไปนะจ๊ะ");
+                bunY = 30;
+                bunX = Math.random() * (rect.width - 160) + 80;
+                bunDrift = (Math.random() - 0.5) * 3;
+              }
+            }
+          }
+
+          if (bunY > rect.height) {
+            bunY = 30;
+            bunX = Math.random() * (rect.width - 160) + 80;
+            bunDrift = (Math.random() - 0.5) * 3;
+          }
+        }, 20);
+      }
+
+      // =========================================================================
+      // มินิเกม 4: 🥫 จุดยิงซอสแม่นยำ (Single Left-Click) - ชิ้นเนื้อยักษ์ เป้าเล็งโผล่
+      // =========================================================================
+      function setupGame4_SingleSauce() {
+        state.goal = 4;
+        state.progress = 0;
+        updateGuide('single', 'คลิกซ้าย 1 ครั้ง (Single Click)', 'เล็งเป้าแล้วกดนิ้วชี้ 1 ครั้ง', 'เกม 4: บีบซอส (Single Click)');
+        document.getElementById('stageHintNotice').textContent = "เลื่อนเมาส์ไปชี้ที่เป้าหมายวงกลม แล้วกดคลิกซ้าย 1 ครั้งเพื่อบีบซอสจ้ะ!";
+        document.getElementById('stageProgressPill').textContent = `บีบซอสแล้ว: 0/${state.goal} จุด`;
+
+        const stage = document.getElementById('giantStageArea');
+        stage.innerHTML = `
+          <!-- Giant Prep Station (85% Arena Space) -->
+          <div class="w-[95%] h-[92%] rounded-[40px] bg-amber-100/90 border-8 border-amber-300 flex flex-col items-center justify-center relative shadow-2xl overflow-hidden">
+            
+            <div class="absolute top-4 text-xs sm:text-sm font-black text-amber-950 font-kid bg-white/70 px-4 py-1 rounded-full shadow">
+              🥫 เล็งเป้าวงกลมแล้วคลิกซ้าย 1 ครั้งเพื่อบีบซอส
+            </div>
+
+            <!-- Giant Burger Patty -->
+            <div class="relative w-80 h-48 sm:w-[500px] sm:h-72 flex items-center justify-center">
+              <svg viewBox="0 0 160 90" class="w-full h-full filter drop-shadow-2xl">
+                <ellipse cx="80" cy="45" rx="74" ry="38" fill="#78350f" stroke="#451a03" stroke-width="5"/>
+                <path d="M 32 30 L 65 62 M 65 22 L 98 62 M 98 22 L 130 58" stroke="#1c0a00" stroke-width="6" stroke-linecap="round"/>
+              </svg>
+
+              <!-- Dynamic Target 1 -->
+              <button onclick="Game.handleSauceHit(this, 1)" class="absolute left-8 top-10 w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-dashed border-red-500 bg-red-500/25 hover:bg-red-500/40 target-pulse flex items-center justify-center transition-all">
+                <span class="text-2xl sm:text-3xl">🎯</span>
+              </button>
+
+              <!-- Dynamic Target 2 -->
+              <button onclick="Game.handleSauceHit(this, 2)" class="absolute left-32 sm:left-48 top-16 sm:top-24 w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-dashed border-yellow-500 bg-yellow-500/25 hover:bg-yellow-500/40 target-pulse flex items-center justify-center transition-all">
+                <span class="text-2xl sm:text-3xl">🎯</span>
+              </button>
+
+              <!-- Dynamic Target 3 -->
+              <button onclick="Game.handleSauceHit(this, 1)" class="absolute right-8 top-10 w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-dashed border-red-500 bg-red-500/25 hover:bg-red-500/40 target-pulse flex items-center justify-center transition-all">
+                <span class="text-2xl sm:text-3xl">🎯</span>
+              </button>
+
+              <!-- Dynamic Target 4 -->
+              <button onclick="Game.handleSauceHit(this, 2)" class="absolute right-24 sm:right-36 bottom-6 w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-dashed border-yellow-500 bg-yellow-500/25 hover:bg-yellow-500/40 target-pulse flex items-center justify-center transition-all">
+                <span class="text-2xl sm:text-3xl">🎯</span>
+              </button>
+            </div>
+
+          </div>
+        `;
+      }
+
+      function handleSauceHit(btn, type) {
+        AudioEngine.playSquirt();
+        state.progress++;
+        document.getElementById('stageProgressPill').textContent = `บีบซอสแล้ว: ${state.progress}/${state.goal} จุด`;
+
+        btn.disabled = true;
+        btn.classList.remove('target-pulse', 'border-dashed');
+        btn.className = "absolute pointer-events-none splat-pop flex items-center justify-center";
+        btn.innerHTML = `
+          <svg viewBox="0 0 60 60" class="w-16 h-16 sm:w-20 sm:h-20 filter drop-shadow-md">
+            <path d="M 30 6 C 38 10, 52 18, 46 32 C 54 42, 44 54, 30 50 C 16 54, 8 42, 14 30 C 6 18, 22 6, 30 6 Z" fill="${type === 2 ? '#eab308' : '#dc2626'}"/>
+            <circle cx="24" cy="20" r="4" fill="white" opacity="0.6"/>
+          </svg>
+        `;
+
+        if (state.progress >= state.goal) {
+          AudioEngine.playFanfare();
+          setTimeout(() => {
+            showClearModal("บีบซอสฉ่ำน่ากิน!", "คุณคลิกซ้ายได้แม่นยำตรงเป้าหมายทุกจุด!");
+          }, 400);
+        } else {
+          AudioEngine.speak("ปุ๊ด! เข้าเป้าหมายแล้ว คลิกจุดต่อไปเลยจ้ะ");
+        }
+      }
+
+      // =========================================================================
+      // มินิเกม 5: 🍔 หอคอยเบอร์เกอร์ยักษ์ (Drag & Drop) - ลากวางชิ้นโต ซ้อนกันเป็นหอคอย
+      // =========================================================================
+      function setupGame5_DragBurger() {
+        state.goal = 4;
+        state.progress = 0;
+        updateGuide('drag', 'ลากและวาง (Drag & Drop)', 'คลิกซ้ายค้างไว้ แล้วลากมาปล่อยบนจาน', 'เกม 5: รวมร่าง (Drag & Drop)');
+        document.getElementById('stageHintNotice').textContent = "คลิกซ้ายค้างที่วัตถุดิบทางซ้าย แล้วลากมาปล่อยลงบนจานทางขวานะจ๊ะ!";
+        document.getElementById('stageProgressPill').textContent = `วางวัตถุดิบแล้ว: 0/${state.goal} ชั้น`;
+
+        const stage = document.getElementById('giantStageArea');
+        stage.innerHTML = `
+          <!-- Giant Assembly Station (Wide 2 Columns) -->
+          <div class="w-[95%] h-[92%] rounded-[40px] bg-slate-900/60 border-8 border-slate-600 flex items-center justify-between p-3 sm:p-6 gap-3 sm:gap-6 shadow-2xl relative overflow-hidden backdrop-blur-md">
+            
+            <!-- Left Shelf: Giant Ingredient Cards -->
+            <div class="w-[42%] h-full bg-amber-100/90 rounded-3xl border-4 border-amber-300 p-3 sm:p-4 flex flex-col justify-around items-center shadow-lg">
+              <span class="text-xs sm:text-sm font-black text-amber-950 font-kid">วัตถุดิบสดใหม่ (คลิกค้างแล้วลาก):</span>
+
+              <div class="w-full flex flex-col gap-2 sm:gap-3 items-center">
+                <!-- 1. Patty -->
+                <div id="dragPatty" onpointerdown="Game.startDragItem(event, 'patty')" class="drag-item w-[90%] py-2.5 sm:py-3.5 bg-amber-900 hover:bg-amber-800 border-2 border-amber-950 rounded-2xl flex items-center justify-center gap-2 text-white font-black text-xs sm:text-base shadow">
+                  <span class="text-xl sm:text-2xl">🥩</span> ชิ้นเนื้อย่าง
+                </div>
+
+                <!-- 2. Veggie -->
+                <div id="dragVeggie" onpointerdown="Game.startDragItem(event, 'veggie')" class="drag-item w-[90%] py-2.5 sm:py-3.5 bg-emerald-600 hover:bg-emerald-500 border-2 border-emerald-800 rounded-2xl flex items-center justify-center gap-2 text-white font-black text-xs sm:text-base shadow">
+                  <span class="text-xl sm:text-2xl">🥗</span> ผักสดกรอบ
+                </div>
+
+                <!-- 3. Cheese -->
+                <div id="dragCheese" onpointerdown="Game.startDragItem(event, 'cheese')" class="drag-item w-[90%] py-2.5 sm:py-3.5 bg-yellow-400 hover:bg-yellow-300 border-2 border-yellow-600 rounded-2xl flex items-center justify-center gap-2 text-amber-950 font-black text-xs sm:text-base shadow">
+                  <span class="text-xl sm:text-2xl">🧀</span> ชีสแผ่นเยิ้ม
+                </div>
+
+                <!-- 4. Top Bun -->
+                <div id="dragTopBun" onpointerdown="Game.startDragItem(event, 'topbun')" class="drag-item w-[90%] py-2.5 sm:py-3.5 bg-amber-600 hover:bg-amber-500 border-2 border-amber-800 rounded-2xl flex items-center justify-center gap-2 text-white font-black text-xs sm:text-base shadow">
+                  <span class="text-xl sm:text-2xl">🍞</span> ขนมปังฝาบน
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Giant Target Stacking Plate Area -->
+            <div id="burgerDropZone" class="w-[58%] h-full bg-slate-950/80 rounded-3xl border-4 border-dashed border-amber-400 p-4 flex flex-col justify-end items-center shadow-inner relative">
+              
+              <div class="absolute top-4 px-4 py-1.5 bg-amber-400 text-amber-950 rounded-full font-black text-xs sm:text-sm font-kid shadow">
+                🍽️ ลากมาปล่อยลงบนจานนี้เลย!
+              </div>
+
+              <!-- Tower Stack Container -->
+              <div id="burgerStackContainer" class="flex flex-col-reverse items-center gap-1 mb-4 w-full">
+                <!-- Base bottom bun -->
+                <div class="w-48 sm:w-64 h-9 sm:h-12 bg-amber-600 rounded-b-3xl border-2 border-amber-800 shadow flex items-center justify-center text-xs font-black text-white font-kid">
+                  🍞 ขนมปังล่าง
+                </div>
+              </div>
+
+              <!-- Big Ceramic Plate Base -->
+              <div class="w-64 sm:w-80 h-7 sm:h-9 bg-slate-200 rounded-full border-4 border-slate-400 shadow-2xl"></div>
+
+            </div>
+
+          </div>
+        `;
+      }
+
+      function startDragItem(e, itemType) {
+        e.preventDefault();
+        AudioEngine.playPop();
+
+        const map = { patty: 'dragPatty', veggie: 'dragVeggie', cheese: 'dragCheese', topbun: 'dragTopBun' };
+        const sourceEl = document.getElementById(map[itemType]);
+        if (!sourceEl) return;
+
+        // Floating Ghost Element
+        const ghost = sourceEl.cloneNode(true);
+        ghost.id = 'floatingDragGhost';
+        ghost.style.position = 'fixed';
+        ghost.style.left = `${e.clientX - 60}px`;
+        ghost.style.top = `${e.clientY - 30}px`;
+        ghost.style.pointerEvents = 'none';
+        ghost.style.zIndex = '9999';
+        ghost.style.opacity = '0.9';
+        ghost.style.transform = 'scale(1.1) rotate(3deg)';
+        document.body.appendChild(ghost);
+
+        const onMove = (ev) => {
+          ghost.style.left = `${ev.clientX - 60}px`;
+          ghost.style.top = `${ev.clientY - 30}px`;
+        };
+
+        const onUp = (ev) => {
+          window.removeEventListener('pointermove', onMove);
+          window.removeEventListener('pointerup', onUp);
+          ghost.remove();
+
+          const dropZone = document.getElementById('burgerDropZone');
+          if (dropZone) {
+            const rect = dropZone.getBoundingClientRect();
+            if (ev.clientX >= rect.left && ev.clientX <= rect.right &&
+                ev.clientY >= rect.top && ev.clientY <= rect.bottom) {
+              handleDropIngredient(itemType, sourceEl);
+            }
+          }
+        };
+
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+      }
+
+      function handleDropIngredient(itemType, sourceEl) {
+        AudioEngine.playCatch();
+        state.progress++;
+        document.getElementById('stageProgressPill').textContent = `วางวัตถุดิบแล้ว: ${state.progress}/${state.goal} ชั้น`;
+
+        sourceEl.classList.add('opacity-25', 'pointer-events-none');
+
+        const stack = document.getElementById('burgerStackContainer');
+        const layer = document.createElement('div');
+
+        if (itemType === 'patty') {
+          layer.className = "w-48 sm:w-64 h-8 sm:h-11 bg-amber-900 border-2 border-amber-950 rounded-2xl shadow flex items-center justify-center text-xs sm:text-sm font-black text-white font-kid splat-pop";
+          layer.innerHTML = "🥩 เนื้อย่างหอมกรุ่น";
+        } else if (itemType === 'veggie') {
+          layer.className = "w-48 sm:w-64 h-7 sm:h-9 bg-emerald-600 border-2 border-emerald-800 rounded-xl shadow flex items-center justify-center text-xs sm:text-sm font-black text-white font-kid splat-pop";
+          layer.innerHTML = "🥗 ผักสดกรอบ";
+        } else if (itemType === 'cheese') {
+          layer.className = "w-50 sm:w-68 h-6 sm:h-8 bg-yellow-400 border-2 border-yellow-600 rounded-lg shadow flex items-center justify-center text-xs sm:text-sm font-black text-amber-950 font-kid splat-pop";
+          layer.innerHTML = "🧀 แผ่นชีสเยิ้ม";
+        } else if (itemType === 'topbun') {
+          layer.className = "w-48 sm:w-64 h-11 sm:h-14 bg-amber-500 border-2 border-amber-700 rounded-t-3xl shadow-lg flex items-center justify-center text-xs sm:text-sm font-black text-white font-kid splat-pop";
+          layer.innerHTML = "🍞 ขนมปังฝาบน";
+        }
+
+        stack.appendChild(layer);
+
+        if (state.progress >= state.goal) {
+          AudioEngine.playFanfare();
+          setTimeout(() => {
+            showClearModal("เบอร์เกอร์ยักษ์เสร็จแล้ว!", "คุณเชี่ยวชาญการลากและวาง (Drag & Drop) แล้ว!");
+          }, 400);
+        } else {
+          AudioEngine.speak("วางสวยมาก! ลากชิ้นต่อไปมาซ้อนเลยจ้ะ");
+        }
+      }
+
+      // --- COMMON HELPERS ---
+      function showClearModal(title, desc) {
+        state.stars += 3;
+        saveStorage();
+        document.getElementById('starDisplay').textContent = state.stars;
+
+        document.getElementById('modalClearTitle').textContent = title;
+        document.getElementById('modalClearDesc').textContent = desc;
+        openModal('gameClearModal');
+        AudioEngine.speak(title + " " + desc);
+      }
+
+      function advanceToNextGame() {
+        closeModal('gameClearModal');
+        if (state.currentGame < 5) {
+          switchMiniGame(state.currentGame + 1);
+        } else {
+          switchMiniGame(1);
+        }
+      }
+
+      function restartMiniGame() {
+        closeModal('gameClearModal');
+        switchMiniGame(state.currentGame);
+      }
+
+      function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+      function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen();
+        }
+      }
+
+      return {
+        init,
+        switchMiniGame,
+        restartMiniGame,
+        advanceToNextGame,
+        speakCurrentTask,
+        handleSauceHit,
+        startDragItem,
+        closeModal,
+        toggleFullscreen
+      };
+    })();
+
+    // Initialize on window load
+    window.addEventListener('load', () => Game.init());
+  </script>
+</body>
+</html>
