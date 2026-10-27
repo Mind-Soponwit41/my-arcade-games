@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full w-full overflow-hidden select-none">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cyber Pipeline: โรงงานจักรกลตรรกะและแปรรูปตัวเลข</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Google Fonts: Prompt & Chakra Petch -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700;800&family=Prompt:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Prompt', sans-serif;
+      touch-action: manipulation;
+    }
+    .font-tech {
+      font-family: 'Chakra Petch', sans-serif;
+    }
+    
+    /* Strict Zero-Scroll Guarantee */
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #050813;
+    }
+
+    /* Cyber Industrial Grid Pattern */
+    .cyber-bg {
+      background-size: 36px 36px;
+      background-image: 
+        linear-gradient(to right, rgba(6, 182, 212, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
+    }
+
+    /* Laser Line Dashes Flowing Animation */
+    @keyframes pipeFlow {
+      from { stroke-dashoffset: 40; }
+      to { stroke-dashoffset: 0; }
+    }
+    .pipe-anim {
+      stroke-dasharray: 8 6;
+      animation: pipeFlow 0.8s linear infinite;
+    }
+
+    /* Glowing Chip Slot Pulse */
+    @keyframes socketGlow {
+      0%, 100% { border-color: rgba(6, 182, 212, 0.4); box-shadow: 0 0 10px rgba(6, 182, 212, 0.2); }
+      50% { border-color: rgba(6, 182, 212, 0.85); box-shadow: 0 0 20px rgba(6, 182, 212, 0.45); }
+    }
+    .socket-active {
+      animation: socketGlow 1.8s infinite ease-in-out;
+    }
+
+    /* Energy Ball Glowing Pulse */
+    @keyframes orbBreath {
+      0%, 100% { filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.8)); transform: scale(1); }
+      50% { filter: drop-shadow(0 0 16px rgba(56, 189, 248, 1)); transform: scale(1.03); }
+    }
+    .orb-pulse {
+      animation: orbBreath 1.6s infinite alternate ease-in-out;
+    }
+
+    /* Laser Processing Flash */
+    @keyframes chipZap {
+      0% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.08); filter: brightness(1.7) drop-shadow(0 0 16px #38bdf8); }
+      100% { transform: scale(1); filter: brightness(1); }
+    }
+    .chip-zap-anim {
+      animation: chipZap 0.35s ease-out;
+    }
+
+    /* Solution Button Gold Pulse */
+    @keyframes hintPulse {
+      0%, 100% { box-shadow: 0 0 8px rgba(234, 179, 8, 0.4); border-color: rgba(234, 179, 8, 0.6); }
+      50% { box-shadow: 0 0 18px rgba(234, 179, 8, 0.9); border-color: rgba(250, 204, 21, 1); }
+    }
+    .hint-btn-glow {
+      animation: hintPulse 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="h-full w-full bg-slate-950 text-slate-100 flex flex-col justify-between cyber-bg overflow-hidden relative">
+
+  <!-- ================= 1. TOP HEADER BAR (~8vh) ================= -->
+  <header class="w-full h-[8vh] min-h-[52px] max-h-[66px] px-2 sm:px-5 bg-slate-900/90 backdrop-blur-md border-b border-cyan-500/30 flex items-center justify-between z-20 shrink-0">
+    <!-- Left: Brand Logo & Stage Indicator -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-cyan-500 via-sky-600 to-indigo-600 p-0.5 shadow-lg shadow-cyan-500/30 flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-microchip text-slate-950 text-lg sm:text-xl"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <h1 class="text-xs sm:text-base font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-emerald-400 leading-none">
+            CYBER PIPELINE
+          </h1>
+          <span id="headerLevelTag" class="text-[9px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/40">
+            ด่าน 1/12
+          </span>
+        </div>
+        <p id="headerTopicText" class="text-[10px] sm:text-xs text-slate-400 truncate max-w-[140px] sm:max-w-xs mt-0.5">
+          การบวกเพิ่มพื้นฐาน (+3)
+        </p>
+      </div>
+    </div>
+
+    <!-- Center: Prominent Show Solution & Mode Controls -->
+    <div class="flex items-center gap-1.5 sm:gap-3">
+      <!-- BIG HIGHLIGHT: SHOW SOLUTION BUTTON -->
+      <button onclick="Game.openSolutionModal()" title="ดูเฉลยและวิธีคิดทีละขั้นตอน พร้อมปุ่มวางชิปอัตโนมัติ" class="hint-btn-glow px-2.5 sm:px-4 py-1.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-yellow-500/30 to-amber-500/20 hover:from-amber-500/40 hover:to-yellow-400/40 border-2 border-yellow-400 text-yellow-300 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95 transition-all shadow-md">
+        <i class="fa-solid fa-lightbulb text-yellow-400 text-sm sm:text-base animate-bounce"></i>
+        <span>ดูเฉลย & วิธีคิด</span>
+        <span class="hidden md:inline text-[10px] bg-yellow-400/20 px-1.5 py-0.5 rounded-md text-yellow-200">AUTO-SOLVE</span>
+      </button>
+
+      <!-- Modes Tabs -->
+      <div class="hidden sm:flex gap-1 bg-slate-950 p-0.5 rounded-xl border border-slate-800 text-xs font-bold">
+        <button id="modeTabPuzzle" onclick="Game.switchMode('puzzle')" class="px-2.5 py-1 rounded-lg bg-cyan-500 text-slate-950 transition-all">
+          🧩 ด่านภารกิจ
+        </button>
+        <button id="modeTabSandbox" onclick="Game.switchMode('sandbox')" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition-all">
+          🧪 แซนด์บ็อกซ์
+        </button>
+      </div>
+
+      <!-- Total Stars Display -->
+      <div class="hidden lg:flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 text-xs font-bold text-amber-300">
+        <i class="fa-solid fa-star text-yellow-400"></i>
+        <span id="statStarsDisplay">0/36</span>
+      </div>
+    </div>
+
+    <!-- Right Controls: Audio, Speech, Stage Map, Help, Fullscreen -->
+    <div class="flex items-center gap-1 sm:gap-1.5">
+      <!-- SFX Toggle -->
+      <button id="sfxBtn" onclick="AudioEngine.toggleSFX()" title="เปิด/ปิด เสียงเอฟเฟกต์" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 flex items-center justify-center text-cyan-400 transition-all">
+        <i id="sfxIconOn" class="fa-solid fa-volume-high text-xs sm:text-sm"></i>
+        <i id="sfxIconOff" class="fa-solid fa-volume-xmark text-xs sm:text-sm hidden text-slate-500"></i>
+      </button>
+
+      <!-- Speech Toggle -->
+      <button id="speechBtn" onclick="AudioEngine.toggleSpeech()" title="เปิด/ปิด เสียงบรรยายภาษาไทย" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 flex items-center justify-center text-emerald-400 transition-all">
+        <i id="speechIconOn" class="fa-solid fa-comment-dots text-xs sm:text-sm"></i>
+        <i id="speechIconOff" class="fa-solid fa-comment-slash text-xs sm:text-sm hidden text-slate-500"></i>
+      </button>
+
+      <!-- Stage Selector (Map) -->
+      <button onclick="Game.openStageMap()" title="เลือกด่าน (Stage Map)" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 flex items-center justify-center text-amber-400 transition-all">
+        <i class="fa-solid fa-map text-xs sm:text-sm"></i>
+      </button>
+
+      <!-- Guide / Help -->
+      <button onclick="Game.openModal('guideModal')" title="คู่มือเล่น" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 flex items-center justify-center text-cyan-300 font-black text-xs sm:text-sm">
+        <i class="fa-solid fa-circle-question"></i>
+      </button>
+
+      <!-- Fullscreen Toggle -->
+      <button onclick="Game.toggleFullscreen()" title="เต็มจอ (Fullscreen)" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-cyan-950/70 hover:bg-cyan-900 border border-cyan-500/50 flex items-center justify-center text-cyan-300 active:scale-95">
+        <i class="fa-solid fa-expand text-xs sm:text-sm"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= 2. MAIN PIPELINE ARENA (~74vh) ================= -->
+  <main class="w-full flex-1 min-h-0 flex flex-col md:flex-row items-center justify-between px-2 sm:px-4 py-1 gap-2 relative z-10">
+
+    <!-- 2.1 LEFT COLUMN: INPUT STREAM (~18%) -->
+    <section class="w-full md:w-[18%] h-auto md:h-full bg-slate-900/70 border border-cyan-500/30 rounded-2xl p-2 sm:p-3 flex md:flex-col justify-between items-center shadow-xl backdrop-blur-sm relative overflow-hidden">
+      <!-- Section Tag -->
+      <div class="w-full flex items-center justify-between border-b border-slate-800 pb-1 mb-1">
+        <span class="text-[10px] font-bold text-cyan-300 font-tech flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+          INPUT STREAM
+        </span>
+        <span class="text-[9px] text-slate-500 font-tech">CHUTE 01</span>
+      </div>
+
+      <!-- Mission Info Card -->
+      <div class="hidden md:block w-full bg-slate-950/80 p-2 rounded-xl border border-slate-800 text-[11px] text-slate-300 leading-tight">
+        <div class="flex items-center justify-between text-amber-400 font-bold mb-0.5">
+          <span>ภารกิจด่านนี้:</span>
+          <button onclick="Game.openSolutionModal()" class="text-[10px] text-yellow-300 underline hover:text-yellow-200">
+            ดูเฉลย 💡
+          </button>
+        </div>
+        <div id="missionDescText" class="text-slate-300">ติดตั้งชิปเพื่อแปลงตัวเลขให้ตรงเป้าหมาย</div>
+      </div>
+
+      <!-- Input Conveyor Queue Container -->
+      <div class="flex-1 w-full flex md:flex-col items-center justify-center gap-2 py-1 relative">
+        <div class="text-[10px] text-cyan-400/80 font-bold uppercase tracking-wider hidden md:block">
+          ลูกบอลนำเข้า
+        </div>
+        <div id="inputQueueContainer" class="flex md:flex-col-reverse items-center justify-center gap-2 max-h-[200px] overflow-hidden">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Sandbox Custom Array Input -->
+      <div id="sandboxInputControls" class="hidden w-full flex flex-col gap-1 mt-1 border-t border-slate-800 pt-1">
+        <span class="text-[9px] text-slate-400 font-bold">ป้อนเลขทดสอบ (คั่นจุลภาค):</span>
+        <div class="flex gap-1">
+          <input id="sandboxInputArray" type="text" value="2, 4, 6, 8" class="w-full bg-slate-950 border border-cyan-500/50 rounded-lg px-2 py-1 text-xs font-tech text-cyan-300 focus:outline-none">
+          <button onclick="Game.applySandboxInputs()" class="px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-xs font-bold text-slate-950 shrink-0">
+            ตั้งค่า
+          </button>
+        </div>
+      </div>
+
+      <div class="hidden md:flex w-full items-center justify-center pt-1 text-[10px] text-cyan-500 font-tech">
+        ➔ ท่อส่งเข้าวงจร
+      </div>
+    </section>
+
+    <!-- 2.2 CENTER COLUMN: PIPELINE GRID (~60%) -->
+    <section class="flex-1 w-full md:w-[60%] h-full bg-slate-900/50 border border-slate-800 rounded-3xl p-2 sm:p-4 flex flex-col justify-between items-center relative shadow-2xl backdrop-blur-md overflow-hidden">
+      
+      <!-- Factory Circuit Matrix Bar -->
+      <div class="w-full flex justify-between items-center px-2 text-[10px] font-tech text-slate-500">
+        <div>CIRCUIT MATRIX v5.0</div>
+        <div id="codeEfficiencyBadge" class="text-emerald-400 font-bold">
+          ชิปที่ใช้: <span id="usedChipsCount">0</span> / <span id="maxChipsAllowed">1</span> ชิป
+        </div>
+        <div>FLOW DIRECTION: ➔ RIGHT</div>
+      </div>
+
+      <!-- SVG PIPELINE CONNECTOR WIRES (Absolute Layer) -->
+      <svg id="pipelineSvg" class="absolute inset-0 w-full h-full pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg">
+        <g id="svgPipeTracks"></g>
+      </svg>
+
+      <!-- INTERACTIVE SOCKET GRID (Front Layer) -->
+      <div class="relative z-10 w-full h-full flex flex-col justify-around py-1">
+
+        <!-- TOP LANE (Output Alpha Line) -->
+        <div class="w-full flex items-center justify-around gap-2 px-2 sm:px-6">
+          <div class="text-[10px] font-tech text-cyan-400 font-bold hidden sm:block w-16">LANE ALPHA</div>
+          
+          <!-- Stage 1 Socket (Gateway) -->
+          <div id="socket_S1" onclick="Game.openChipPicker('S1')" class="socket-node w-20 h-20 sm:w-28 sm:h-24 rounded-2xl bg-slate-950/90 border-2 border-cyan-500/40 hover:border-cyan-400 flex flex-col items-center justify-between p-1.5 cursor-pointer transition-all hover:scale-105 shadow-lg relative group">
+            <span class="text-[9px] font-tech text-cyan-400">STAGE 1</span>
+            <div id="chipContent_S1" class="flex-1 w-full flex flex-col items-center justify-center text-center">
+              <span class="text-xs text-slate-500 font-bold">+ ติดตั้งชิป</span>
+            </div>
+            <span class="text-[8px] text-slate-500">SOCKET 01</span>
+          </div>
+
+          <!-- Stage 2A Socket -->
+          <div id="socket_S2A" onclick="Game.openChipPicker('S2A')" class="socket-node w-20 h-20 sm:w-28 sm:h-24 rounded-2xl bg-slate-950/90 border-2 border-cyan-500/40 hover:border-cyan-400 flex flex-col items-center justify-between p-1.5 cursor-pointer transition-all hover:scale-105 shadow-lg relative group">
+            <span class="text-[9px] font-tech text-cyan-400">STAGE 2-A</span>
+            <div id="chipContent_S2A" class="flex-1 w-full flex flex-col items-center justify-center text-center">
+              <span class="text-xs text-slate-500 font-bold">+ ติดตั้งชิป</span>
+            </div>
+            <span class="text-[8px] text-slate-500">SOCKET 2A</span>
+          </div>
+
+          <!-- Stage 3A Socket -->
+          <div id="socket_S3A" onclick="Game.openChipPicker('S3A')" class="socket-node w-20 h-20 sm:w-28 sm:h-24 rounded-2xl bg-slate-950/90 border-2 border-cyan-500/40 hover:border-cyan-400 flex flex-col items-center justify-between p-1.5 cursor-pointer transition-all hover:scale-105 shadow-lg relative group">
+            <span class="text-[9px] font-tech text-cyan-400">STAGE 3-A</span>
+            <div id="chipContent_S3A" class="flex-1 w-full flex flex-col items-center justify-center text-center">
+              <span class="text-xs text-slate-500 font-bold">+ ติดตั้งชิป</span>
+            </div>
+            <span class="text-[8px] text-slate-500">SOCKET 3A</span>
+          </div>
+        </div>
+
+        <!-- BOTTOM LANE (Output Beta Line) -->
+        <div class="w-full flex items-center justify-around gap-2 px-2 sm:px-6">
+          <div class="text-[10px] font-tech text-amber-400 font-bold hidden sm:block w-16">LANE BETA</div>
+
+          <!-- Dummy Spacer to keep alignment -->
+          <div class="w-20 h-10 sm:w-28 sm:h-12 flex items-center justify-center">
+            <div class="text-[9px] font-tech text-slate-600">BYPASS LINK ⬇</div>
+          </div>
+
+          <!-- Stage 2B Socket -->
+          <div id="socket_S2B" onclick="Game.openChipPicker('S2B')" class="socket-node w-20 h-20 sm:w-28 sm:h-24 rounded-2xl bg-slate-950/90 border-2 border-amber-500/40 hover:border-amber-400 flex flex-col items-center justify-between p-1.5 cursor-pointer transition-all hover:scale-105 shadow-lg relative group">
+            <span class="text-[9px] font-tech text-amber-400">STAGE 2-B</span>
+            <div id="chipContent_S2B" class="flex-1 w-full flex flex-col items-center justify-center text-center">
+              <span class="text-xs text-slate-500 font-bold">+ ติดตั้งชิป</span>
+            </div>
+            <span class="text-[8px] text-slate-500">SOCKET 2B</span>
+          </div>
+
+          <!-- Stage 3B Socket -->
+          <div id="socket_S3B" onclick="Game.openChipPicker('S3B')" class="socket-node w-20 h-20 sm:w-28 sm:h-24 rounded-2xl bg-slate-950/90 border-2 border-amber-500/40 hover:border-amber-400 flex flex-col items-center justify-between p-1.5 cursor-pointer transition-all hover:scale-105 shadow-lg relative group">
+            <span class="text-[9px] font-tech text-amber-400">STAGE 3-B</span>
+            <div id="chipContent_S3B" class="flex-1 w-full flex flex-col items-center justify-center text-center">
+              <span class="text-xs text-slate-500 font-bold">+ ติดตั้งชิป</span>
+            </div>
+            <span class="text-[8px] text-slate-500">SOCKET 3B</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Real-time Status Readout -->
+      <div class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-1 flex justify-between items-center text-[10px] sm:text-xs">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="pipelineStatusText" class="text-slate-300 font-medium">พร้อมทำงาน: ติดตั้งชิปแล้วกด [▶ เปิดเครื่อง] หรือกด [💡 ดูเฉลย]</span>
+        </div>
+        <div id="stepDebugInfo" class="text-cyan-400 font-tech font-bold">READY</div>
+      </div>
+    </section>
+
+    <!-- 2.3 RIGHT COLUMN: TARGET CHAMBERS (~22%) -->
+    <section class="w-full md:w-[22%] h-auto md:h-full bg-slate-900/70 border border-emerald-500/30 rounded-2xl p-2 sm:p-3 flex md:flex-col justify-between items-center shadow-xl backdrop-blur-sm relative overflow-hidden">
+      <!-- Section Tag -->
+      <div class="w-full flex items-center justify-between border-b border-slate-800 pb-1 mb-1">
+        <span class="text-[10px] font-bold text-emerald-400 font-tech flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          TARGET OUTPUTS
+        </span>
+        <span class="text-[9px] text-slate-500 font-tech">COLLECTOR</span>
+      </div>
+
+      <!-- OUTPUT TUBE TOP (LANE ALPHA) -->
+      <div id="targetBoxAlpha" class="w-full flex-1 bg-slate-950/90 rounded-2xl border-2 border-cyan-500/40 p-2 sm:p-3 flex flex-col justify-between my-1 relative shadow-inner">
+        <div class="flex justify-between items-center">
+          <span class="text-[10px] font-bold text-cyan-300 font-tech">ท่อบน (ALPHA)</span>
+          <span id="targetCountAlpha" class="text-[10px] font-tech text-cyan-400">0/3</span>
+        </div>
+        <div class="my-1 text-center">
+          <div id="targetLabelAlpha" class="text-xs sm:text-sm font-black text-white">ต้องการ: [ ? ]</div>
+          <div id="targetHintAlpha" class="text-[10px] text-cyan-300/80">ตรงตามสูตรเป้าหมาย</div>
+        </div>
+        <div id="receivedListAlpha" class="flex flex-wrap gap-1 items-center justify-center min-h-[30px] p-1 bg-slate-900/80 rounded-xl border border-slate-800">
+          <span class="text-[10px] text-slate-600">รอลูกบอล...</span>
+        </div>
+      </div>
+
+      <!-- OUTPUT TUBE BOTTOM (LANE BETA) -->
+      <div id="targetBoxBeta" class="w-full flex-1 bg-slate-950/90 rounded-2xl border-2 border-amber-500/40 p-2 sm:p-3 flex flex-col justify-between my-1 relative shadow-inner">
+        <div class="flex justify-between items-center">
+          <span class="text-[10px] font-bold text-amber-300 font-tech">ท่อล่าง (BETA)</span>
+          <span id="targetCountBeta" class="text-[10px] font-tech text-amber-400">0/3</span>
+        </div>
+        <div class="my-1 text-center">
+          <div id="targetLabelBeta" class="text-xs sm:text-sm font-black text-white">ต้องการ: [ ? ]</div>
+          <div id="targetHintBeta" class="text-[10px] text-amber-300/80">รองรับเงื่อนไขแยก</div>
+        </div>
+        <div id="receivedListBeta" class="flex flex-wrap gap-1 items-center justify-center min-h-[30px] p-1 bg-slate-900/80 rounded-xl border border-slate-800">
+          <span class="text-[10px] text-slate-600">รอลูกบอล...</span>
+        </div>
+      </div>
+
+      <!-- Overall Success Gauge -->
+      <div class="w-full mt-1">
+        <div class="flex justify-between text-[10px] text-slate-400 mb-0.5 font-tech">
+          <span>PIPELINE ACCURACY</span>
+          <span id="accuracyPercent">0%</span>
+        </div>
+        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden p-0.5">
+          <div id="accuracyProgressBar" class="h-full bg-gradient-to-r from-cyan-500 to-emerald-400 rounded-full w-0 transition-all duration-300"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= 3. CONTROL PAD & CHIP DOCK (~18vh) ================= -->
+  <footer class="w-full h-[18vh] min-h-[110px] max-h-[145px] px-2 sm:px-6 bg-slate-900/95 border-t border-cyan-500/30 flex flex-col justify-between py-1.5 z-20 shrink-0">
+    
+    <!-- Top Row of Footer: Chip Category Quick Palettes -->
+    <div class="w-full flex items-center justify-between gap-2 overflow-x-auto pb-1">
+      <div class="flex items-center gap-1.5 shrink-0">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-tech flex items-center gap-1">
+          <span>⚡ ชิปคำสั่ง:</span>
+        </span>
+        <div class="flex gap-1">
+          <button onclick="Game.quickSelectChip('add', 1)" class="px-2 py-1 rounded-xl bg-blue-950/80 border border-blue-500/60 hover:border-blue-400 text-blue-300 font-tech font-bold text-xs active:scale-95 transition-all">+ 1</button>
+          <button onclick="Game.quickSelectChip('add', 2)" class="px-2 py-1 rounded-xl bg-blue-950/80 border border-blue-500/60 hover:border-blue-400 text-blue-300 font-tech font-bold text-xs active:scale-95 transition-all">+ 2</button>
+          <button onclick="Game.quickSelectChip('add', 3)" class="px-2 py-1 rounded-xl bg-blue-950/80 border border-blue-500/60 hover:border-blue-400 text-blue-300 font-tech font-bold text-xs active:scale-95 transition-all">+ 3</button>
+          <button onclick="Game.quickSelectChip('add', 5)" class="px-2 py-1 rounded-xl bg-blue-950/80 border border-blue-500/60 hover:border-blue-400 text-blue-300 font-tech font-bold text-xs active:scale-95 transition-all">+ 5</button>
+          <button onclick="Game.quickSelectChip('sub', 1)" class="px-2 py-1 rounded-xl bg-rose-950/80 border border-rose-500/60 hover:border-rose-400 text-rose-300 font-tech font-bold text-xs active:scale-95 transition-all">- 1</button>
+          <button onclick="Game.quickSelectChip('mul', 2)" class="px-2 py-1 rounded-xl bg-indigo-950/80 border border-indigo-500/60 hover:border-indigo-400 text-indigo-300 font-tech font-bold text-xs active:scale-95 transition-all">× 2</button>
+          <button onclick="Game.quickSelectChip('mul', 3)" class="px-2 py-1 rounded-xl bg-indigo-950/80 border border-indigo-500/60 hover:border-indigo-400 text-indigo-300 font-tech font-bold text-xs active:scale-95 transition-all">× 3</button>
+          <button onclick="Game.quickSelectChip('sqr')" class="px-2 py-1 rounded-xl bg-purple-950/80 border border-purple-500/60 hover:border-purple-400 text-purple-300 font-tech font-bold text-xs active:scale-95 transition-all">x²</button>
+          <button onclick="Game.quickSelectChip('mod', 5)" class="px-2 py-1 rounded-xl bg-emerald-950/80 border border-emerald-500/60 hover:border-emerald-400 text-emerald-300 font-tech font-bold text-xs active:scale-95 transition-all">% 5</button>
+          <button onclick="Game.quickSelectChip('branch_even')" class="px-2 py-1 rounded-xl bg-amber-950/80 border border-amber-500/60 hover:border-amber-400 text-amber-300 font-tech font-bold text-xs active:scale-95 transition-all">◇ คู่/คี่</button>
+          <button onclick="Game.quickSelectChip('branch_gt', 10)" class="px-2 py-1 rounded-xl bg-amber-950/80 border border-amber-500/60 hover:border-amber-400 text-amber-300 font-tech font-bold text-xs active:scale-95 transition-all">◇ > 10</button>
+          <button onclick="Game.quickSelectChip('filter_discard')" class="px-2 py-1 rounded-xl bg-slate-800 border border-slate-600 hover:border-slate-400 text-slate-300 font-tech font-bold text-xs active:scale-95 transition-all">🗑️ ทิ้ง</button>
+        </div>
+      </div>
+
+      <!-- Selected Chip Indicator -->
+      <div class="hidden lg:flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 text-xs">
+        <span class="text-slate-400">ชิปที่ถืออยู่:</span>
+        <span id="activeHoldingChipLabel" class="text-cyan-400 font-tech font-bold">แตะชิปด้านบน หรือคลิกช่องเพื่อเลือก</span>
+      </div>
+    </div>
+
+    <!-- Bottom Row: Primary Run Controls -->
+    <div class="w-full flex items-center justify-between gap-2 sm:gap-4 pt-1 border-t border-slate-800/80">
+      
+      <!-- Speed Buttons -->
+      <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800">
+        <span class="text-[10px] text-slate-400 px-1 font-tech font-bold">SPEED:</span>
+        <button id="speedBtn1" onclick="Game.setSpeed(1)" class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-cyan-500 text-slate-950 font-tech font-black text-xs">1x</button>
+        <button id="speedBtn2" onclick="Game.setSpeed(2)" class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-900 text-slate-400 hover:text-white font-tech font-black text-xs">2x</button>
+      </div>
+
+      <!-- Execution Controllers (RUN / STEP / RESET) -->
+      <div class="flex-1 max-w-xl flex items-center justify-center gap-2 sm:gap-3">
+        <!-- RUN BUTTON -->
+        <button id="runBtn" onclick="Game.toggleRun()" class="flex-1 h-10 sm:h-12 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 active:scale-95 text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 transition-all">
+          <i class="fa-solid fa-play"></i>
+          <span id="runBtnText">เปิดเครื่อง (RUN)</span>
+        </button>
+
+        <!-- STEP BUTTON -->
+        <button id="stepBtn" onclick="Game.stepExecution()" class="h-10 sm:h-12 px-3 sm:px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 text-cyan-300 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all">
+          <i class="fa-solid fa-forward-step"></i>
+          <span class="hidden sm:inline">ทีละก้าว</span> (STEP)
+        </button>
+
+        <!-- RESET BUTTON -->
+        <button id="resetBtn" onclick="Game.resetPipeline()" class="h-10 sm:h-12 px-3 sm:px-4 rounded-2xl bg-slate-800 hover:bg-rose-950/60 active:scale-95 border border-slate-700 text-rose-300 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all">
+          <i class="fa-solid fa-rotate-left"></i>
+          <span class="hidden sm:inline">รีเซ็ต</span>
+        </button>
+      </div>
+
+      <!-- Clear Chips -->
+      <button onclick="Game.clearAllSockets()" title="ล้างชิปทั้งหมดในสายพาน" class="h-9 px-2.5 sm:px-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-rose-400 font-bold text-xs transition-all flex items-center gap-1">
+        <i class="fa-solid fa-trash-can"></i>
+        <span class="hidden sm:inline">ล้างบอร์ด</span>
+      </button>
+
+    </div>
+  </footer>
+
+  <!-- ================= 4. MODALS & POPUPS ================= -->
+
+  <!-- 4.1 STEP-BY-STEP SOLUTION & AUTO-SOLVE MODAL -->
+  <div id="solutionModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 z-50 hidden">
+    <div class="bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-yellow-400/80 rounded-3xl p-4 sm:p-6 max-w-xl w-full shadow-2xl flex flex-col justify-between max-h-[92vh] animate-in fade-in zoom-in duration-200">
+      
+      <!-- Modal Header -->
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-yellow-400/20 text-yellow-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-lightbulb"></i>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
+              <span>เฉลยละเอียด & วิธีคิดอัลกอริทึม</span>
+              <span id="solStageBadge" class="text-xs px-2 py-0.5 rounded-full bg-yellow-950 text-yellow-300 border border-yellow-500/50 font-tech">ด่าน 1</span>
+            </h3>
+            <p class="text-xs text-slate-400" id="solTopicText">การบวกเพิ่มพื้นฐาน</p>
+          </div>
+        </div>
+        <button onclick="Game.closeModal('solutionModal')" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold">
+          ✕
+        </button>
+      </div>
+
+      <!-- Modal Content Body -->
+      <div class="space-y-3 overflow-y-auto pr-1 my-3 text-xs sm:text-sm">
+        
+        <!-- Step 1: Target Mathematical Formula -->
+        <div class="bg-slate-800/70 p-3 rounded-2xl border border-slate-700">
+          <div class="font-bold text-cyan-300 mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-calculator"></i>
+            <span>1. หลักการคิดและสมการคณิตศาสตร์:</span>
+          </div>
+          <div id="solMathReasoning" class="text-slate-200 leading-relaxed pl-2 border-l-2 border-cyan-400 mt-1">
+            กำลังโหลด...
+          </div>
+        </div>
+
+        <!-- Step 2: Chip Placement Guide -->
+        <div class="bg-slate-800/70 p-3 rounded-2xl border border-slate-700">
+          <div class="font-bold text-amber-400 mb-1.5 flex items-center gap-1.5">
+            <i class="fa-solid fa-network-wired"></i>
+            <span>2. การจัดวางชิปบนสายพาน (Sequence / Pipeline):</span>
+          </div>
+          <div id="solChipsBlueprint" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Step 3: Explanation Narrative -->
+        <div class="bg-slate-800/70 p-3 rounded-2xl border border-slate-700">
+          <div class="font-bold text-emerald-400 mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-chalkboard-user"></i>
+            <span>3. คำอธิบายเชิงตรรกะสำหรับนักเรียน:</span>
+          </div>
+          <p id="solStudentExplanation" class="text-slate-300 leading-relaxed text-xs">
+            กำลังโหลด...
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Action Footer with AUTO-SOLVE Button -->
+      <div class="flex flex-col sm:flex-row gap-2 pt-2 border-t border-slate-800">
+        <!-- Listen Voice Button -->
+        <button onclick="Game.speakSolution()" class="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+          <i class="fa-solid fa-volume-high"></i>
+          <span>🔊 ฟังเสียงอธิบายเฉลย</span>
+        </button>
+
+        <!-- Big Auto-Solve Button -->
+        <button onclick="Game.autoSolveCurrentStage()" class="flex-1 py-3 rounded-2xl bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-400 hover:from-yellow-300 hover:to-orange-300 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-yellow-500/30 active:scale-95 transition-all">
+          <i class="fa-solid fa-wand-magic-sparkles text-base"></i>
+          <span>⚡ วางเฉลยลงสายพานทันที (Auto-Solve)</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 4.2 CHIP SELECTOR DRAWER / MODAL -->
+  <div id="chipPickerModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 z-50 hidden">
+    <div class="bg-slate-900 border-2 border-cyan-500/50 rounded-3xl p-4 sm:p-5 max-w-lg w-full shadow-2xl flex flex-col gap-3">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <div>
+          <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
+            <span>⚙️ ติดตั้งชิปประมวลผล</span>
+            <span id="targetSocketBadge" class="text-xs px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/50 font-tech">SOCKET S1</span>
+          </h3>
+          <p class="text-xs text-slate-400">เลือกชิปคณิตศาสตร์หรือตรรกะเพื่อติดตั้งลงในช่องนี้</p>
+        </div>
+        <button onclick="Game.closeModal('chipPickerModal')" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold">✕</button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+        <button id="chipTabMath" onclick="Game.renderChipPickerCategory('math')" class="py-1.5 rounded-xl bg-cyan-500 text-slate-950 transition-all">
+          ➕ ชิปคำนวณ (+, -, ×, x², %)
+        </button>
+        <button id="chipTabLogic" onclick="Game.renderChipPickerCategory('logic')" class="py-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-all">
+          ◇ ชิปตรรกะ (If-Else / กรอง)
+        </button>
+      </div>
+
+      <div id="chipOptionsContainer" class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[46vh] overflow-y-auto pr-1 my-1">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="flex gap-2 pt-2 border-t border-slate-800">
+        <button onclick="Game.removeChipFromSocket()" class="flex-1 py-2 rounded-xl bg-rose-950/70 border border-rose-500/40 text-rose-300 font-bold text-xs hover:bg-rose-900 transition-all">
+          ✕ ถอดชิปออก
+        </button>
+        <button onclick="Game.closeModal('chipPickerModal')" class="flex-1 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">
+          ปิด
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4.3 STAGE SELECTOR (MAP) MODAL -->
+  <div id="stageMapModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 z-50 hidden">
+    <div class="bg-slate-900 border border-cyan-500/50 rounded-3xl p-4 sm:p-6 max-w-2xl w-full max-h-[92vh] flex flex-col justify-between shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div>
+          <h2 class="text-lg sm:text-xl font-black text-white">🗺️ แผนที่ด่านโรงงานไซเบอร์ (12 ด่าน)</h2>
+          <p class="text-xs text-cyan-300">ไล่ระดับจากง่ายไปสู่ผังงานเงื่อนไขขั้นสูง</p>
+        </div>
+        <button onclick="Game.closeModal('stageMapModal')" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold">✕</button>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 overflow-y-auto my-3 pr-1" id="stageGridContent">
+        <!-- Rendered by JS -->
+      </div>
+
+      <button onclick="Game.closeModal('stageMapModal')" class="w-full py-2.5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-sm transition-all">
+        ปิดหน้าต่าง
+      </button>
+    </div>
+  </div>
+
+  <!-- 4.4 VICTORY MODAL -->
+  <div id="victoryModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-cyan-400 rounded-3xl p-6 max-w-md w-full shadow-2xl text-center relative">
+      <div class="w-20 h-20 mx-auto -mt-12 bg-gradient-to-tr from-yellow-400 to-amber-200 rounded-3xl p-3 shadow-xl shadow-yellow-500/40 flex items-center justify-center text-4xl">
+        🏆
+      </div>
+      <h2 class="text-2xl font-black text-white mt-3" id="victoryTitle">ภารกิจสำเร็จ!</h2>
+      <p class="text-xs sm:text-sm text-cyan-200 mt-1" id="victorySubtitle">สายพานประมวลผลแปลงตัวเลขได้ถูกต้องครบถ้วน</p>
+
+      <div id="victoryStarRow" class="flex justify-center gap-2 my-4 text-3xl">
+        <span class="text-yellow-400">⭐</span>
+        <span class="text-yellow-400">⭐</span>
+        <span class="text-yellow-400">⭐</span>
+      </div>
+
+      <div class="bg-slate-800/80 rounded-2xl p-3 my-3 border border-slate-700 grid grid-cols-2 gap-2 text-center">
+        <div>
+          <div class="text-[10px] text-slate-400 uppercase">ชิปที่ใช้ / โควตา</div>
+          <div id="victoryChipsText" class="text-lg font-black font-tech text-cyan-400">1 / 1 ชิป</div>
+        </div>
+        <div>
+          <div class="text-[10px] text-slate-400 uppercase">คะแนนสะสม</div>
+          <div id="victoryScoreText" class="text-lg font-black font-tech text-yellow-400">+500</div>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="Game.replayCurrentStage()" class="flex-1 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm">
+          🔄 ปรับแต่งใหม่
+        </button>
+        <button onclick="Game.advanceNextStage()" class="flex-1 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-emerald-400 text-slate-950 font-black text-sm shadow-lg shadow-cyan-500/30">
+          ด่านต่อไป ➔
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4.5 GUIDE MODAL -->
+  <div id="guideModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 z-50 hidden">
+    <div class="bg-slate-900 border border-cyan-500/50 rounded-3xl p-5 max-w-lg w-full max-h-[92vh] flex flex-col justify-between shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <h3 class="text-base font-black text-cyan-300 flex items-center gap-2">
+          <span>📘 คู่มือโรงงาน Cyber Pipeline</span>
+        </h3>
+        <button onclick="Game.closeModal('guideModal')" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold">✕</button>
+      </div>
+
+      <div class="space-y-3 overflow-y-auto pr-1 my-3 text-xs text-slate-300">
+        <div class="bg-slate-800/60 p-3 rounded-2xl border border-slate-700">
+          <div class="font-bold text-amber-400 mb-1 flex items-center gap-1.5">
+            <span>⚙️ 1. หลักการทำงานของสายพาน (Sequence):</span>
+          </div>
+          <p class="leading-relaxed">
+            ตัวเลขจากคิวซ้ายจะไหลเข้าสู่สายพานทีละลูก เมื่อลูกบอลผ่านชิปประมวลผล ค่าจะเปลี่ยนไปทันทีตามลำดับ เช่น เริ่มต้นที่ 2 ผ่านชิป [+ 3] จะกลายเป็น 5
+          </p>
+        </div>
+
+        <div class="bg-slate-800/60 p-3 rounded-2xl border border-slate-700">
+          <div class="font-bold text-cyan-400 mb-1 flex items-center gap-1.5">
+            <span>🔀 2. ชิปผังงานเงื่อนไข (If-Else Branching):</span>
+          </div>
+          <p class="leading-relaxed">
+            หากติดตั้งชิป <span class="text-amber-400">[◇ คู่/คี่]</span> ใน STAGE 1 ถ้าเป็นเลขคู่จะวิ่งไปทาง <strong class="text-cyan-300">LANE ALPHA (ท่อบน)</strong> แต่ถ้าเป็นเลขคี่จะเบี่ยงลงสู่ <strong class="text-amber-400">LANE BETA (ท่อล่าง)</strong>
+          </p>
+        </div>
+
+        <div class="bg-slate-800/60 p-3 rounded-2xl border border-slate-700">
+          <div class="font-bold text-yellow-400 mb-1 flex items-center gap-1.5">
+            <span>💡 3. หากติดปัญหาหรือคิดไม่ออก:</span>
+          </div>
+          <p class="leading-relaxed">
+            กดปุ่ม <strong class="text-yellow-300">[💡 ดูเฉลย & วิธีคิด]</strong> ที่แถบด้านบนได้ตลอดเวลา จะมีอธิบายสมการอย่างละเอียด และมีปุ่ม <strong class="text-white">วางชิปอัตโนมัติ (Auto-Solve)</strong> ให้คุณกดดูการทำงานจริงได้ทันที!
+          </p>
+        </div>
+      </div>
+
+      <button onclick="Game.closeModal('guideModal')" class="w-full py-2.5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs transition-all">
+        เข้าใจแล้ว เริ่มสร้างวงจรเลย!
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= 5. JAVASCRIPT GAME ENGINE ================= -->
+  <script>
+    /**
+     * CYBER PIPELINE v5.0
+     * Integrated Math & Computational Thinking Simulator with Step-by-Step Auto-Solver
+     */
+
+    // --- 1. WEB AUDIO API SYNTHESIZER ---
+    const AudioEngine = (() => {
+      let ctx = null;
+      let sfxEnabled = true;
+      let speechEnabled = true;
+      let thaiVoice = null;
+
+      function getContext() {
+        if (!ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) ctx = new AudioContextClass();
+        }
+        if (ctx && ctx.state === 'suspended') {
+          ctx.resume();
+        }
+        return ctx;
+      }
+
+      function initVoices() {
+        if ('speechSynthesis' in window) {
+          const load = () => {
+            const voices = window.speechSynthesis.getVoices();
+            thaiVoice = voices.find(v => v.lang.startsWith('th')) || null;
+          };
+          load();
+          if (window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = load;
+          }
+        }
+      }
+
+      return {
+        init: () => initVoices(),
+        toggleSFX: () => {
+          sfxEnabled = !sfxEnabled;
+          document.getElementById('sfxIconOn').classList.toggle('hidden', !sfxEnabled);
+          document.getElementById('sfxIconOff').classList.toggle('hidden', sfxEnabled);
+          if (sfxEnabled) AudioEngine.playSnap();
+        },
+        toggleSpeech: () => {
+          speechEnabled = !speechEnabled;
+          document.getElementById('speechIconOn').classList.toggle('hidden', !speechEnabled);
+          document.getElementById('speechIconOff').classList.toggle('hidden', speechEnabled);
+          if (speechEnabled) AudioEngine.speak("เปิดเสียงบรรยายภาษาไทยแล้วค่ะ");
+        },
+        speak: (text) => {
+          if (!speechEnabled || !('speechSynthesis' in window)) return;
+          try {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'th-TH';
+            if (thaiVoice) u.voice = thaiVoice;
+            u.rate = 1.05;
+            u.pitch = 1.1;
+            window.speechSynthesis.speak(u);
+          } catch(e) {}
+        },
+        playSnap: () => {
+          if (!sfxEnabled) return;
+          try {
+            const c = getContext();
+            if (!c) return;
+            const osc = c.createOscillator();
+            const gain = c.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440, c.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, c.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.25, c.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, c.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(c.destination);
+            osc.start();
+            osc.stop(c.currentTime + 0.08);
+          } catch(e) {}
+        },
+        playZap: () => {
+          if (!sfxEnabled) return;
+          try {
+            const c = getContext();
+            if (!c) return;
+            const osc = c.createOscillator();
+            const gain = c.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(260, c.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, c.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.2, c.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, c.currentTime + 0.12);
+            osc.connect(gain);
+            gain.connect(c.destination);
+            osc.start();
+            osc.stop(c.currentTime + 0.12);
+          } catch(e) {}
+        },
+        playChime: () => {
+          if (!sfxEnabled) return;
+          try {
+            const c = getContext();
+            if (!c) return;
+            const now = c.currentTime;
+            [523.25, 659.25, 783.99].forEach((freq, idx) => {
+              const osc = c.createOscillator();
+              const gain = c.createGain();
+              osc.type = 'sine';
+              osc.frequency.value = freq;
+              gain.gain.setValueAtTime(0.18, now + idx * 0.05);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.22);
+              osc.connect(gain);
+              gain.connect(c.destination);
+              osc.start(now + idx * 0.05);
+              osc.stop(now + idx * 0.05 + 0.25);
+            });
+          } catch(e) {}
+        },
+        playFanfare: () => {
+          if (!sfxEnabled) return;
+          try {
+            const c = getContext();
+            if (!c) return;
+            const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+            const now = c.currentTime;
+            notes.forEach((f, i) => {
+              const osc = c.createOscillator();
+              const gain = c.createGain();
+              osc.type = 'triangle';
+              osc.frequency.value = f;
+              gain.gain.setValueAtTime(0.18, now + i * 0.07);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.35);
+              osc.connect(gain);
+              gain.connect(c.destination);
+              osc.start(now + i * 0.07);
+              osc.stop(now + i * 0.07 + 0.4);
+            });
+          } catch(e) {}
+        },
+        playError: () => {
+          if (!sfxEnabled) return;
+          try {
+            const c = getContext();
+            if (!c) return;
+            const osc = c.createOscillator();
+            const gain = c.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(160, c.currentTime);
+            osc.frequency.linearRampToValueAtTime(80, c.currentTime + 0.22);
+            gain.gain.setValueAtTime(0.2, c.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, c.currentTime + 0.22);
+            osc.connect(gain);
+            gain.connect(c.destination);
+            osc.start();
+            osc.stop(c.currentTime + 0.22);
+          } catch(e) {}
+        }
+      };
+    })();
+
+    // --- 2. 12 STAGES WITH IN-DEPTH STEP-BY-STEP SOLUTIONS ---
+    const STAGES = [
+      {
+        id: 1,
+        title: "ก้าวแรกของวิศวกร: บวกเพิ่มค่า (+3)",
+        topic: "การคำนวณบวกค่าทีละขั้นอย่างง่าย",
+        desc: "แปลงเลขนำเข้า [2, 5, 7] ให้กลายเป็น [5, 8, 10] ส่งเข้าท่อบน",
+        inputs: [2, 5, 7],
+        targets: { alpha: [5, 8, 10], beta: [] },
+        targetHints: { alpha: "ต้องการ [5, 8, 10]", beta: "ไม่ได้ใช้งาน" },
+        maxChips: 1,
+        speechIntro: "ด่านที่ 1 เริ่มต้นง่ายๆ ด้วยการติดตั้งชิปบวกสามค่ะ",
+        solution: {
+          sockets: {
+            S1: { type: 'add', val: 3, label: '+ 3', desc: 'บวกค่าเพิ่ม 3', color: 'blue' }
+          },
+          mathReasoning: "สังเกตความสัมพันธ์ของตัวเลข: 2 กลายเป็น 5 (+3), 5 กลายเป็น 8 (+3), และ 7 กลายเป็น 10 (+3)",
+          chipsGuide: [
+            { socket: "STAGE 1", chip: "+ 3", color: "blue", role: "บวกค่าตัวเลขทุกตัวเพิ่มขึ้น 3" }
+          ],
+          studentExplanation: "โจทย์ต้องการให้เลขทุกลูกมีค่าเพิ่มขึ้น 3 หน่วย ดังนั้นเพียงแค่ติดชิป [+ 3] ในช่อง STAGE 1 ช่องแรก ลูกบอลทุกลูกก็จะแปลงเป็นค่าเป้าหมายพอดีค่ะ"
+        }
+      },
+      {
+        id: 2,
+        title: "ทวีคูณพลังงาน: คูณสองเท่า (×2)",
+        topic: "การคูณจำนวนเท่าตัว",
+        desc: "แปลงเลขนำเข้า [3, 4, 6] ให้กลายเป็น [6, 8, 12] ส่งเข้าท่อบน",
+        inputs: [3, 4, 6],
+        targets: { alpha: [6, 8, 12], beta: [] },
+        targetHints: { alpha: "ต้องการ [6, 8, 12]", beta: "ไม่ได้ใช้งาน" },
+        maxChips: 1,
+        speechIntro: "ด่านที่ 2 ขยายค่าเป็นสองเท่าด้วยชิปคูณสองค่ะ",
+        solution: {
+          sockets: {
+            S1: { type: 'mul', val: 2, label: '× 2', desc: 'คูณค่าเป็นสองเท่า', color: 'indigo' }
+          },
+          mathReasoning: "ผลคูณสองเท่า: 3 × 2 = 6, 4 × 2 = 8, 6 × 2 = 12",
+          chipsGuide: [
+            { socket: "STAGE 1", chip: "× 2", color: "indigo", role: "เพิ่มค่าเป็นสองเท่า" }
+          ],
+          studentExplanation: "เลขเป้าหมายคือสองเท่าของเลขนำเข้าพอดี จึงติดตั้งชิป [× 2] เพียงชิ้นเดียวใน STAGE 1 ค่ะ"
+        }
+      },
+      {
+        id: 3,
+        title: "ลำดับสองขั้นตอน: บวกก่อนแล้วค่อยคูณ",
+        topic: "ลำดับขั้นตอนคำนวณ (A + 1) × 2",
+        desc: "แปลงเลข [1, 2, 4] ให้เป็น [4, 6, 10] (บวก 1 แล้วคูณ 2)",
+        inputs: [1, 2, 4],
+        targets: { alpha: [4, 6, 10], beta: [] },
+        targetHints: { alpha: "ต้องการ [4, 6, 10]", beta: "ไม่ได้ใช้งาน" },
+        maxChips: 2,
+        speechIntro: "ด่านที่ 3 วางชิปเรียงลำดับสองขั้นตอน บวกหนึ่งก่อนแล้วคูณสองค่ะ",
+        solution: {
+          sockets: {
+            S1: { type: 'add', val: 1, label: '+ 1', desc: 'บวกค่าเพิ่ม 1', color: 'blue' },
+            S2A: { type: 'mul', val: 2, label: '× 2', desc: 'คูณค่าเป็นสองเท่า', color: 'indigo' }
+          },
+          mathReasoning: "สูตรคือ (x + 1) × 2: (1+1)×2 = 4, (2+1)×2 = 6, (4+1)×2 = 10",
+          chipsGuide: [
+            { socket: "STAGE 1", chip: "+ 1", color: "blue", role: "ขั้นตอนที่ 1: บวก 1" },
+            { socket: "STAGE 2-A", chip: "× 2", color: "indigo", role: "ขั้นตอนที่ 2: คูณ 2" }
+          ],
+          studentExplanation: "ในทางคอมพิวเตอร์และคณิตศาสตร์ ลำดับขั้นตอน (Sequence) สำคัญมาก เราต้องบวก 1 ในช่องแรกก่อน แล้วส่งผลลัพธ์ไปคูณ 2 ในช่องที่สองค่ะ"
+        }
+      },
+      {
+        id: 4,
+        title: "สลับลำดับ ผลลัพธ์เปลี่ยน: (x × 2) + 5",
+        topic: "ความสำคัญของลำดับคำสั่ง (Order of Operations)",
+        desc: "แปลงเลข [2, 3, 5] ให้เป็น [9, 11, 15] (คูณ 2 ก่อนแล้วบวก 5)",
+        inputs: [2, 3, 5],
+        targets: { alpha: [9, 11, 15], beta: [] },
+        targetHints: { alpha: "ต้องการ [9, 11, 15]", beta: "ไม่ได้ใช้งาน" },
+        maxChips: 2,
+        speechIntro: "ด่านที่ 4 สลับเอาชิปคูณสองไว้ข้างหน้า แล้วค่อยบวกห้าค่ะ",
+        solution: {
+          sockets: {
+            S1: { type: 'mul', val: 2, label: '× 2', desc: 'คูณค่าเป็นสองเท่า', color: 'indigo' },
+            S2A: { type: 'add', val: 5, label: '+ 5', desc: 'บวกค่าเพิ่ม 5', color: 'blue' }
+          },
+          mathReasoning: "สูตรคือ (x × 2) + 5: (2×2)+5 = 9, (3×2)+5 = 11, (5×2)+5 = 15",
+          chipsGuide: [
+            { socket: "STAGE 1", chip: "× 2", color: "indigo", role: "คูณ 2 ก่อน" },
+            { socket: "STAGE 2-A", chip: "+ 5", color: "blue", role: "แล้วจึงบวก 5" }
+          ],
+          studentExplanation: "หากเราบวก 5 ก่อนแล้วคูณ 2 จะได้ค่าผิด ด่านนี้จึงสอนว่าการสลับตำแหน่งชิป จะเปลี่ยนผลลัพธ์ของโปรแกรมอย่างสิ้นเชิงค่ะ"
+        }
+      },
+      {
+        id: 5,
+        title: "ยกกำลังสองแล้วลดค่า: x² - 1",
+        topic: "การคำนวณเลขยกกำลังสอง (Square Power)",
+        desc: "แปลงเลข [3, 4, 5] ให้เป็น [8, 15, 24] (ยกกำลังสอง แล้วลบ 1)",
+        inputs: [3, 4, 5],
+        targets: { alpha: [8, 15, 24], beta: [] },
+        targetHints: { alpha: "ต้องการ [8, 15, 24]", beta: "ไม่ได้ใช้งาน" },
+        maxChips: 2,
+        speechIntro: "ด่านที่ 5 นำชิปยกกำลังสองมาต่อด้วยชิปลบหนึ่งค่ะ",
+        solution: {
+          sockets: {
+            S1: { type: 'sqr', val: 0, label: 'x²', desc: 'ยกกำลังสอง', color: 'purple' },
+            S2A: { type: 'sub', val: 1, label: '- 1', desc: 'ลดค่าลง 1', color: 'rose' }
+          },
+          mathReasoning: "สูตรคือ x² - 1: 3² - 1 = 8, 4² - 1 = 15, 5² - 1 = 24",
+          chipsGuide: [
+            { socket: "STAGE 1", chip: "x²", color: "purple", role: "ยกกำลังสอง (x คูณ x)" },
+            { socket: "STAGE 2-A", chip: "- 1", color: "rose", role: "ลบออก 1" }
+          ],
+          studentExplanation: "ชิป x² จะนำตัวเลขมาคูณกับตัวมันเอง เช่น 4x4 ได้ 16 จากนั้นเมื่อไหลไปเจอชิป [- 1] ก็จะเหลือ 15 พอดีค่ะ"
+        }
+      },
+      {
+        id: 6,
+        title: "ผังงานแยกสองท่อ: เงื่อนไขเลขคู่/คี่",
+        topic: "การสร้างทางเลือก If-Else (Branching)",
+        desc: "ส่งเลขคู่ [2, 8] เข้าท่อบน (ALPHA) และเลขคี่ [5, 9] ลงท่อล่าง (BETA)",
+        inputs: [2, 5, 8, 9],
+        targets: { alpha: [2, 8], beta: [5, 9] },
+        targetHints: { alpha: "เลขคู่ [2, 8]", beta: "เลขคี่ [5, 9]" },
+        maxChips: 1,
+        speechIntro: "ด่านที่ 6 ใช้ชิปสี่เหลี่ยมข้าวหลามตัดเพื่อแยกเลขคู่และเลขคี่ค่ะ",
+        solution: {
+          sockets: {
+            S1: { type: 'branch_even', val: 0, label: '◇ คู่ / คี่', desc: 'คู่ไปท่อบน | คี่ไปท่อล่าง', color: 'amber' }
+          },
+          mathReasoning: "เลขคู่ (หารด้วย 2 ลงตัว) ไปท่อบน (ALPHA) ส่วนเลขคี่ไปท่อล่าง (BETA)",
+          chipsGuide: [
+            { socket: "STAGE 1", chip: "◇ คู่/คี่", color: "amber", role: "สวิตช์ตรวจสอบเงื่อนไข If-Else" }
+          ],
+          studentExplanation: "ชิปตรรกะ ◇ คู่/คี่ จะทำหน้าที่เป็นประตูทางแยก ถ้าตัวเลขเป็นเลขคู่ มันจะส่งลูกบอลขึ้นท่อบน แต่ถ้าเป็นเลขคี่ มันจะเบี่ยงลงท่อล่างทันทีค่ะ"
+        }
+      },
+      {
+        id: 7,
+        title: "แยกสายแล้วแปรรูปต่างกัน (Branch & Compute)",
+        topic: "การคำนวณแยกอิสระในแต่ละสายพาน",
+        desc: "เลขคู่ [2, 4] คูณ 2 ได้ [4, 8] ส่วนเลขคี่ [3, 5] บวก 10 ได้ [13, 15]",
+        inputs: [2, 3, 4, 5],
+        targets: { alpha: [4, 8], beta: [13, 15] },
+        targetHints: { alpha: "เลขคู่ × 2 [4, 8]", beta: "เลขคี่ + 10 [13, 15]" },
+        maxChips: 3,
+        speechIntro: "ด่านที่ 7 แยกคู่คี่แล้ววางชิปคำนวณคนละสูตรในแต่ละท่อค่ะ",
+        solution: {
+          sockets: {
+            S1: { type: 'branch_even', val: 0, label: '◇ คู่ / คี่', desc: 'คู่ไปบน | คี่ไปล่าง', color: 'amber' },
+            S2A: { type: 'mul', val: 2, label: '× 2', desc: 'คูณค่าเป็นสองเท่า', color: 'indigo' },
+            S2B: { type: 'add', val: 10, label: '+ 10', desc: 'บวกค่าเพิ่ม 10', color: 'blue' }
+          },
+          mathReasoning: "เลขคู่: 2×2=4, 4×2=8 | เลขคี่: 3+10=13, 5+10=15",
+          chipsGuide: [
+            { socket: "STAGE 1", chip: "◇ คู่/คี่", color: "amber", role: "แยกทางเดินเลขคู่/คี่" },
+            { socket: "STAGE 2-A (ท่อบน)", chip: "× 2", color: "indigo", role: "คำนวณเฉพาะเลขคู่" },
+            { socket: "STAGE 2-B (ท่อล่าง)", chip: "+ 10", color: "blue", role: "คำนวณเฉพาะเลขคี่" }
+          ],
+          studentExplanation: "วางชิปแยกสายในช่อง STAGE 1 จากนั้นวางชิป [× 2] ที่ท่อบนเพื่อแปรรูปเลขคู่ และวางชิป [+ 10] ที่ท่อล่างเพื่อแปรรูปเลขคี่ค่ะ"
+        }
+      },
+      {
+        id: 8,
+        title: "เงื่อนไขเปรียบเทียบค่ามากกว่า 10 (If x > 10)",
+        topic: "การเปรียบเทียบค่าเชิงตรรกะ (> 10)",
+        desc: "เลขที่มากกว่า 10 เข้าท่อบน [12, 16] เลขที่เหลือน้อยกว่าหรือเท่ากับ 10 ลงท่อล่าง [4, 8]",
+        inputs: [4, 12, 8, 16],
+        targets: { alpha: [12, 16], beta: [4, 8] },
+        targetHints: { alpha: "> 10 [12, 16]", beta: "≤ 10 [4, 8]" },
+        maxChips: 1,
+        speechIntro: "ด่านที่ 8 ตรวจสอบค่ามากกว่าสิบด้วยชิปเงื่อนไขค่ะ",
+        solution: {
+          sockets: {
+            S1: { type: 'branch_gt', val: 10, label: '◇ > 10', desc: 'มากกว่า 10 ไปบน | อื่นๆ ไปล่าง', color: 'amber' }
+          },
+          mathReasoning: "12 และ 16 มีค่ามากกว่า 10 จึงถูกส่งเข้าท่อบน ส่วน 4 และ 8 มีค่าน้อยกว่าหรือเท่ากับ 10 จึงลงท่อล่าง",
+          chipsGuide: [
+            { socket: "STAGE 1", chip: "◇ > 10", color: "amber", role: "กรองค่ามากกว่า 10" }
+          ],
+          studentExplanation: "ใช้ชิปตรรกะ [◇ > 10] เพียงตัวเดียวใน STAGE 1 เพื่อตรวจดูว่าลูกบอลลูกไหนมีค่าเกิน 10 ค่ะ"
+        }
+      },
+      {
+        id: 9,
+        title: "การคำนวณเศษเหลือจากการหาร: Modulo (% 5)",
+        topic: "การคำนวณเศษมอดุโล (Modulo Operator)",
+        desc: "หาเศษเมื่อนำเลข [12, 17, 24] มาหารด้วย 5 ได้ผลลัพธ์เป็น [2, 2, 4]",
+        inputs: [12, 17, 24],
+        targets: { alpha: [2, 2, 4], beta: [] },
+        targetHints: { alpha: "ต้องการ [2, 2, 4]", beta: "ไม่ได้ใช้งาน" },
+        maxChips: 1,
+        speechIntro: "ด่านที่ 9 นำชิปเปอร์เซ็นต์ห้ามาหาเศษจากการหารค่ะ",
+        solution: {
+          sockets: {
+            S1: { type: 'mod', val: 5, label: '% 5', desc: 'หาเศษเมื่อหาร 5', color: 'emerald' }
+          },
+          mathReasoning: "12 หาร 5 ได้ 2 เศษ 2, 17 หาร 5 ได้ 3 เศษ 2, 24 หาร 5 ได้ 4 เศษ 4",
+          chipsGuide: [
+            { socket: "STAGE 1", chip: "% 5", color: "emerald", role: "คืนค่าเศษเหลือจากการหาร" }
+          ],
+          studentExplanation: "สัญลักษณ์ % ในวิทยาการคอมพิวเตอร์หมายถึง 'มอดุโล' หรือการหาเศษจากการหาร ติดชิป [% 5] ค่าตัวเลขจะกลายเป็นเศษเหลือทันทีค่ะ"
+        }
+      },
+      {
+        id: 10,
+        title: "ระบบคัดแยกและทิ้งข้อมูลขยะ (Filter & Discard)",
+        topic: "การคัดทิ้งข้อมูลที่ไม่ตรงเงื่อนไข",
+        desc: "คัดเอาเฉพาะเลขคู่ [4, 10] มาบวก 2 (ได้ 6, 12) ส่วนเลขคี่ [7, 13] ให้ทิ้งถังขยะ",
+        inputs: [4, 7, 10, 13],
+        targets: { alpha: [6, 12], beta: [] },
+        targetHints: { alpha: "เลขคู่ + 2 [6, 12]", beta: "ทิ้งเลขคี่ทั้งหมด" },
+        maxChips: 3,
+        speechIntro: "ด่านที่ 10 แยกเลขคี่ลงท่อล่างแล้วใช้ชิปทิ้งข้อมูลค่ะ",
+        solution: {
+          sockets: {
+            S1: { type: 'branch_even', val: 0, label: '◇ คู่ / คี่', desc: 'คู่ไปบน | คี่ไปล่าง', color: 'amber' },
+            S2A: { type: 'add', val: 2, label: '+ 2', desc: 'บวกค่าเพิ่ม 2', color: 'blue' },
+            S2B: { type: 'filter_discard', val: 0, label: '🗑️ ทิ้ง', desc: 'ทิ้งลูกบอลออกจากระบบ', color: 'slate' }
+          },
+          mathReasoning: "เลขคู่: 4+2=6, 10+2=12 เข้าท่อบน | เลขคี่: 7 และ 13 ถูกทำลายทิ้ง",
+          chipsGuide: [
+            { socket: "STAGE 1", chip: "◇ คู่/คี่", color: "amber", role: "แยกเลขคู่ขึ้นบน เลขคี่ลงล่าง" },
+            { socket: "STAGE 2-A", chip: "+ 2", color: "blue", role: "บวก 2 ให้เลขคู่" },
+            { socket: "STAGE 2-B", chip: "🗑️ ทิ้ง", color: "slate", role: "ทำลายลูกบอลเลขคี่ทิ้ง" }
+          ],
+          studentExplanation: "ใช้ชิป [◇ คู่/คี่] แยกสาย จากนั้นที่ท่อบนใส่ชิป [+ 2] และที่ท่อล่างใส่ชิป [🗑️ ทิ้ง] เพื่อไม่ให้เลขคี่หลุดเข้าท่อเป้าหมายค่ะ"
+        }
+      },
+      {
+        id: 11,
+        title: "สมการเชิงเส้นความสัมพันธ์: f(x) = 3x - 1",
+        topic: "การเขียนฟังก์ชันคำนวณเชิงเส้น",
+        desc: "แปลงเลข [2, 4, 6] ให้กลายเป็น [5, 11, 17] (คูณ 3 ก่อนแล้วลบ 1)",
+        inputs: [2, 4, 6],
+        targets: { alpha: [5, 11, 17], beta: [] },
+        targetHints: { alpha: "ต้องการ [5, 11, 17]", beta: "ไม่ได้ใช้งาน" },
+        maxChips: 2,
+        speechIntro: "ด่านที่ 11 สร้างสูตรคูณสามแล้วลบหนึ่งค่ะ",
+        solution: {
+          sockets: {
+            S1: { type: 'mul', val: 3, label: '× 3', desc: 'คูณค่าเป็นสามเท่า', color: 'indigo' },
+            S2A: { type: 'sub', val: 1, label: '- 1', desc: 'ลดค่าลง 1', color: 'rose' }
+          },
+          mathReasoning: "สูตรคือ (x × 3) - 1: (2×3)-1 = 5, (4×3)-1 = 11, (6×3)-1 = 17",
+          chipsGuide: [
+            { socket: "STAGE 1", chip: "× 3", color: "indigo", role: "คูณ 3 ก่อน" },
+            { socket: "STAGE 2-A", chip: "- 1", color: "rose", role: "ลบ 1 ตามหลัง" }
+          ],
+          studentExplanation: "วิเคราะห์แบบรูป: 2 -> 5, 4 -> 11, 6 -> 17 สังเกตว่านำตัวเลขไปคูณ 3 จะได้ 6, 12, 18 ซึ่งเกินไป 1 ดังนั้นเพียงแค่ลบ 1 ออกก็จะได้คำตอบค่ะ"
+        }
+      },
+      {
+        id: 12,
+        title: "สุดยอดโรงงานจักรกลตรรกะ (Grand Master)",
+        topic: "การประกอบวงจรผสมผสานเต็มรูปแบบ",
+        desc: "เลขคู่ [4]: ยกกำลังสอง (ได้ 16) | เลขคี่ [3, 5]: คูณ 2 แล้วบวก 4 (ได้ [10, 14])",
+        inputs: [3, 4, 5],
+        targets: { alpha: [16], beta: [10, 14] },
+        targetHints: { alpha: "เลขคู่: 4² = 16", beta: "เลขคี่: (x × 2) + 4" },
+        maxChips: 4,
+        speechIntro: "ด่านสุดท้าย รวมพลังตรรกะและคณิตศาสตร์ขั้นสูงค่ะ!",
+        solution: {
+          sockets: {
+            S1: { type: 'branch_even', val: 0, label: '◇ คู่ / คี่', desc: 'คู่ไปบน | คี่ไปล่าง', color: 'amber' },
+            S2A: { type: 'sqr', val: 0, label: 'x²', desc: 'ยกกำลังสอง', color: 'purple' },
+            S2B: { type: 'mul', val: 2, label: '× 2', desc: 'คูณ 2', color: 'indigo' },
+            S3B: { type: 'add', val: 4, label: '+ 4', desc: 'บวก 4', color: 'blue' }
+          },
+          mathReasoning: "เลขคู่ 4: 4² = 16 เข้าท่อบน | เลขคี่ 3, 5: (3×2)+4 = 10, (5×2)+4 = 14 เข้าท่อล่าง",
+          chipsGuide: [
+            { socket: "STAGE 1", chip: "◇ คู่/คี่", color: "amber", role: "แยกเลขคู่ขึ้นบน เลขคี่ลงล่าง" },
+            { socket: "STAGE 2-A", chip: "x²", color: "purple", role: "เลขคู่ยกกำลังสอง" },
+            { socket: "STAGE 2-B", chip: "× 2", color: "indigo", role: "เลขคี่คูณ 2 ก่อน" },
+            { socket: "STAGE 3-B", chip: "+ 4", color: "blue", role: "แล้วจึงบวก 4" }
+          ],
+          studentExplanation: "ด่านนี้บูรณาการครบทั้ง 1.การแยกทางเลือก If-Else 2.การยกกำลังสองในท่อบน และ 3.การคำนวณสองจังหวะ (คูณแล้วบวก) ในท่อล่างค่ะ"
+        }
+      }
+    ];
+
+    // --- 3. AVAILABLE CHIPS CATALOG ---
+    const CHIP_CATALOG = {
+      math: [
+        { type: 'add', val: 1, label: '+ 1', desc: 'บวกค่าเพิ่ม 1', color: 'blue' },
+        { type: 'add', val: 2, label: '+ 2', desc: 'บวกค่าเพิ่ม 2', color: 'blue' },
+        { type: 'add', val: 3, label: '+ 3', desc: 'บวกค่าเพิ่ม 3', color: 'blue' },
+        { type: 'add', val: 4, label: '+ 4', desc: 'บวกค่าเพิ่ม 4', color: 'blue' },
+        { type: 'add', val: 5, label: '+ 5', desc: 'บวกค่าเพิ่ม 5', color: 'blue' },
+        { type: 'add', val: 10, label: '+ 10', desc: 'บวกค่าเพิ่ม 10', color: 'blue' },
+        { type: 'sub', val: 1, label: '- 1', desc: 'ลดค่าลง 1', color: 'rose' },
+        { type: 'sub', val: 2, label: '- 2', desc: 'ลดค่าลง 2', color: 'rose' },
+        { type: 'mul', val: 2, label: '× 2', desc: 'คูณค่าเป็นสองเท่า', color: 'indigo' },
+        { type: 'mul', val: 3, label: '× 3', desc: 'คูณค่าเป็นสามเท่า', color: 'indigo' },
+        { type: 'sqr', val: 0, label: 'x²', desc: 'ยกกำลังสอง', color: 'purple' },
+        { type: 'mod', val: 5, label: '% 5', desc: 'หาเศษเมื่อหาร 5', color: 'emerald' }
+      ],
+      logic: [
+        { type: 'branch_even', val: 0, label: '◇ คู่ / คี่', desc: 'คู่ไปท่อบน (ALPHA) | คี่ไปท่อล่าง (BETA)', color: 'amber' },
+        { type: 'branch_gt', val: 10, label: '◇ > 10', desc: 'มากกว่า 10 ไปบน | อื่นๆ ไปล่าง', color: 'amber' },
+        { type: 'filter_discard', val: 0, label: '🗑️ ทิ้ง', desc: 'ทิ้งลูกบอลออกจากระบบทันที', color: 'slate' }
+      ]
+    };
+
+    // --- 4. GAME ENGINE CONTROLLER ---
+    const Game = (() => {
+      let state = {
+        mode: 'puzzle', // 'puzzle' | 'sandbox'
+        currentStageId: 1,
+        score: 0,
+        stars: {},
+        stageUnlocked: 1,
+        speed: 1,
+        isRunning: false,
+        activePickerSocket: null,
+        holdingChip: null,
+        sockets: { S1: null, S2A: null, S3A: null, S2B: null, S3B: null },
+        inputQueue: [],
+        receivedAlpha: [],
+        receivedBeta: []
+      };
+
+      function loadStorage() {
+        try {
+          const raw = localStorage.getItem('cyber_pipeline_save_v5');
+          if (raw) {
+            const data = JSON.parse(raw);
+            state.stars = data.stars || {};
+            state.score = data.score || 0;
+            state.stageUnlocked = data.stageUnlocked || 1;
+          }
+        } catch(e) {}
+      }
+
+      function saveStorage() {
+        try {
+          const payload = {
+            stars: state.stars,
+            score: state.score,
+            stageUnlocked: state.stageUnlocked
+          };
+          localStorage.setItem('cyber_pipeline_save_v5', JSON.stringify(payload));
+        } catch(e) {}
+      }
+
+      function init() {
+        AudioEngine.init();
+        loadStorage();
+        loadStage(1);
+        updateHeaderUI();
+        window.addEventListener('resize', drawSvgPipelineConduits);
+        setTimeout(drawSvgPipelineConduits, 200);
+      }
+
+      function loadStage(id) {
+        state.currentStageId = id;
+        const stage = STAGES.find(s => s.id === id) || STAGES[0];
+        
+        resetPipeline();
+        state.sockets = { S1: null, S2A: null, S3A: null, S2B: null, S3B: null };
+        renderAllSockets();
+
+        document.getElementById('headerLevelTag').textContent = `ด่าน ${stage.id}/12`;
+        document.getElementById('headerTopicText').textContent = stage.topic;
+        document.getElementById('missionDescText').textContent = stage.desc;
+        document.getElementById('maxChipsAllowed').textContent = stage.maxChips;
+
+        renderTargetBoxes(stage);
+        state.inputQueue = [...stage.inputs];
+        renderInputQueue();
+
+        setTimeout(() => {
+          AudioEngine.speak(stage.speechIntro);
+        }, 350);
+
+        updateHeaderUI();
+        drawSvgPipelineConduits();
+      }
+
+      function updateHeaderUI() {
+        let totalStars = 0;
+        Object.values(state.stars).forEach(v => totalStars += v);
+        document.getElementById('statStarsDisplay').textContent = `${totalStars}/36`;
+
+        const used = Object.values(state.sockets).filter(Boolean).length;
+        document.getElementById('usedChipsCount').textContent = used;
+      }
+
+      function renderTargetBoxes(stage) {
+        const aBox = document.getElementById('targetBoxAlpha');
+        const bBox = document.getElementById('targetBoxBeta');
+
+        if (stage.targets.alpha.length > 0) {
+          aBox.classList.remove('opacity-40');
+          document.getElementById('targetLabelAlpha').textContent = `ต้องการ: [ ${stage.targets.alpha.join(', ')} ]`;
+          document.getElementById('targetHintAlpha').textContent = stage.targetHints.alpha;
+          document.getElementById('targetCountAlpha').textContent = `0/${stage.targets.alpha.length}`;
+        } else {
+          aBox.classList.add('opacity-40');
+          document.getElementById('targetLabelAlpha').textContent = "ไม่ได้ใช้งาน";
+          document.getElementById('targetHintAlpha').textContent = "-";
+          document.getElementById('targetCountAlpha').textContent = "-";
+        }
+
+        if (stage.targets.beta.length > 0) {
+          bBox.classList.remove('opacity-40');
+          document.getElementById('targetLabelBeta').textContent = `ต้องการ: [ ${stage.targets.beta.join(', ')} ]`;
+          document.getElementById('targetHintBeta').textContent = stage.targetHints.beta;
+          document.getElementById('targetCountBeta').textContent = `0/${stage.targets.beta.length}`;
+        } else {
+          bBox.classList.add('opacity-40');
+          document.getElementById('targetLabelBeta').textContent = "ไม่ได้ใช้งาน";
+          document.getElementById('targetHintBeta').textContent = "-";
+          document.getElementById('targetCountBeta').textContent = "-";
+        }
+
+        document.getElementById('receivedListAlpha').innerHTML = '<span class="text-[10px] text-slate-600">รอลูกบอล...</span>';
+        document.getElementById('receivedListBeta').innerHTML = '<span class="text-[10px] text-slate-600">รอลูกบอล...</span>';
+        document.getElementById('accuracyPercent').textContent = "0%";
+        document.getElementById('accuracyProgressBar').style.width = "0%";
+      }
+
+      function renderInputQueue() {
+        const container = document.getElementById('inputQueueContainer');
+        container.innerHTML = state.inputQueue.map(num => `
+          <div class="orb-pulse w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-700 shadow-lg flex items-center justify-center border-2 border-white/80 font-tech font-black text-sm text-white">
+            ${num}
+          </div>
+        `).join('');
+      }
+
+      function renderAllSockets() {
+        ['S1', 'S2A', 'S3A', 'S2B', 'S3B'].forEach(sId => {
+          const chip = state.sockets[sId];
+          const el = document.getElementById(`chipContent_${sId}`);
+          const socketEl = document.getElementById(`socket_${sId}`);
+
+          if (chip) {
+            socketEl.className = `socket-node w-20 h-20 sm:w-28 sm:h-24 rounded-2xl bg-gradient-to-b from-slate-900 to-${chip.color}-950/80 border-2 border-${chip.color}-400 flex flex-col items-center justify-between p-1.5 cursor-pointer transition-all hover:scale-105 shadow-lg relative group`;
+            el.innerHTML = `
+              <div class="text-base sm:text-2xl font-black font-tech text-${chip.color}-300 drop-shadow">${chip.label}</div>
+              <div class="text-[9px] text-slate-300 line-clamp-1">${chip.desc}</div>
+            `;
+          } else {
+            socketEl.className = "socket-node w-20 h-20 sm:w-28 sm:h-24 rounded-2xl bg-slate-950/90 border-2 border-cyan-500/40 hover:border-cyan-400 flex flex-col items-center justify-between p-1.5 cursor-pointer transition-all hover:scale-105 shadow-lg relative group";
+            el.innerHTML = `<span class="text-xs text-slate-500 font-bold">+ ติดตั้งชิป</span>`;
+          }
+        });
+        updateHeaderUI();
+      }
+
+      function drawSvgPipelineConduits() {
+        const svg = document.getElementById('pipelineSvg');
+        const tracksG = document.getElementById('svgPipeTracks');
+        if (!svg || !tracksG) return;
+
+        const getPos = (id) => {
+          const el = document.getElementById(id);
+          if (!el) return { x: 0, y: 0, left: 0, right: 0 };
+          const rect = el.getBoundingClientRect();
+          const pRect = svg.getBoundingClientRect();
+          return {
+            x: rect.left + rect.width / 2 - pRect.left,
+            y: rect.top + rect.height / 2 - pRect.top,
+            left: rect.left - pRect.left,
+            right: rect.right - pRect.left
+          };
+        };
+
+        const s1 = getPos('socket_S1');
+        const s2a = getPos('socket_S2A');
+        const s3a = getPos('socket_S3A');
+        const s2b = getPos('socket_S2B');
+        const s3b = getPos('socket_S3B');
+
+        tracksG.innerHTML = `
+          <!-- Input Lead to S1 -->
+          <path d="M 0 ${s1.y} L ${s1.left} ${s1.y}" stroke="#06b6d4" stroke-width="5" fill="none" opacity="0.3" />
+          <path d="M 0 ${s1.y} L ${s1.left} ${s1.y}" stroke="#22d3ee" stroke-width="2.5" fill="none" class="pipe-anim" />
+
+          <!-- S1 to S2A (Upper Line) -->
+          <path d="M ${s1.right} ${s1.y} L ${s2a.left} ${s2a.y}" stroke="#06b6d4" stroke-width="5" fill="none" opacity="0.3" />
+          <path d="M ${s1.right} ${s1.y} L ${s2a.left} ${s2a.y}" stroke="#22d3ee" stroke-width="2.5" fill="none" class="pipe-anim" />
+
+          <!-- S2A to S3A -->
+          <path d="M ${s2a.right} ${s2a.y} L ${s3a.left} ${s3a.y}" stroke="#06b6d4" stroke-width="5" fill="none" opacity="0.3" />
+          <path d="M ${s2a.right} ${s2a.y} L ${s3a.left} ${s3a.y}" stroke="#22d3ee" stroke-width="2.5" fill="none" class="pipe-anim" />
+
+          <!-- S3A to Target Alpha -->
+          <path d="M ${s3a.right} ${s3a.y} L ${svg.clientWidth} ${s3a.y}" stroke="#06b6d4" stroke-width="5" fill="none" opacity="0.3" />
+          <path d="M ${s3a.right} ${s3a.y} L ${svg.clientWidth} ${s3a.y}" stroke="#22d3ee" stroke-width="2.5" fill="none" class="pipe-anim" />
+
+          <!-- S1 Divert to S2B (Branch Curve) -->
+          <path d="M ${s1.right} ${s1.y} C ${s1.right + 25} ${s1.y}, ${s2b.left - 25} ${s2b.y}, ${s2b.left} ${s2b.y}" stroke="#f59e0b" stroke-width="5" fill="none" opacity="0.3" />
+          <path d="M ${s1.right} ${s1.y} C ${s1.right + 25} ${s1.y}, ${s2b.left - 25} ${s2b.y}, ${s2b.left} ${s2b.y}" stroke="#fbbf24" stroke-width="2.5" fill="none" class="pipe-anim" />
+
+          <!-- S2B to S3B (Lower Line) -->
+          <path d="M ${s2b.right} ${s2b.y} L ${s3b.left} ${s3b.y}" stroke="#f59e0b" stroke-width="5" fill="none" opacity="0.3" />
+          <path d="M ${s2b.right} ${s2b.y} L ${s3b.left} ${s3b.y}" stroke="#fbbf24" stroke-width="2.5" fill="none" class="pipe-anim" />
+
+          <!-- S3B to Target Beta -->
+          <path d="M ${s3b.right} ${s3b.y} L ${svg.clientWidth} ${s3b.y}" stroke="#f59e0b" stroke-width="5" fill="none" opacity="0.3" />
+          <path d="M ${s3b.right} ${s3b.y} L ${svg.clientWidth} ${s3b.y}" stroke="#fbbf24" stroke-width="2.5" fill="none" class="pipe-anim" />
+        `;
+      }
+
+      function openChipPicker(socketId) {
+        state.activePickerSocket = socketId;
+        document.getElementById('targetSocketBadge').textContent = `SOCKET ${socketId}`;
+        renderChipPickerCategory('math');
+        openModal('chipPickerModal');
+        AudioEngine.playSnap();
+      }
+
+      function renderChipPickerCategory(cat) {
+        const container = document.getElementById('chipOptionsContainer');
+        const tabMath = document.getElementById('chipTabMath');
+        const tabLogic = document.getElementById('chipTabLogic');
+
+        if (cat === 'math') {
+          tabMath.className = 'py-1.5 rounded-xl bg-cyan-500 text-slate-950 transition-all font-bold';
+          tabLogic.className = 'py-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-all font-bold';
+        } else {
+          tabMath.className = 'py-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-all font-bold';
+          tabLogic.className = 'py-1.5 rounded-xl bg-cyan-500 text-slate-950 transition-all font-bold';
+        }
+
+        const list = CHIP_CATALOG[cat];
+        container.innerHTML = list.map((chip, idx) => `
+          <button onclick="Game.installChip('${cat}', ${idx})" class="p-2 rounded-2xl bg-slate-950 border-2 border-${chip.color}-500/50 hover:border-${chip.color}-400 hover:scale-105 active:scale-95 flex flex-col items-center justify-between text-center transition-all shadow-md">
+            <span class="text-xs text-${chip.color}-400 font-bold">${chip.type.toUpperCase()}</span>
+            <span class="text-lg sm:text-xl font-black font-tech text-white my-0.5">${chip.label}</span>
+            <span class="text-[9px] text-slate-300 leading-tight">${chip.desc}</span>
+          </button>
+        `).join('');
+      }
+
+      function installChip(cat, idx) {
+        if (!state.activePickerSocket) return;
+        const chip = CHIP_CATALOG[cat][idx];
+        state.sockets[state.activePickerSocket] = { ...chip };
+        closeModal('chipPickerModal');
+        AudioEngine.playSnap();
+        renderAllSockets();
+        AudioEngine.speak(`ติดตั้งชิป ${chip.label} เรียบร้อยค่ะ`);
+      }
+
+      function removeChipFromSocket() {
+        if (!state.activePickerSocket) return;
+        state.sockets[state.activePickerSocket] = null;
+        closeModal('chipPickerModal');
+        AudioEngine.playSnap();
+        renderAllSockets();
+      }
+
+      function clearAllSockets() {
+        state.sockets = { S1: null, S2A: null, S3A: null, S2B: null, S3B: null };
+        AudioEngine.playSnap();
+        renderAllSockets();
+        resetPipeline();
+      }
+
+      function quickSelectChip(type, val = 0) {
+        let found = CHIP_CATALOG.math.find(c => c.type === type && (val === 0 || c.val === val));
+        if (!found) found = CHIP_CATALOG.logic.find(c => c.type === type);
+        if (found) {
+          state.holdingChip = found;
+          document.getElementById('activeHoldingChipLabel').textContent = `พร้อมวาง: [ ${found.label} ] -> คลิกช่องซ็อกเก็ตที่ต้องการ`;
+          AudioEngine.playSnap();
+        }
+      }
+
+      // --- 5. DETAILED SOLUTION & AUTO-SOLVER ---
+      function openSolutionModal() {
+        const stage = STAGES.find(s => s.id === state.currentStageId) || STAGES[0];
+        const sol = stage.solution;
+        if (!sol) return;
+
+        AudioEngine.playSnap();
+        document.getElementById('solStageBadge').textContent = `ด่าน ${stage.id}`;
+        document.getElementById('solTopicText').textContent = stage.topic;
+        document.getElementById('solMathReasoning').textContent = sol.mathReasoning;
+        document.getElementById('solStudentExplanation').textContent = sol.studentExplanation;
+
+        const container = document.getElementById('solChipsBlueprint');
+        container.innerHTML = sol.chipsGuide.map(item => `
+          <div class="p-2 rounded-xl bg-slate-900 border border-${item.color}-500/50 flex flex-col items-center text-center">
+            <span class="text-[9px] text-slate-400 font-tech font-bold">${item.socket}</span>
+            <span class="text-base font-black font-tech text-${item.color}-300 my-0.5">${item.chip}</span>
+            <span class="text-[9px] text-slate-300 leading-tight">${item.role}</span>
+          </div>
+        `).join('');
+
+        openModal('solutionModal');
+      }
+
+      function speakSolution() {
+        const stage = STAGES.find(s => s.id === state.currentStageId) || STAGES[0];
+        if (stage && stage.solution) {
+          AudioEngine.speak(stage.solution.studentExplanation);
+        }
+      }
+
+      function autoSolveCurrentStage() {
+        const stage = STAGES.find(s => s.id === state.currentStageId) || STAGES[0];
+        if (!stage || !stage.solution) return;
+
+        // Reset and auto populate
+        state.sockets = { S1: null, S2A: null, S3A: null, S2B: null, S3B: null };
+        for (const [sockKey, chipData] of Object.entries(stage.solution.sockets)) {
+          state.sockets[sockKey] = { ...chipData };
+        }
+
+        renderAllSockets();
+        drawSvgPipelineConduits();
+        closeModal('solutionModal');
+        AudioEngine.playFanfare();
+        AudioEngine.speak("ติดตั้งชิปตามเฉลยให้เรียบร้อยแล้วค่ะ กดปุ่มเปิดเครื่องเพื่อดูการแปลงค่าได้เลยค่ะ");
+
+        // Highlight the Run button to prompt the user
+        const runBtn = document.getElementById('runBtn');
+        runBtn.classList.add('ring-4', 'ring-yellow-400', 'scale-105');
+        setTimeout(() => runBtn.classList.remove('ring-4', 'ring-yellow-400', 'scale-105'), 2000);
+      }
+
+      // --- 6. SIMULATION RUNTIME ---
+      function toggleRun() {
+        if (state.isRunning) {
+          resetPipeline();
+        } else {
+          startPipelineRun();
+        }
+      }
+
+      function setSpeed(sp) {
+        state.speed = sp;
+        ['1', '2'].forEach(s => {
+          const btn = document.getElementById(`speedBtn${s}`);
+          if (parseInt(s) === sp) {
+            btn.className = "w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-cyan-500 text-slate-950 font-tech font-black text-xs";
+          } else {
+            btn.className = "w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-900 text-slate-400 hover:text-white font-tech font-black text-xs";
+          }
+        });
+        AudioEngine.playSnap();
+      }
+
+      function startPipelineRun() {
+        if (state.inputQueue.length === 0) {
+          const stage = STAGES.find(s => s.id === state.currentStageId) || STAGES[0];
+          state.inputQueue = [...stage.inputs];
+          renderInputQueue();
+        }
+
+        state.isRunning = true;
+        state.receivedAlpha = [];
+        state.receivedBeta = [];
+        document.getElementById('runBtn').classList.remove('from-emerald-500', 'to-cyan-500');
+        document.getElementById('runBtn').classList.add('from-rose-500', 'to-amber-500');
+        document.getElementById('runBtnText').textContent = "หยุดเครื่อง (STOP)";
+        document.getElementById('pipelineStatusText').textContent = "กำลังเดินเครื่องจักรกลคำนวณ...";
+        AudioEngine.speak("เริ่มเดินเครื่องจักรกลค่ะ");
+
+        processNextBall();
+      }
+
+      function processNextBall() {
+        if (!state.isRunning) return;
+
+        if (state.inputQueue.length === 0) {
+          setTimeout(evaluateMissionOutcome, 600 / state.speed);
+          return;
+        }
+
+        const originalVal = state.inputQueue.shift();
+        renderInputQueue();
+
+        const ball = {
+          val: originalVal,
+          lane: 'alpha'
+        };
+
+        animateBallStep(ball, 1);
+      }
+
+      function animateBallStep(ball, stepNum) {
+        if (!state.isRunning) return;
+        const delay = 650 / state.speed;
+
+        if (stepNum === 1) {
+          document.getElementById('stepDebugInfo').textContent = `INPUT: ${ball.val} ➔ S1`;
+          highlightSocket('S1');
+
+          const chip1 = state.sockets.S1;
+          if (chip1) applyChipEffect(ball, chip1, 'S1');
+          if (ball.discarded) return handleDiscard(ball);
+
+          setTimeout(() => animateBallStep(ball, 2), delay);
+
+        } else if (stepNum === 2) {
+          const targetSocket = (ball.lane === 'alpha') ? 'S2A' : 'S2B';
+          document.getElementById('stepDebugInfo').textContent = `STAGE 2: ${ball.val} ➔ ${targetSocket}`;
+          highlightSocket(targetSocket);
+
+          const chip2 = state.sockets[targetSocket];
+          if (chip2) applyChipEffect(ball, chip2, targetSocket);
+          if (ball.discarded) return handleDiscard(ball);
+
+          setTimeout(() => animateBallStep(ball, 3), delay);
+
+        } else if (stepNum === 3) {
+          const targetSocket = (ball.lane === 'alpha') ? 'S3A' : 'S3B';
+          document.getElementById('stepDebugInfo').textContent = `STAGE 3: ${ball.val} ➔ ${targetSocket}`;
+          highlightSocket(targetSocket);
+
+          const chip3 = state.sockets[targetSocket];
+          if (chip3) applyChipEffect(ball, chip3, targetSocket);
+          if (ball.discarded) return handleDiscard(ball);
+
+          setTimeout(() => animateBallStep(ball, 4), delay);
+
+        } else if (stepNum === 4) {
+          deliverBallToOutput(ball);
+          setTimeout(processNextBall, 500 / state.speed);
+        }
+      }
+
+      function applyChipEffect(ball, chip, socketId) {
+        const oldVal = ball.val;
+        AudioEngine.playZap();
+
+        const sockEl = document.getElementById(`socket_${socketId}`);
+        sockEl.classList.add('chip-zap-anim');
+        setTimeout(() => sockEl.classList.remove('chip-zap-anim'), 350);
+
+        if (chip.type === 'add') {
+          ball.val += chip.val;
+        } else if (chip.type === 'sub') {
+          ball.val -= chip.val;
+        } else if (chip.type === 'mul') {
+          ball.val *= chip.val;
+        } else if (chip.type === 'sqr') {
+          ball.val = ball.val * ball.val;
+        } else if (chip.type === 'mod') {
+          ball.val = ball.val % chip.val;
+        } else if (chip.type === 'branch_even') {
+          ball.lane = (oldVal % 2 === 0) ? 'alpha' : 'beta';
+        } else if (chip.type === 'branch_gt') {
+          ball.lane = (oldVal > chip.val) ? 'alpha' : 'beta';
+        } else if (chip.type === 'filter_discard') {
+          ball.discarded = true;
+        }
+
+        if (oldVal !== ball.val) {
+          AudioEngine.speak(`เลข ${oldVal} ผ่านชิป ${chip.label} ได้ ${ball.val}`);
+        }
+      }
+
+      function highlightSocket(sId) {
+        document.querySelectorAll('.socket-node').forEach(el => el.classList.remove('socket-active'));
+        const el = document.getElementById(`socket_${sId}`);
+        if (el) el.classList.add('socket-active');
+      }
+
+      function handleDiscard(ball) {
+        AudioEngine.playError();
+        document.getElementById('stepDebugInfo').textContent = `DISCARDED: เลข ${ball.val} ถูกทิ้ง`;
+        AudioEngine.speak(`คัดกรองทิ้งเลข ${ball.val} ค่ะ`);
+        setTimeout(processNextBall, 400 / state.speed);
+      }
+
+      function deliverBallToOutput(ball) {
+        AudioEngine.playChime();
+        const stage = STAGES.find(s => s.id === state.currentStageId) || STAGES[0];
+
+        if (ball.lane === 'alpha') {
+          state.receivedAlpha.push(ball.val);
+          renderReceived('receivedListAlpha', state.receivedAlpha);
+          document.getElementById('targetCountAlpha').textContent = `${state.receivedAlpha.length}/${stage.targets.alpha.length}`;
+        } else {
+          state.receivedBeta.push(ball.val);
+          renderReceived('receivedListBeta', state.receivedBeta);
+          document.getElementById('targetCountBeta').textContent = `${state.receivedBeta.length}/${stage.targets.beta.length}`;
+        }
+
+        const totalNeeded = stage.targets.alpha.length + stage.targets.beta.length;
+        const totalReceived = state.receivedAlpha.length + state.receivedBeta.length;
+        const pct = Math.min(100, Math.round((totalReceived / totalNeeded) * 100));
+        document.getElementById('accuracyPercent').textContent = `${pct}%`;
+        document.getElementById('accuracyProgressBar').style.width = `${pct}%`;
+      }
+
+      function renderReceived(containerId, list) {
+        const c = document.getElementById(containerId);
+        c.innerHTML = list.map(v => `
+          <span class="px-2 py-0.5 rounded-lg bg-cyan-950 border border-cyan-400 text-cyan-200 font-tech font-bold text-xs animate-in zoom-in">
+            ${v}
+          </span>
+        `).join('');
+      }
+
+      function resetPipeline() {
+        state.isRunning = false;
+        document.querySelectorAll('.socket-node').forEach(el => el.classList.remove('socket-active'));
+        document.getElementById('runBtn').classList.remove('from-rose-500', 'to-amber-500');
+        document.getElementById('runBtn').classList.add('from-emerald-500', 'to-cyan-500');
+        document.getElementById('runBtnText').textContent = "เปิดเครื่อง (RUN)";
+        document.getElementById('pipelineStatusText').textContent = "รีเซ็ตระบบแล้ว พร้อมเริ่มใหม่";
+        document.getElementById('stepDebugInfo').textContent = "READY";
+
+        const stage = STAGES.find(s => s.id === state.currentStageId) || STAGES[0];
+        state.inputQueue = [...stage.inputs];
+        state.receivedAlpha = [];
+        state.receivedBeta = [];
+        renderInputQueue();
+        renderTargetBoxes(stage);
+      }
+
+      function stepExecution() {
+        if (!state.isRunning) startPipelineRun();
+      }
+
+      function evaluateMissionOutcome() {
+        state.isRunning = false;
+        document.getElementById('runBtn').classList.remove('from-rose-500', 'to-amber-500');
+        document.getElementById('runBtn').classList.add('from-emerald-500', 'to-cyan-500');
+        document.getElementById('runBtnText').textContent = "เปิดเครื่อง (RUN)";
+
+        const stage = STAGES.find(s => s.id === state.currentStageId) || STAGES[0];
+        const isAlphaMatch = arraysEqual(state.receivedAlpha, stage.targets.alpha);
+        const isBetaMatch = arraysEqual(state.receivedBeta, stage.targets.beta);
+
+        if (isAlphaMatch && isBetaMatch) {
+          AudioEngine.playFanfare();
+          const usedChips = Object.values(state.sockets).filter(Boolean).length;
+          let starsEarned = (usedChips <= stage.maxChips) ? 3 : (usedChips <= stage.maxChips + 1) ? 2 : 1;
+
+          state.stars[stage.id] = Math.max(state.stars[stage.id] || 0, starsEarned);
+          state.score += 500 * starsEarned;
+          if (stage.id === state.stageUnlocked && state.stageUnlocked < 12) {
+            state.stageUnlocked++;
+          }
+          saveStorage();
+
+          document.getElementById('victoryTitle').textContent = `ด่าน ${stage.id} สำเร็จ!`;
+          document.getElementById('victorySubtitle').textContent = stage.title;
+          document.getElementById('victoryChipsText').textContent = `${usedChips} / ${stage.maxChips} ชิป`;
+          document.getElementById('victoryScoreText').textContent = `+${500 * starsEarned}`;
+          
+          document.getElementById('victoryStarRow').innerHTML = Array(3).fill(0).map((_, i) => `
+            <span class="${i < starsEarned ? 'text-yellow-400' : 'text-slate-600'}">⭐</span>
+          `).join('');
+
+          openModal('victoryModal');
+          AudioEngine.speak(`ยอดเยี่ยมมากค่ะ ผ่านด่านที่ ${stage.id} ได้รับ ${starsEarned} ดาวแล้วค่ะ`);
+          updateHeaderUI();
+
+        } else {
+          AudioEngine.playError();
+          document.getElementById('pipelineStatusText').textContent = "ผลลัพธ์ยังไม่ตรงเป้าหมาย กดปุ่ม [💡 ดูเฉลย] ด้านบนเพื่อดูวิธีคิดได้เลยค่ะ";
+          AudioEngine.speak("ผลลัพธ์ยังไม่ตรงเป้าหมาย สามารถกดปุ่มดูเฉลยเพื่อศึกษาขั้นตอนได้นะคะ");
+        }
+      }
+
+      function arraysEqual(a, b) {
+        if (a.length !== b.length) return false;
+        for (let i = 0; i < a.length; i++) {
+          if (a[i] !== b[i]) return false;
+        }
+        return true;
+      }
+
+      function advanceNextStage() {
+        closeModal('victoryModal');
+        if (state.currentStageId < 12) {
+          loadStage(state.currentStageId + 1);
+        } else {
+          openStageMap();
+        }
+      }
+
+      function replayCurrentStage() {
+        closeModal('victoryModal');
+        resetPipeline();
+      }
+
+      function switchMode(m) {
+        state.mode = m;
+        const tabP = document.getElementById('modeTabPuzzle');
+        const tabS = document.getElementById('modeTabSandbox');
+        const sandboxCtrl = document.getElementById('sandboxInputControls');
+
+        if (m === 'puzzle') {
+          tabP.className = "px-2.5 py-1 rounded-lg bg-cyan-500 text-slate-950 transition-all font-bold";
+          tabS.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition-all font-bold";
+          sandboxCtrl.classList.add('hidden');
+          loadStage(state.currentStageId);
+        } else {
+          tabP.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition-all font-bold";
+          tabS.className = "px-2.5 py-1 rounded-lg bg-emerald-500 text-slate-950 transition-all font-bold";
+          sandboxCtrl.classList.remove('hidden');
+          resetPipeline();
+          document.getElementById('headerLevelTag').textContent = "SANDBOX 🧪";
+          document.getElementById('headerTopicText').textContent = "ห้องแล็บสร้างวงจรและทดสอบอิสระ";
+          document.getElementById('missionDescText').textContent = "ป้อนเลขทดสอบและประกอบชิปคำนวณตามต้องการ";
+          applySandboxInputs();
+          AudioEngine.speak("ยินดีต้อนรับสู่ห้องแล็บอิสระค่ะ");
+        }
+      }
+
+      function applySandboxInputs() {
+        const raw = document.getElementById('sandboxInputArray').value;
+        const nums = raw.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+        state.inputQueue = nums.length > 0 ? nums : [1, 2, 3, 4];
+        renderInputQueue();
+        AudioEngine.playSnap();
+      }
+
+      function openStageMap() {
+        const grid = document.getElementById('stageGridContent');
+        grid.innerHTML = STAGES.map(s => {
+          const starsEarned = state.stars[s.id] || 0;
+          const isUnlocked = s.id === 1 || (state.stars[s.id - 1] !== undefined) || s.id <= state.stageUnlocked;
+          const isCurrent = (s.id === state.currentStageId);
+
+          return `
+            <button onclick="${isUnlocked ? `Game.selectStageFromMap(${s.id})` : ''}" class="p-2 sm:p-3 rounded-2xl border text-left transition-all ${
+              isUnlocked 
+                ? (isCurrent ? 'bg-cyan-950 border-cyan-400 ring-2 ring-cyan-400' : 'bg-slate-800/80 border-slate-700 hover:border-cyan-500') 
+                : 'bg-slate-900 border-slate-800 opacity-40 cursor-not-allowed'
+            }">
+              <div class="flex justify-between items-center text-[10px] text-slate-400 font-bold">
+                <span>ด่านที่ ${s.id}</span>
+                <span>${isUnlocked ? (starsEarned > 0 ? '⭐'.repeat(starsEarned) : '☆☆☆') : '🔒'}</span>
+              </div>
+              <div class="text-xs sm:text-sm font-black font-tech text-white truncate mt-1">${s.title}</div>
+              <div class="text-[9px] text-slate-400 line-clamp-1 mt-0.5">${s.topic}</div>
+            </button>
+          `;
+        }).join('');
+
+        openModal('stageMapModal');
+      }
+
+      function selectStageFromMap(id) {
+        closeModal('stageMapModal');
+        switchMode('puzzle');
+        loadStage(id);
+      }
+
+      function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+      function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen();
+        }
+      }
+
+      return {
+        init,
+        switchMode,
+        loadStage,
+        openChipPicker,
+        renderChipPickerCategory,
+        installChip,
+        removeChipFromSocket,
+        clearAllSockets,
+        quickSelectChip,
+        setSpeed,
+        toggleRun,
+        stepExecution,
+        resetPipeline,
+        advanceNextStage,
+        replayCurrentStage,
+        openSolutionModal,
+        speakSolution,
+        autoSolveCurrentStage,
+        applySandboxInputs,
+        openStageMap,
+        selectStageFromMap,
+        openModal,
+        closeModal,
+        toggleFullscreen
+      };
+    })();
+
+    window.addEventListener('load', () => Game.init());
+  </script>
+</body>
+</html>
