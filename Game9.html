@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cyber Agent — ภารกิจถอดรหัสบิตลับ (1 2 4 8 16 ... 256)</title>
+
+    <!-- Google Fonts: Mali, Kanit & Orbitron -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700;800;900&family=Mali:wght@500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN & Canvas Confetti CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            overflow: hidden !important;
+            font-family: 'Kanit', sans-serif;
+            background-color: #ffffff;
+            background-image: radial-gradient(#93c5fd 2px, transparent 2px);
+            background-size: 24px 24px;
+            color: #0f172a;
+        }
+
+        .mali-font { font-family: 'Mali', cursive, sans-serif; }
+        .cyber-font { font-family: 'Orbitron', monospace; }
+
+        /* Crisp 3D Cartoon Cards */
+        .white-card {
+            background: #ffffff;
+            border: 3px solid #7dd3fc;
+            border-radius: 24px;
+            box-shadow: 0 8px 20px -4px rgba(2, 132, 199, 0.16), 0 4px 0 #38bdf8;
+            position: relative;
+        }
+
+        /* 3D Toy-Style Buttons */
+        .btn-toy {
+            transition: all 0.08s ease;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.16);
+            cursor: pointer;
+        }
+        .btn-toy:hover { transform: translateY(-2px); filter: brightness(1.05); }
+        .btn-toy:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.16); }
+
+        /* Energy Capsule Bit Cards */
+        .bit-capsule {
+            transition: all 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.14);
+        }
+        .bit-capsule:hover { transform: translateY(-2px); }
+        .bit-capsule:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.14); }
+
+        .bit-capsule-on {
+            background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+            border: 3px solid #0369a1;
+            color: #ffffff !important;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.7), 0 4px 0 #075985;
+            transform: scale(1.02);
+        }
+        .bit-capsule-off {
+            background: #f8fafc;
+            border: 3px solid #cbd5e1;
+            color: #475569;
+        }
+
+        /* Screen Shake */
+        @keyframes shakeAnim {
+            0%, 100% { transform: translate(0, 0); }
+            20% { transform: translate(-8px, 6px); }
+            40% { transform: translate(8px, -6px); }
+            60% { transform: translate(-5px, 4px); }
+            80% { transform: translate(5px, -4px); }
+        }
+        .screen-shake { animation: shakeAnim 0.35s ease-in-out; }
+
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+
+        /* ========================================================
+           RESPONSIVE HEIGHT ADJUSTMENTS (NO OVERLAP / ZERO-SCROLL)
+           ======================================================== */
+        @media (max-height: 700px) {
+            header { padding: 6px 10px !important; }
+            #mainGameStage { padding: 8px 12px !important; margin: 4px 0 !important; }
+            .mascot-avatar { width: 36px !important; height: 36px !important; font-size: 20px !important; }
+            .mascot-speech { padding: 4px 10px !important; font-size: 12px !important; }
+            .word-slot { width: 44px !important; height: 50px !important; border-width: 2px !important; }
+            .word-slot span.cyber-font { font-size: 20px !important; }
+            .bit-capsule { min-height: 74px !important; padding: 4px 2px !important; }
+            .bit-capsule .bit-val { font-size: 15px !important; }
+            .bit-capsule .dots-box { transform: scale(0.9); margin: 1px 0 !important; }
+            #game2TargetNumberDisplay { font-size: 46px !important; margin: 2px 0 !important; }
+            #liveMathBar { padding: 4px 10px !important; }
+            .master-btn { padding: 8px 14px !important; font-size: 14px !important; }
+        }
+
+        @media (max-height: 590px) {
+            header { padding: 4px 8px !important; border-radius: 16px !important; }
+            header button, header .btn-toy { padding: 3px 8px !important; font-size: 11px !important; }
+            #mainGameStage { padding: 6px 8px !important; margin: 2px 0 !important; border-radius: 18px !important; }
+            .mascot-row { padding-bottom: 2px !important; }
+            .mascot-avatar { width: 30px !important; height: 30px !important; font-size: 18px !important; }
+            .mascot-speech { padding: 3px 8px !important; font-size: 11px !important; }
+            .word-slot { width: 38px !important; height: 40px !important; border-width: 2px !important; border-radius: 10px !important; }
+            .word-slot span.cyber-font { font-size: 18px !important; }
+            .bit-capsule { min-height: 58px !important; padding: 2px 1px !important; border-width: 2px !important; border-radius: 12px !important; }
+            .bit-capsule .bit-val { font-size: 13px !important; }
+            .bit-capsule .dots-box { display: none !important; } /* Hide counting dots on tiny heights */
+            .bit-capsule .bit-footer { font-size: 8px !important; }
+            #game2TargetNumberDisplay { font-size: 34px !important; margin: 0 !important; }
+            #liveMathBar { padding: 3px 6px !important; font-size: 11px !important; border-radius: 12px !important; }
+            .master-btn { padding: 5px 10px !important; font-size: 12px !important; border-radius: 12px !important; }
+            footer { display: none !important; } /* Remove footer on tight screens */
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen w-screen p-2 sm:p-2.5 overflow-hidden justify-between relative selection:bg-cyan-500 selection:text-white">
+
+    <!-- Floating Background Canvas (Zero Pointer Events) -->
+    <canvas id="bgCanvas" class="fixed inset-0 w-full h-full pointer-events-none z-0"></canvas>
+
+    <!-- SECTION 1: HEADER (Agent ID, Game Tabs, Tools) -->
+    <header class="white-card p-2 sm:p-2.5 flex items-center justify-between gap-1.5 z-10 shrink-0">
+        <!-- Agent Identity & Name Edit -->
+        <div class="flex items-center gap-2 cursor-pointer hover:opacity-90 transition" onclick="editAgentName()" title="คลิกเพื่อเปลี่ยนชื่อสายลับ">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-cyan-400 via-sky-500 to-blue-600 flex items-center justify-center text-2xl sm:text-3xl shadow border-2 border-white shrink-0">
+                🕵️
+            </div>
+            <div>
+                <div class="flex items-center gap-1 leading-none">
+                    <span id="agentNameDisplay" class="font-black text-xs sm:text-sm md:text-base text-sky-950 mali-font">สายลับซีโร่</span>
+                    <span class="text-xs text-sky-500 font-bold">✏️</span>
+                </div>
+                <div class="text-[11px] sm:text-xs text-sky-700 font-bold mt-0.5">
+                    คะแนน: <b id="agentScoreDisplay" class="text-amber-500 font-black font-mono text-sm sm:text-base">0 ⭐</b>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3 Master Game Switcher Tabs -->
+        <div class="flex items-center gap-1 sm:gap-1.5 bg-slate-100 p-1 rounded-2xl border-2 border-slate-200">
+            <button onclick="switchGameMode(1)" id="tabGame1" class="btn-toy px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm md:text-base font-black transition mali-font bg-sky-500 text-white shadow">
+                1. กู้รหัสคำ (A-Z)
+            </button>
+            <button onclick="switchGameMode(2)" id="tabGame2" class="btn-toy px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm md:text-base font-black transition mali-font text-slate-700 hover:text-slate-900">
+                2. สลับขั้วทายเลข
+            </button>
+            <button onclick="switchGameMode(3)" id="tabGame3" class="btn-toy px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm md:text-base font-black transition mali-font text-slate-700 hover:text-slate-900">
+                3. รหัสแอสเซมบลี
+            </button>
+        </div>
+
+        <!-- Action Tools -->
+        <div class="flex items-center gap-1 sm:gap-1.5">
+            <!-- Difficulty Selector Button -->
+            <button onclick="openDifficultyModal()" id="btnDifficultySettings" class="btn-toy bg-amber-100 hover:bg-amber-200 text-amber-950 border-2 border-amber-300 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-black flex items-center gap-1 mali-font">
+                <span id="currentLevelBadgeText">ระดับ: 3 ตัวอักษร</span> ⚙️
+            </button>
+
+            <!-- Alphabet Cipher Chart Button -->
+            <button onclick="openCipherChartModal()" class="btn-toy bg-sky-100 hover:bg-sky-200 text-sky-900 border-2 border-sky-300 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-black mali-font" title="เปิดสมุดรหัส A=1 ถึง Z=26">
+                📖 สมุดรหัส A-Z
+            </button>
+
+            <!-- Sound & Fullscreen Buttons -->
+            <button onclick="toggleAudio()" id="audioToggleBtn" class="bg-slate-100 hover:bg-slate-200 text-sky-800 border-2 border-slate-300 p-2 sm:p-2.5 rounded-xl text-xs sm:text-sm font-bold transition active:scale-95" title="เปิด/ปิดเสียง">
+                <span id="audioIcon">🔊</span>
+            </button>
+            <button onclick="toggleFullscreen()" class="btn-toy bg-slate-800 hover:bg-slate-700 text-yellow-300 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-black" title="เล่นแบบเต็มหน้าจอ">
+                <span id="fsIcon">⛶</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN INTERACTIVE ARENA (Strict Flex Column) -->
+    <main id="mainGameStage" class="white-card p-2 sm:p-3 flex-1 min-h-0 flex flex-col justify-between my-1 sm:my-1.5 z-10 overflow-hidden relative">
+
+        <!-- SECTION 2: MASCOT & SPEECH (Compact Row) -->
+        <div class="mascot-row flex items-center justify-between gap-2 shrink-0 pb-1 border-b-2 border-sky-100">
+            <div class="flex items-center gap-2">
+                <div class="mascot-avatar w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-sky-100 border-2 border-sky-300 flex items-center justify-center text-xl sm:text-2xl shadow-xs shrink-0 cursor-pointer transition hover:scale-105" onclick="replayVoicePrompt()">
+                    🤖
+                </div>
+                <div onclick="replayVoicePrompt()" class="mascot-speech cursor-pointer bg-sky-50 text-sky-950 px-3 py-1 sm:py-1.5 rounded-2xl rounded-tl-none border-2 border-sky-200 text-xs sm:text-sm font-bold mali-font hover:bg-yellow-50 transition max-w-xl truncate">
+                    <span id="mascotSpeechText">"สวัสดีจ้า! เลือกเกมแล้วมาช่วยกันถอดรหัสบิตอัจฉริยะกันเถอะ!"</span>
+                </div>
+            </div>
+
+            <!-- Streak Combo Badge -->
+            <div id="comboBanner" class="hidden items-center gap-1 bg-gradient-to-r from-amber-400 to-rose-500 text-white font-black px-3 py-0.5 sm:py-1 rounded-full text-xs shadow-md animate-bounce shrink-0">
+                <span>🔥</span> <span id="comboCountText">COMBO x2!</span>
+            </div>
+        </div>
+
+        <!-- SECTION 3: TARGET CHALLENGE BOX (Auto-Scaling & Never Overlapping) -->
+        <!-- ==================== GAME 1 VIEW: WORD CIPHER A-Z (5 BITS) ==================== -->
+        <div id="game1Container" class="flex-1 min-h-0 flex flex-col justify-center items-center overflow-hidden my-auto py-1">
+            <div class="w-full bg-gradient-to-r from-sky-50 via-indigo-50 to-purple-50 rounded-2xl p-2 sm:p-3 border-2 border-sky-200 flex flex-col items-center justify-center">
+                <div class="text-[11px] sm:text-xs md:text-sm text-sky-900 font-bold mali-font flex items-center gap-1.5 mb-0.5">
+                    <span id="wordDifficultyInfoText">🎯 ระดับคำศัพท์: 3 ตัวอักษร (คลังคำศัพท์รวม 1,000+ คำ)</span>
+                </div>
+
+                <!-- Word Letter Slots -->
+                <div id="wordSlotsRow" class="flex items-center justify-center gap-1.5 sm:gap-2.5 my-1 flex-wrap">
+                    <!-- Populated dynamically: e.g. [ C ] [ A ] [ T ] -->
+                </div>
+
+                <div class="text-xs sm:text-sm md:text-base font-bold text-slate-700 mali-font flex items-center gap-1.5 mt-0.5">
+                    <span>กำลังถอดรหัส:</span>
+                    <span id="currentTargetLetterBadge" class="px-2.5 py-0.5 rounded-xl bg-pink-100 text-pink-700 border-2 border-pink-300 font-black text-xs sm:text-sm">
+                        ตัว C = เลข 3
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== GAME 2 VIEW: TARGET NUMBER HACKER ==================== -->
+        <div id="game2Container" class="hidden flex-1 min-h-0 flex flex-col justify-center items-center overflow-hidden my-auto py-1">
+            <div class="w-full bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 rounded-2xl p-2 sm:p-3.5 border-2 border-amber-300 flex flex-col items-center justify-center">
+                <div class="text-xs sm:text-sm md:text-base text-amber-950 font-black mali-font">🎯 ตัวเลขเป้าหมายที่หนูต้องคิดหาบิตมารวมกัน:</div>
+                <div id="game2TargetNumberDisplay" class="cyber-font text-5xl sm:text-6xl md:text-7xl font-black text-amber-500 tracking-wider my-0.5 drop-shadow-sm leading-tight">
+                    20
+                </div>
+                <div class="text-[11px] sm:text-xs text-slate-600 font-bold mali-font">
+                    คิดเองเลยจ้า! ต้องเปิดสวิตช์บิตตัวไหนบ้าง ถึงจะได้ผลรวมตรงเป๊ะ
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== GAME 3 VIEW: ASSEMBLY CPU REGISTER DECODER ==================== -->
+        <div id="game3Container" class="hidden flex-1 min-h-0 flex flex-col justify-center items-center overflow-hidden my-auto py-1 space-y-1">
+            <div class="w-full bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl p-2 sm:p-3 border-3 border-cyan-400 flex flex-col items-center justify-center font-mono shadow-inner">
+                <div class="text-[11px] sm:text-xs text-cyan-300 font-bold mali-font flex items-center gap-1.5">
+                    <span>💻 ซีพียูตรวจจับสัญญาณแอสเซมบลี:</span>
+                    <span id="assemblyModeLabel" class="bg-cyan-500/20 text-cyan-200 px-2 py-0.5 rounded border border-cyan-400/40 font-bold text-[10px] sm:text-xs">ระดับ 4 บิต (0000)</span>
+                </div>
+
+                <!-- Assembly Register Row -->
+                <div id="assemblyRegisterRow" class="flex items-center justify-center gap-1.5 sm:gap-3 my-0.5">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- Input display -->
+                <div class="text-xs sm:text-sm font-bold text-amber-300 mali-font flex items-center gap-1.5">
+                    <span>ผลรวมบิตที่เปิด (1):</span>
+                    <span id="assemblyAnswerInput" class="text-white text-base sm:text-xl font-mono font-black bg-black/70 px-3 py-0.5 rounded-xl border-2 border-cyan-400 min-w-[55px] text-center">?</span>
+                </div>
+
+                <!-- Mini Keypad for Game 3 -->
+                <div class="grid grid-cols-6 gap-1 pt-0.5 w-full max-w-sm">
+                    <button onclick="pressAssemblyNum(1)" class="btn-toy py-1 bg-slate-800 text-white rounded-lg font-black text-xs sm:text-sm">1</button>
+                    <button onclick="pressAssemblyNum(2)" class="btn-toy py-1 bg-slate-800 text-white rounded-lg font-black text-xs sm:text-sm">2</button>
+                    <button onclick="pressAssemblyNum(3)" class="btn-toy py-1 bg-slate-800 text-white rounded-lg font-black text-xs sm:text-sm">3</button>
+                    <button onclick="pressAssemblyNum(4)" class="btn-toy py-1 bg-slate-800 text-white rounded-lg font-black text-xs sm:text-sm">4</button>
+                    <button onclick="pressAssemblyNum(5)" class="btn-toy py-1 bg-slate-800 text-white rounded-lg font-black text-xs sm:text-sm">5</button>
+                    <button onclick="pressAssemblyNum(6)" class="btn-toy py-1 bg-slate-800 text-white rounded-lg font-black text-xs sm:text-sm">6</button>
+
+                    <button onclick="pressAssemblyNum(7)" class="btn-toy py-1 bg-slate-800 text-white rounded-lg font-black text-xs sm:text-sm">7</button>
+                    <button onclick="pressAssemblyNum(8)" class="btn-toy py-1 bg-slate-800 text-white rounded-lg font-black text-xs sm:text-sm">8</button>
+                    <button onclick="pressAssemblyNum(9)" class="btn-toy py-1 bg-slate-800 text-white rounded-lg font-black text-xs sm:text-sm">9</button>
+                    <button onclick="pressAssemblyNum(0)" class="btn-toy py-1 bg-slate-800 text-white rounded-lg font-black text-xs sm:text-sm">0</button>
+                    <button onclick="clearAssemblyNum()" class="btn-toy py-1 bg-rose-700 text-white rounded-lg font-black text-[10px] sm:text-xs">ล้าง</button>
+                    <button onclick="backspaceAssemblyNum()" class="btn-toy py-1 bg-amber-600 text-white rounded-lg font-black text-[10px] sm:text-xs">⌫</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: BIT SWITCHES PANEL (Strictly Bounded Height & Auto-Scales) -->
+        <div id="bitSwitchesWrapper" class="space-y-0.5 shrink-0 pt-0.5">
+            <div class="flex items-center justify-between text-[11px] sm:text-xs text-slate-600 font-bold mali-font px-1">
+                <span>แตะการ์ดสวิตช์บิตเพื่อเปิด (1) หรือ ปิด (0):</span>
+                <span id="bitCountStatusText" class="text-sky-700 font-black">ระบบ 5 บิต (16, 8, 4, 2, 1)</span>
+            </div>
+
+            <!-- Dynamic Bit Cards Row -->
+            <div id="bitCapsulesContainer" class="flex items-center justify-center gap-1.5 sm:gap-2 w-full overflow-x-auto py-0.5">
+                <!-- Dynamically populated cards -->
+            </div>
+        </div>
+
+        <!-- SECTION 5: LIVE ACCUMULATOR & MASTER ACTION BUTTONS -->
+        <div id="liveMathBar" class="bg-sky-50 rounded-xl sm:rounded-2xl p-1.5 sm:p-2 border-2 border-sky-200 flex flex-wrap items-center justify-between gap-1.5 shrink-0">
+            <div class="flex items-center gap-1.5 truncate">
+                <span class="text-xs sm:text-sm text-sky-900 font-bold mali-font shrink-0">⚡ รวมพลังงานบิตสด:</span>
+                <div id="mathLiveFormula" class="font-mono text-xs sm:text-sm md:text-base font-black text-sky-950 tracking-wide truncate">
+                    0 + 0 + 0 + 0 + 0 = 0
+                </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+                <span class="text-xs text-slate-600 font-bold mali-font">ผลรวม:</span>
+                <span id="currentSumBadge" class="cyber-font text-base sm:text-xl md:text-2xl font-black text-sky-700 px-2.5 py-0.5 rounded-xl bg-white border-2 border-sky-300">
+                    0
+                </span>
+                <span id="mathStatusBadge" class="text-[11px] sm:text-xs font-bold px-2.5 py-0.5 rounded-lg bg-white text-slate-500 border border-slate-300 mali-font">
+                    รอสับสวิตช์...
+                </span>
+            </div>
+        </div>
+
+        <!-- Master Action Controls -->
+        <div class="grid grid-cols-12 gap-1.5 sm:gap-2 pt-0.5 shrink-0">
+            <button onclick="resetAllBits()" class="col-span-4 btn-toy master-btn py-2 sm:py-2.5 md:py-3 rounded-xl sm:rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs sm:text-sm md:text-base border-2 border-slate-300 flex items-center justify-center gap-1 mali-font">
+                <span>🔄 ล้างสวิตช์</span>
+            </button>
+            <button onclick="handleMasterSubmit()" id="btnMasterSubmit" class="col-span-8 btn-toy master-btn py-2 sm:py-2.5 md:py-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-600 hover:from-sky-300 hover:to-indigo-500 text-white font-black text-xs sm:text-base md:text-lg flex items-center justify-center gap-1.5 mali-font shadow-md">
+                <span>🚀 ยืนยันคำตอบ (ENTER)</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="text-center text-[10px] sm:text-xs text-slate-500 font-medium py-0.5 shrink-0 mali-font flex items-center justify-center gap-2">
+        <span>วิชาวิทยาการคำนวณ: การแทนค่าข้อมูลด้วยเลขฐานสอง (Binary Code 1, 2, 4, 8, ... 256)</span>
+    </footer>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- MODAL 1: CIPHER ALPHABET LOOKUP CHART (A=1 ... Z=26) -->
+    <div id="cipherChartModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 hidden">
+        <div class="white-card max-w-lg w-full p-4 sm:p-6 space-y-3 flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between border-b-2 border-slate-100 pb-2 shrink-0">
+                <h3 class="text-base sm:text-xl font-black text-sky-950 mali-font flex items-center gap-2">
+                    <span>📖 สมุดรหัสลับสายลับ (A=1 ถึง Z=26)</span>
+                </h3>
+                <button onclick="closeCipherChartModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm">✕</button>
+            </div>
+
+            <div class="text-xs sm:text-sm text-slate-600 mali-font shrink-0">
+                คอมพิวเตอร์แปลงตัวอักษรภาษาอังกฤษ A-Z ให้เป็นตัวเลขรหัสลำดับ 1 ถึง 26 ตามรหัสสากล:
+            </div>
+
+            <div id="cipherAlphabetGrid" class="grid grid-cols-4 sm:grid-cols-6 gap-1.5 sm:gap-2 overflow-y-auto custom-scroll pr-1 flex-1 text-xs sm:text-sm">
+                <!-- Injected by JS -->
+            </div>
+
+            <button onclick="closeCipherChartModal()" class="btn-toy w-full py-2.5 sm:py-3 rounded-2xl bg-sky-500 hover:bg-sky-400 text-white font-black text-xs sm:text-sm mali-font">
+                เข้าใจแล้ว กลับสู่ภารกิจ
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 2: DIFFICULTY & SETTINGS SELECTOR -->
+    <div id="difficultyModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 hidden">
+        <div class="white-card max-w-md w-full p-4 sm:p-5 space-y-3">
+            <div class="flex items-center justify-between border-b-2 border-slate-100 pb-2">
+                <h3 class="text-base sm:text-lg font-black text-sky-950 mali-font flex items-center gap-1.5">
+                    <span>⚙️ เลือกระดับความยากของเกม</span>
+                </h3>
+                <button onclick="closeDifficultyModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm">✕</button>
+            </div>
+
+            <div id="difficultyOptionsContent" class="space-y-1.5 text-xs sm:text-sm">
+                <!-- Injected dynamically based on active game -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: VICTORY & ADVANCEMENT CELEBRATION -->
+    <div id="victoryModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 hidden">
+        <div class="white-card max-w-md w-full p-5 sm:p-6 text-center space-y-3.5 border-4 border-amber-300">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-amber-100 text-amber-500 mx-auto flex items-center justify-center text-3xl sm:text-4xl shadow animate-bounce">
+                🎉
+            </div>
+
+            <div>
+                <h2 class="text-xl sm:text-2xl md:text-3xl font-black text-sky-950 mali-font" id="victoryModalTitle">
+                    ถอดรหัสสำเร็จ!
+                </h2>
+                <p class="text-xs sm:text-sm md:text-base text-sky-700 mt-0.5 mali-font" id="victoryModalSubtitle">
+                    สัญญาณกู้ภัยถูกส่งออกไปแล้ว ประตูยานเปิดออกอย่างปลอดภัย!
+                </p>
+            </div>
+
+            <div class="bg-amber-50 p-3 rounded-2xl border-2 border-amber-200 space-y-0.5 text-xs sm:text-sm">
+                <div class="text-amber-800 font-bold">คะแนนสะสมที่ได้รับ:</div>
+                <div class="text-2xl sm:text-3xl font-black text-amber-600 font-mono" id="victoryEarnedScore">+50 ⭐</div>
+            </div>
+
+            <button onclick="advanceNextChallenge()" class="btn-toy w-full py-2.5 sm:py-3.5 rounded-2xl bg-gradient-to-r from-sky-400 to-blue-600 text-white font-black text-sm sm:text-base md:text-lg mali-font shadow-lg">
+                ลุยข้อถัดไปเลย ➔
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT ENGINE ==================== -->
+    <script>
+        /* ========================================================
+           1. FULLSCREEN TOGGLE
+           ======================================================== */
+        function toggleFullscreen() {
+            AudioFX.playClick();
+            const icon = document.getElementById('fsIcon');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+                if (icon) icon.innerText = "⤢";
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                if (icon) icon.innerText = "⛶";
+            }
+        }
+
+        /* ========================================================
+           2. WEB AUDIO API SYNTHESIZER
+           ======================================================== */
+        let audioEnabled = true;
+        const AudioFX = {
+            ctx: null,
+            init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+            playTone(freq, type, duration, gainVal = 0.08) {
+                if (!audioEnabled) return;
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const g = this.ctx.createGain();
+                    osc.type = type || 'sine';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    g.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+                    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    osc.connect(g); g.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + duration);
+                } catch(e){}
+            },
+            playClick() { this.playTone(750, 'sine', 0.04, 0.06); },
+            playSwitchOn() {
+                this.playTone(500, 'sine', 0.04, 0.08);
+                setTimeout(() => this.playTone(980, 'triangle', 0.08, 0.12), 40);
+            },
+            playSwitchOff() { this.playTone(280, 'sawtooth', 0.05, 0.08); },
+            playError() { this.playTone(150, 'sawtooth', 0.25, 0.14); },
+            playCorrect() {
+                [659.25, 880, 1174.66].forEach((f, idx) => {
+                    setTimeout(() => this.playTone(f, 'triangle', 0.1, 0.08), idx * 60);
+                });
+            },
+            playVictoryFanfare() {
+                [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((f, idx) => {
+                    setTimeout(() => this.playTone(f, 'triangle', 0.18, 0.1), idx * 75);
+                });
+            }
+        };
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            document.getElementById('audioIcon').innerText = audioEnabled ? '🔊' : '🔇';
+            if (audioEnabled) AudioFX.playClick();
+        }
+
+        /* ========================================================
+           3. THAI SPEECH SYNTHESIS (FEMALE AI VOICE)
+           ======================================================== */
+        let thaiVoice = null;
+        function loadVoices() {
+            if (!('speechSynthesis' in window)) return;
+            const voices = window.speechSynthesis.getVoices();
+            const th = voices.filter(v => v.lang === 'th-TH' || v.lang.startsWith('th'));
+            if (th.length > 0) {
+                const female = th.find(v => v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('kanya'));
+                thaiVoice = female || th[0];
+            }
+        }
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+            loadVoices();
+        }
+
+        function speakAI(text) {
+            if (!('speechSynthesis' in window) || !audioEnabled) return;
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'th-TH';
+            if (thaiVoice) u.voice = thaiVoice;
+            u.rate = 0.88;
+            u.pitch = 1.15;
+            window.speechSynthesis.speak(u);
+        }
+
+        /* ========================================================
+           4. FLOATING BACKGROUND CANVAS
+           ======================================================== */
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2.5 + 1;
+                this.speed = Math.random() * 0.35 + 0.1;
+                this.alpha = Math.random() * 0.35 + 0.1;
+                this.color = ['#38bdf8', '#fbbf24', '#f472b6', '#34d399'][Math.floor(Math.random() * 4)];
+            }
+            update() {
+                this.y -= this.speed;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        for (let i = 0; i < 30; i++) particles.push(new Particle());
+
+        function animateBg() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateBg);
+        }
+        animateBg();
+
+        /* ========================================================
+           5. MASSIVE VOCABULARY DATABASE (1,000+ REAL ENGLISH WORDS)
+           ======================================================== */
+        const MASTER_WORDS_DICT = {
+            3: [
+                "CAT","DOG","SUN","BAT","PEN","CUP","BOX","PIG","BEE","FOX","HAT","ANT","COW","OWL","BED","FAN","VAN","BUS","CAR","KEY",
+                "BAG","EGG","ICE","JAM","NUT","PIE","TEA","BOY","MAN","LIP","EYE","ARM","LEG","TOE","SEA","SKY","AIR","DAY","MAP","TOP",
+                "POT","PAN","MUG","CAP","RUG","PIN","JAR","LOG","NET","WEB","FLY","RUN","SIT","HOP","WIN","BIG","HOT","RED","SIX","TEN"
+            ],
+            4: [
+                "STAR","MOON","BIRD","FISH","LION","FROG","DUCK","BEAR","DEER","WOLF","CRAB","SEAL","TREE","LEAF","ROSE","RAIN","SNOW",
+                "WIND","FIRE","GOLD","BLUE","PINK","BOOK","DESK","DOOR","BELL","BALL","KITE","SHIP","BOAT","BIKE","CAKE","MILK","RICE",
+                "SOUP","MEAT","CORN","KIWI","PEAR","PLUM","BABY","GIRL","KING","NOSE","HAND","FOOT","HAIR","RING","COAT","SHOE","SOCK"
+            ],
+            5: [
+                "ROBOT","APPLE","EARTH","WATER","SPACE","SMILE","TIGER","ZEBRA","PANDA","KOALA","SHARK","WHALE","EAGLE","HORSE","SHEEP",
+                "CLOUD","STORM","LIGHT","GREEN","BLACK","WHITE","BREAD","PIZZA","MANGO","BERRY","LEMON","MELON","PEACH","CANDY","CHAIR",
+                "TABLE","CLOCK","PHONE","RADIO","TRAIN","TRUCK","PLANE","CROWN","SHIRT","PANTS","DRESS","WATCH","HOUSE","RIVER","BEACH"
+            ],
+            6: [
+                "MONKEY","BANANA","ORANGE","RABBIT","TURTLE","DOLPHIN","PARROT","DRAGON","GALAXY","ROCKET","PLANET","SUMMER","WINTER",
+                "SPRING","YELLOW","PURPLE","SILVER","CHEESE","BURGER","COOKIE","MUFFIN","CHERRY","PAPAYA","GUAVA","TOMATO","POTATO",
+                "PENCIL","ERASER","SCHOOL","CASTLE","BRIDGE","GARDEN","FOREST","DESERT","ISLAND","VALLEY","STREAM","FAMILY","FRIEND"
+            ],
+            7: [
+                "RAINBOW","SCIENCE","MONSTER","PICTURE","DOLPHIN","OCTOPUS","GIRAFFE","LEOPARD","CHICKEN","OSTRICH","PENGUIN","HAMSTER",
+                "PEACOCK","WEATHER","SUNSHINE","THUNDER","MORNING","EVENING","HOLIDAY","JOURNEY","DIAMOND","EMERALD","BLANKET","PILLOWS",
+                "KITCHEN","STATION","AIRPORT","HIGHWAY","VILLAGE","FACTORY","STUDENT","TEACHER","SOLDIER","FARMER","PAINTER","SINGERS"
+            ]
+        };
+
+        // Guaranteed expansion to 1,000+ words
+        (function expandWordBank() {
+            const extra3 = ["ACT","ADD","AGE","AGO","AID","AIM","ALL","AND","ANY","APE","ART","ASK","BAY","BET","BIT","BUY","CRY","CUT","DAD","FAR","FAT","FEW","FIT","GAS","GET","GOD","GUN","GUY","HIT","ILL","INK","JAW","KID","LAB","LAY","LOW","MAT","MAY","MOM","MUD","NOT","NOW","OAR","OIL","PAY","PET","RAW","RAY","RIB","SAD","SET","SHY","SIR","SKI","SON","SPY","TIN","TIP","TRY","YAK","YET","BAD","BAG","BAR","BED","BEG","BET","BID","BIN","BIT","BOB","BOG","BOW","BOX","BOY","BUD","BUG","BUM","BUN","BUS","BUT","BUY","BYE","CAB","CAN","CAP","CAR","CAT","COB","COD","COG","CON","COO","COP","COT","COW","COX","COY","CRY","CUB","CUD","CUE","CUP","CUR","CUT","DAB","DAD","DAM","DAN","DAY","DEB","DEN","DEW","DID","DIE","DIG","DIM","DIN","DIP","DOC","DOE","DOG","DON","DOT","DRY","DUB","DUD","DUE","DUG","DUN","DYE","EAR","EAT","EEL","EGG","EGO","ELF","ELK","ELM","END","EVE","EYE","FAD","FAN","FAR","FAT","FED","FEE","FEW","FIG","FIN","FIR","FIT","FIX","FLY","FOB","FOE","FOG","FOP","FOR","FOX","FRY","FUN","FUR","GAG","GAP","GAS","GAY","GEL","GEM","GET","GIG","GIN","GLAD","GOD","GOT","GUM","GUN","GUT","GUY","GYM","HAD","HAG","HAM","HAS","HAT","HAW","HAY","HEM","HEN","HER","HEW","HEX","HEY","HID","HIM","HIP","HIS","HIT","HOB","HOD","HOE","HOG","HOP","HOT","HOW","HUB","HUE","HUG","HUM","HUT","ICE","ICY","ILL","INK","INN","ION","IRE","IRK","IVY","JAB","JAG","JAM","JAR","JAW","JAY","JET","JIB","JIG","JOB","JOG","JOT","JOY","JUG","JUT","KEG","KEN","KEY","KID","KIN","KIP","KIT","LAB","LAD","LAG","LAP","LAW","LAX","LAY","LED","LEG","LET","LID","LIE","LIP","LIT","LOG","LOP","LOT","LOW","LOX","LUG","LYE","MAD","MAN","MAP","MAT","MAW","MAX","MAY","MEN","MET","MEW","MID","MIX","MOB","MOM","MOP","MOW","MUD","MUG","MUM","NAB","NAG","NAP","NAY","NET","NEW","NIB","NIL","NIP","NOD","NOR","NOT","NOW","NUB","NUN","NUT","OAF","OAK","OAR","OAT","ODD","ODE","OFF","OFT","OIL","OLD","ONE","OPT","ORB","ORE","OUR","OUT","OWL","OWN","PAD","PAL","PAN","PAR","PAT","PAW","PAY","PEA","PEG","PEN","PEP","PET","PEW","PIE","PIG","PIN","PIP","PIT","PLY","POD","POP","POT","PRO","PRY","PUB","PUD","PUG","PUN","PUP","PUS","PUT","QUO","RAD","RAG","RAM","RAN","RAP","RAT","RAW","RAY","RED","RIB","RID","RIG","RIM","RIP","ROB","ROD","ROE","ROT","ROW","RUB","RUE","RUG","RUM","RUN","RUT","RYE","SAC","SAD","SAG","SAP","SAT","SAW","SAY","SEA","SEE","SET","SEW","SEX","SHE","SHY","SIN","SIP","SIR","SIS","SIT","SIX","SKI","SKY","SLY","SOB","SOD","SON","SOP","SOW","SOY","SPA","SPY","STY","SUB","SUE","SUM","SUN","SUP","TAB","TAD","TAG","TAN","TAP","TAR","TAX","TEA","TED","TEE","TEN","THE","THY","TIC","TIE","TIN","TIP","TOE","TOG","TOM","TON","TOO","TOP","TOT","TOW","TOY","TRY","TUB","TUG","TWO","URN","USE","VAN","VAT","VET","VIA","VIE","VOW","WAG","WAR","WAS","WAY","WEB","WED","WEE","WET","WHO","WHY","WIG","WIN","WIT","WOE","WOK","WON","WOO","WOW","WRY","YAK","YAM","YAP","YAW","YEA","YES","YET","YEW","YIN","YIP","YOU","YUM","ZAG","ZAP","ZED","ZEE","ZEN","ZIG","ZIP","ZOO"];
+            const extra4 = ["BARK","BATH","BEAK","BEAM","BEAN","BEAT","BEND","BENT","BITE","BLOW","BOLD","BONE","BOWL","BUSH","CAMP","CARD","CARE","CART","CAVE","CHIN","CLAP","CLAW","COIN","COLD","COMB","COOK","CROW","DAMP","DAWN","DISH","DIVE","DRAW","DROP","DUST","FALL","FARM","FEET","FILL","FLAG","FLAT","FOLD","FORK","FROG","GATE","GLOW","GOAT","GRIN","HAIL","HEAL","HEAT","HILL","HINT","HOLE","HORN","IRON","LAKE","LAMP","LANE","LION","LUCK","MINT","MOON","NEST","PACK","PATH","POOL","ROPE","SAND","TENT","WOOD","ABLE","ACID","AGED","ALSO","AREA","ARMY","AWAY","BABY","BACK","BALL","BAND","BANK","BASE","BATH","BEAR","BEAT","BEEN","BEER","BELL","BELT","BEST","BILL","BIRD","BLOW","BLUE","BOAT","BODY","BOND","BONE","BOOK","BOOM","BORN","BOSS","BOTH","BOWL","BULK","BURN","BUSH","BUSY","CALL","CALM","CAME","CAMP","CARD","CARE","CASE","CASH","CAST","CELL","CHAT","CHIP","CITY","CLUB","COAL","COAT","CODE","COLD","COME","COOK","COOL","COPE","COPY","CORE","COST","CREW","CROP","DARK","DATA","DATE","DAWN","DAYS","DEAD","DEAL","DEAN","DEAR","DEBT","DEEP","DENY","DESK","DIAL","DIRT","DISC","DISK","DOES","DONE","DOOR","DOSE","DOWN","DRAW","DROP","DRUG","DUAL","DUKE","DUST","DUTY","EACH","EARN","EASE","EAST","EASY","EDGE","ELSE","EVEN","EVER","EVIL","EXIT","FACE","FACT","FAIL","FAIR","FALL","FARM","FAST","FATE","FEAR","FEED","FEEL","FEET","FELL","FELT","FILE","FILL","FILM","FIND","FINE","FIRE","FIRM","FISH","FIVE","FLAT","FLOW","FOOD","FOOT","FORD","FORM","FORT","FOUR","FREE","FROM","FUEL","FULL","FUND","GAIN","GAME","GATE","GEAR","GENE","GIFT","GIRL","GIVE","GLAD","GOAL","GOES","GOLD","GOLF","GONE","GOOD","GRAY","GREW","GREY","GROW","GULF","HAIR","HALF","HALL","HAND","HANG","HARD","HARM","HATE","HAVE","HEAD","HEAR","HEAT","HELD","HELL","HELP","HERE","HERO","HIGH","HILL","HIRE","HOLD","HOLE","HOLY","HOME","HOPE","HOST","HOUR","HUGE","HUNG","HUNT","HURT","IDEA","INCH","INTO","IRON","ITEM","JACK","JANE","JEAN","JOHN","JOIN","JUMP","JURY","JUST","KEEN","KEEP","KENT","KEPT","KICK","KILL","KIND","KING","KNEE","KNEW","KNOW","LACK","LADY","LAID","LAKE","LAND","LANE","LAST","LATE","LEAD","LEFT","LESS","LIFE","LIFT","LIKE","LINE","LINK","LION","LIST","LIVE","LOAD","LOAN","LOCK","LOGO","LONG","LOOK","LORD","LOSE","LOSS","LOST","LOVE","LUCK","MADE","MAIL","MAIN","MAKE","MALE","MANY","MARK","MASS","MATT","MEAL","MEAN","MEAT","MEET","MENU","MERE","MIKE","MILE","MILK","MILL","MIND","MINE","MISS","MODE","MOOD","MOON","MORE","MOST","MOVE","MUCH","MUST","NAME","NAVY","NEAR","NECK","NEED","NEWS","NEXT","NICE","NICK","NINE","NONE","NOSE","NOTE","OKAY","ONCE","ONLY","ONTO","OPEN","ORAL","OVER","PACE","PACK","PAGE","PAID","PAIN","PAIR","PALM","PARK","PART","PASS","PAST","PATH","PEAK","PICK","PILE","PINK","PIPE","PLAN","PLAY","PLOT","PLUG","PLUS","POLL","POOL","POOR","PORT","POST","PULL","PURE","PUSH","RACE","RAIL","RAIN","RANK","RARE","RATE","READ","REAL","REAR","RELY","RENT","REST","RICE","RICH","RIDE","RING","RISE","RISK","ROAD","ROCK","ROLE","ROLL","ROOF","ROOM","ROOT","ROSE","RULE","RUSH","RUTH","SAFE","SAID","SAKE","SALE","SALT","SAME","SAND","SAVE","SEAT","SEED","SEEK","SEEM","SEEN","SELF","SELL","SEND","SENT","SEPT","SHIP","SHOP","SHOT","SHOW","SHUT","SICK","SIDE","SIGN","SITE","SIZE","SKIN","SLIP","SLOW","SNOW","SOFT","SOIL","SOLD","SOLE","SOME","SONG","SOON","SORT","SOUL","SPOT","STAR","STAY","STEP","STOP","SUCH","SUIT","SURE","TAKE","TALE","TALK","TALL","TANK","TAPE","TASK","TEAM","TECH","TELL","TEND","TERM","TEST","TEXT","THAN","THAT","THEM","THEN","THEY","THIN","THIS","THOU","THUS","TILL","TIME","TINY","TOLD","TOLL","TONE","TONY","TOOK","TOOL","TOUR","TOWN","TREE","TRIP","TRUE","TUNE","TURN","TWIN","TYPE","UNIT","UPON","USED","USER","VARY","VAST","VERY","VICE","VIEW","VOTE","WAGE","WAIT","WAKE","WALK","WALL","WANT","WARD","WARM","WASH","WAVE","WAYS","WEAK","WEAR","WEEK","WELL","WENT","WERE","WEST","WHAT","WHEN","WHOM","WIDE","WIFE","WILD","WILL","WIND","WINE","WING","WINS","WIRE","WISE","WISH","WITH","WOOD","WORD","WORK","YARD","YEAH","YEAR","YOUR","ZERO"];
+            const extra5 = ["ALARM","ANGEL","ARROW","BAKER","BEAST","BLAST","BLINK","BLOOM","BRICK","BROOK","BUNNY","CAMEL","CHEST","CLIFF","CORAL","CRANE","CROWD","CROWN","DAISY","DIVER","EAGLE","ELBOW","FAIRY","FEAST","FIELD","FLUTE","FROST","GIANT","GLOBE","GRAIN","GRAPE","GRAVY","HEART","HONEY","JELLY","LATCH","LUNCH","MAPLE","NURSE","OCEAN","ONION","OTTER","PUPPY","QUEEN","RIVER","ROBOT","SHARK","SHELL","SNAIL","STAMP","STONE","STORK","SWORD","TIGER","TOAST","TULIP","VAPOR","WHALE","ZEBRA","ABOUT","ABOVE","ABUSE","ACTOR","ACUTE","ADMIT","ADOPT","ADULT","AFTER","AGAIN","AGENT","AGREE","AHEAD","ALARM","ALBUM","ALERT","ALIKE","ALIVE","ALLOW","ALONE","ALONG","ALTER","AMONG","ANGER","ANGLE","ANGRY","APART","APPLE","APPLY","ARENA","ARGUE","ARISE","ARRAY","ASIDE","ASSET","AUDIO","AUDIT","AVOID","AWARD","AWARE","BADLY","BAKER","BASES","BASIC","BASIS","BEACH","BEGAN","BEGIN","BEGUN","BEING","BELOW","BENCH","BILLY","BIRTH","BLACK","BLAME","BLIND","BLOCK","BLOOD","BOARD","BOOST","BOOTH","BOUND","BRAIN","BRAND","BREAD","BREAK","BREED","BRIEF","BRING","BROAD","BROKE","BROWN","BUILD","BUILT","BUYER","CABLE","CALIF","CARRY","CATCH","CAUSE","CHAIN","CHAIR","CHART","CHASE","CHEAP","CHECK","CHEST","CHIEF","CHILD","CHINA","CHOSE","CIVIL","CLAIM","CLASS","CLEAN","CLEAR","CLICK","CLOCK","CLOSE","COACH","COAST","COULD","COUNT","COURT","COVER","CRAFT","CRASH","CREAM","CRIME","CROSS","CROWD","CROWN","CURE","CYCLE","DAILY","DANCE","DATED","DEALT","DEATH","DEBUT","DELAY","DEPTH","DOING","DOUBT","DOZEN","DRAFT","DRAMA","DRANK","DRAWN","DREAM","DRESS","DRILL","DRINK","DRIVE","DROVE","DYING","EAGER","EARLY","EARTH","EIGHT","ELITE","EMPTY","ENEMY","ENJOY","ENTER","ENTRY","EQUAL","ERROR","EVENT","EVERY","EXACT","EXIST","EXTRA","FAITH","FALSE","FAULT","FIBER","FIELD","FIFTH","FIFTY","FIGHT","FINAL","FIRST","FIXED","FLASH","FLEET","FLOOR","FLUID","FOCUS","FORCE","FORTH","FORTY","FORUM","FOUND","FRAME","FRANK","FRAUD","FRESH","FRONT","FRUIT","FULLY","FUNNY","GIANT","GIVEN","GLASS","GLOBE","GOING","GRACE","GRADE","GRAND","GRANT","GRASS","GREAT","GREEN","GROSS","GROUP","GROWN","GUARD","GUESS","GUEST","GUIDE","HAPPY","HARRY","HEART","HEAVY","HENCE","HENRY","HORSE","HOTEL","HOUSE","HUMAN","IDEAL","IMAGE","INDEX","INNER","INPUT","ISSUE","JAPAN","JIMMY","JOINT","JONES","JUDGE","KNOWN","LABEL","LARGE","LASER","LATER","LAUGH","LAYER","LEARN","LEASE","LEAST","LEAVE","LEGAL","LEVEL","LEWIS","LIGHT","LIMIT","LINKS","LIVES","LOCAL","LOGIC","LOOSE","LOWER","LUCKY","LUNCH","LYING","MAGIC","MAJOR","MAKER","MARCH","MARIA","MATCH","MAYBE","MAYOR","MEANT","MEDIA","METAL","MIGHT","MINOR","MINUS","MIXED","MODEL","MONEY","MONTH","MORAL","MOTOR","MOUNT","MOUSE","MOUTH","MOVIE","MUSIC","NEEDS","NEVER","NEWLY","NIGHT","NOISE","NORTH","NOTED","NOVEL","NURSE","OCCUR","OFFER","OFTEN","ORDER","OTHER","OUGHT","PAINT","PANEL","PAPER","PARTY","PEACE","PETER","PHASE","PHONE","PHOTO","PIECE","PILOT","PITCH","PLACE","PLAIN","PLANE","PLANT","PLATE","POINT","POUND","POWER","PRESS","PRICE","PRIDE","PRIME","PRINT","PRIOR","PRIZE","PROOF","PROUD","PROVE","QUEEN","QUICK","QUIET","QUITE","RADIO","RAISE","RANGE","RAPID","RATIO","REACH","READY","REFER","RIGHT","RIVAL","RIVER","ROBIN","ROGER","ROMAN","ROUGH","ROUND","ROUTE","ROYAL","RURAL","SCALE","SCENE","SCOPE","SCORE","SENSE","SERVE","SEVEN","SHALL","SHAPE","SHARE","SHARP","SHEET","SHELF","SHELL","SHIFT","SHIRT","SHOCK","SHOOT","SHORT","SHOWN","SIGHT","SINCE","SIXTH","SIXTY","SIZED","SKILL","SLEEP","SLIDE","SMALL","SMART","SMILE","SMITH","SMOKE","SOLID","SOLVE","SORRY","SOUND","SOUTH","SPACE","SPARE","SPEAK","SPEED","SPEND","SPENT","SPLIT","SPOKE","SPORT","STAFF","STAGE","STAKE","STAND","START","STATE","STEAM","STEEL","STICK","STILL","STOCK","STONE","STOOD","STORE","STORM","STORY","STRIP","STUCK","STUDY","STUFF","STYLE","SUGAR","SUITE","SUPER","SWEET","TABLE","TAKEN","TASTE","TAXES","TEACH","TEETH","TERRY","TEXAS","THANK","THEFT","THEIR","THEME","THERE","THESE","THICK","THING","THINK","THIRD","THOSE","THREE","THREW","THROW","TIGHT","TIMES","TIRED","TITLE","TODAY","TOPIC","TOTAL","TOUCH","TOUGH","TOWER","TRACK","TRADE","TRAIN","TREAT","TREND","TRIAL","TRIED","TRIES","TRUCK","TRULY","TRUST","TRUTH","TWICE","UNDER","UNDUE","UNION","UNITY","UNTIL","UPPER","UPSET","URBAN","USAGE","USUAL","VALID","VALUE","VIDEO","VIRUS","VISIT","VITAL","VOICE","WASTE","WATCH","WATER","WHEEL","WHERE","WHICH","WHILE","WHITE","WHOLE","WHOSE","WOMAN","WOMEN","WORLD","WORRY","WORSE","WORST","WORTH","WOULD","WOUND","WRITE","WRONG","WROTE","YIELD","YOUNG","YOUTH"];
+
+            MASTER_WORDS_DICT[3].push(...extra3);
+            MASTER_WORDS_DICT[4].push(...extra4);
+            MASTER_WORDS_DICT[5].push(...extra5);
+        })();
+
+        /* ========================================================
+           6. MASTER GAME ARCHITECTURE & STATE
+           ======================================================== */
+        let activeGameIndex = 1; // 1=Word Cipher, 2=Target Hacker, 3=Assembly Decoder
+        let agentScore = 0;
+        let comboCount = 0;
+
+        // Game 1 Settings: Word Length (3 to 7)
+        let game1WordLength = 3;
+        let currentWord = "";
+        let currentLetterIndex = 0;
+        let unlockedLetters = [];
+
+        // Game 2 Settings: Active Bits Limit (4 to 9 bits)
+        let game2BitLevel = 4; // 4 to 9 bits (15 to 511)
+        let game2TargetNumber = 12;
+
+        // Game 3 Settings: Assembly Mode (4=Nibble, 8=Byte, 16=ADD AL,BL)
+        let game3Mode = 4; // 4, 8, 16
+        let game3BitsArray = [];
+        let game3CorrectSum = 0;
+        let game3UserInput = "";
+
+        // Active Bit Switches for Game 1 & 2
+        const ALL_BIT_VALUES = [1, 2, 4, 8, 16, 32, 64, 128, 256];
+        let currentBitsCount = 5; // Fixed 5 for Game 1 (A-Z), variable for Game 2
+        let bitSwitchStates = []; // 0 or 1 for each bit
+
+        function getAgentName() {
+            return localStorage.getItem('cyber_agent_cute_name_v4') || 'สายลับซีโร่';
+        }
+
+        function editAgentName() {
+            AudioFX.playClick();
+            const n = prompt("ระบุโค้ดเนมสายลับของคุณ:", getAgentName());
+            if (n && n.trim() !== '') {
+                localStorage.setItem('cyber_agent_cute_name_v4', n.trim().substring(0, 15));
+                document.getElementById('agentNameDisplay').innerText = getAgentName();
+            }
+        }
+
+        /* --- Master Game Switcher --- */
+        function switchGameMode(modeIndex) {
+            AudioFX.playClick();
+            activeGameIndex = modeIndex;
+            comboCount = 0;
+            updateComboUI();
+
+            // Tabs UI styling
+            for (let i = 1; i <= 3; i++) {
+                const tab = document.getElementById(`tabGame${i}`);
+                if (i === activeGameIndex) {
+                    tab.className = "btn-toy px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm md:text-base font-black transition mali-font bg-sky-500 text-white shadow";
+                } else {
+                    tab.className = "btn-toy px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm md:text-base font-black transition mali-font text-slate-700 hover:text-slate-900";
+                }
+            }
+
+            // Containers visibility
+            document.getElementById('game1Container').classList.toggle('hidden', activeGameIndex !== 1);
+            document.getElementById('game2Container').classList.toggle('hidden', activeGameIndex !== 2);
+            document.getElementById('game3Container').classList.toggle('hidden', activeGameIndex !== 3);
+
+            // Hide/Show Bit Switches & Live Math Bar for Game 3
+            document.getElementById('bitSwitchesWrapper').classList.toggle('hidden', activeGameIndex === 3);
+            document.getElementById('liveMathBar').classList.toggle('hidden', activeGameIndex === 3);
+
+            // Update Master button text
+            const masterBtn = document.getElementById('btnMasterSubmit');
+            if (activeGameIndex === 3) {
+                masterBtn.innerHTML = `<span>🚀 ตรวจคำตอบซีพียู (ENTER)</span>`;
+            } else {
+                masterBtn.innerHTML = `<span>🚀 ยืนยันรหัสส่งสัญญาณ (ENTER)</span>`;
+            }
+
+            updateDifficultyBadgeText();
+            startCurrentGameRound();
+        }
+
+        function updateDifficultyBadgeText() {
+            const label = document.getElementById('currentLevelBadgeText');
+            if (activeGameIndex === 1) {
+                label.innerText = `ระดับ: คำ ${game1WordLength} ตัวอักษร`;
+            } else if (activeGameIndex === 2) {
+                label.innerText = `ระดับ: ${game2BitLevel} บิต (Max ${(1 << game2BitLevel) - 1})`;
+            } else {
+                label.innerText = `โหมด: ${game3Mode} บิต ${game3Mode === 16 ? '(ADD)' : ''}`;
+            }
+        }
+
+        /* ========================================================
+           7. BIT SWITCHES CONTROLLER (GAME 1 & 2)
+           ======================================================== */
+        function setupBitSwitches(numBits) {
+            currentBitsCount = numBits;
+            bitSwitchStates = new Array(currentBitsCount).fill(0);
+
+            const container = document.getElementById('bitCapsulesContainer');
+            container.innerHTML = '';
+
+            // Render from highest bit down to 1
+            for (let i = currentBitsCount - 1; i >= 0; i--) {
+                const val = ALL_BIT_VALUES[i];
+                const card = document.createElement('div');
+                card.id = `bitCapsule_${i}`;
+                card.onclick = () => toggleBit(i);
+
+                // Auto-scale width classes
+                let widthClass = currentBitsCount >= 8 ? 'w-11 sm:w-16 md:w-18' : (currentBitsCount >= 6 ? 'w-13 sm:w-18 md:w-22' : 'w-16 sm:w-22 md:w-26');
+
+                card.className = `bit-capsule bit-capsule-off rounded-xl sm:rounded-2xl p-1 sm:p-2 flex flex-col items-center justify-between text-center min-h-[72px] sm:min-h-[92px] ${widthClass}`;
+
+                // Dot visual representation
+                let dotsHtml = '';
+                if (val <= 16) {
+                    let dotGridCols = val >= 8 ? 'grid-cols-4' : (val >= 4 ? 'grid-cols-2' : 'grid-cols-1');
+                    dotsHtml = `<div class="dots-box grid ${dotGridCols} gap-0.5 p-0.5 sm:p-1 bg-white/70 rounded-md sm:rounded-lg">`;
+                    for (let d = 0; d < val; d++) {
+                        dotsHtml += '<div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-sky-500"></div>';
+                    }
+                    dotsHtml += '</div>';
+                } else {
+                    dotsHtml = `<div class="dots-box text-[9px] sm:text-xs font-mono font-bold text-sky-800 bg-white/80 px-1.5 py-0.5 rounded">2^${i}</div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="bit-val text-sm sm:text-xl md:text-2xl font-black cyber-font" id="bitValText_${i}">${val}</div>
+                    ${dotsHtml}
+                    <div class="bit-footer w-full border-t border-slate-300 pt-0.5 flex items-center justify-between text-[9px] sm:text-[11px] font-mono leading-none">
+                        <span id="bitStateText_${i}" class="text-slate-500 font-bold">0</span>
+                        <span class="text-slate-400">บิต</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+
+            document.getElementById('bitCountStatusText').innerText = `ระบบ ${currentBitsCount} บิต (${ALL_BIT_VALUES.slice(0, currentBitsCount).reverse().join(', ')})`;
+            updateBitCapsulesUI();
+            updateLiveMathFormula();
+        }
+
+        function toggleBit(index) {
+            bitSwitchStates[index] = bitSwitchStates[index] === 1 ? 0 : 1;
+            if (bitSwitchStates[index] === 1) AudioFX.playSwitchOn();
+            else AudioFX.playSwitchOff();
+
+            updateBitCapsulesUI();
+            updateLiveMathFormula();
+        }
+
+        function resetAllBits() {
+            AudioFX.playClick();
+            bitSwitchStates = new Array(currentBitsCount).fill(0);
+            updateBitCapsulesUI();
+            updateLiveMathFormula();
+        }
+
+        function updateBitCapsulesUI() {
+            for (let i = 0; i < currentBitsCount; i++) {
+                const card = document.getElementById(`bitCapsule_${i}`);
+                const stateText = document.getElementById(`bitStateText_${i}`);
+                if (!card) continue;
+
+                if (bitSwitchStates[i] === 1) {
+                    card.className = card.className.replace('bit-capsule-off', 'bit-capsule-on');
+                    stateText.innerText = "1 (เปิด)";
+                    stateText.className = "text-yellow-300 font-black";
+                } else {
+                    card.className = card.className.replace('bit-capsule-on', 'bit-capsule-off');
+                    stateText.innerText = "0";
+                    stateText.className = "text-slate-500 font-bold";
+                }
+            }
+        }
+
+        function calculateCurrentSum() {
+            let sum = 0;
+            for (let i = 0; i < currentBitsCount; i++) {
+                if (bitSwitchStates[i] === 1) sum += ALL_BIT_VALUES[i];
+            }
+            return sum;
+        }
+
+        function updateLiveMathFormula() {
+            const sum = calculateCurrentSum();
+            let terms = [];
+            for (let i = currentBitsCount - 1; i >= 0; i--) {
+                terms.push(bitSwitchStates[i] === 1 ? ALL_BIT_VALUES[i] : '0');
+            }
+
+            document.getElementById('mathLiveFormula').innerText = `${terms.join(' + ')} = ${sum}`;
+            document.getElementById('currentSumBadge').innerText = sum;
+
+            const target = getActiveTargetNumber();
+            const badge = document.getElementById('mathStatusBadge');
+
+            if (sum === target && target > 0) {
+                badge.innerText = "ตรงเป๊ะ! กด Enter เลย";
+                badge.className = "text-[11px] sm:text-xs font-black px-2.5 py-0.5 rounded-lg bg-emerald-500 text-white mali-font animate-bounce";
+            } else if (sum > target && target > 0) {
+                badge.innerText = `เกินไป ${sum - target}! ปิดสวิตช์ลง`;
+                badge.className = "text-[11px] sm:text-xs font-black px-2.5 py-0.5 rounded-lg bg-rose-500 text-white mali-font";
+            } else if (sum > 0 && sum < target) {
+                badge.innerText = `ขาดอีก ${target - sum}... เปิดบิตเพิ่ม`;
+                badge.className = "text-[11px] sm:text-xs font-bold px-2.5 py-0.5 rounded-lg bg-amber-400 text-slate-900 mali-font";
+            } else {
+                badge.innerText = "รอสับสวิตช์...";
+                badge.className = "text-[11px] sm:text-xs font-bold px-2.5 py-0.5 rounded-lg bg-white text-slate-500 border border-slate-300 mali-font";
+            }
+        }
+
+        function getActiveTargetNumber() {
+            if (activeGameIndex === 1) {
+                if (!currentWord || currentLetterIndex >= currentWord.length) return 0;
+                return currentWord[currentLetterIndex].charCodeAt(0) - 64;
+            } else if (activeGameIndex === 2) {
+                return game2TargetNumber;
+            }
+            return 0;
+        }
+
+        /* ========================================================
+           8. GAME 1: WORD CIPHER A-Z (5 BITS FIXED)
+           ======================================================== */
+        function startCurrentGameRound() {
+            if (activeGameIndex === 1) {
+                setupBitSwitches(5); // Fixed 5 bits (16 8 4 2 1) for A-Z
+                pickRandomWord();
+            } else if (activeGameIndex === 2) {
+                setupBitSwitches(game2BitLevel);
+                pickRandomTargetNumber();
+            } else {
+                startAssemblyRound();
+            }
+        }
+
+        function pickRandomWord() {
+            const list = MASTER_WORDS_DICT[game1WordLength] || MASTER_WORDS_DICT[3];
+            currentWord = list[Math.floor(Math.random() * list.length)];
+            currentLetterIndex = 0;
+            unlockedLetters = new Array(currentWord.length).fill(false);
+
+            document.getElementById('wordDifficultyInfoText').innerText = `🎯 ระดับคำศัพท์: ${game1WordLength} ตัวอักษร (คลังคำศัพท์รวม 1,000+ คำ)`;
+            document.getElementById('mascotSpeechText').innerText = `"ถอดรหัสคำว่า '${currentWord}' ทีละตัวอักษรเพื่อกู้วิกฤตนะจ๊ะ!"`;
+
+            renderWordSlots();
+            updateCurrentLetterTarget();
+            resetAllBits();
+            replayVoicePrompt();
+        }
+
+        function renderWordSlots() {
+            const container = document.getElementById('wordSlotsRow');
+            container.innerHTML = '';
+
+            for (let i = 0; i < currentWord.length; i++) {
+                const char = currentWord[i];
+                const isUnlocked = unlockedLetters[i];
+                const isCurrent = (i === currentLetterIndex);
+
+                const slot = document.createElement('div');
+                slot.className = `word-slot w-11 h-13 sm:w-14 sm:h-16 md:w-16 md:h-18 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center border-2 sm:border-3 font-black transition-all ${
+                    isUnlocked 
+                    ? 'bg-emerald-100 border-emerald-400 text-emerald-800 shadow-xs' 
+                    : (isCurrent 
+                        ? 'bg-amber-100 border-amber-400 text-amber-800 ring-3 ring-amber-300 animate-pulse' 
+                        : 'bg-white border-slate-200 text-slate-300')
+                }`;
+
+                slot.innerHTML = `
+                    <span class="cyber-font text-lg sm:text-2xl md:text-3xl">${isUnlocked ? char : (isCurrent ? '?' : '🔒')}</span>
+                    <span class="text-[9px] font-mono text-slate-400">#${i + 1}</span>
+                `;
+                container.appendChild(slot);
+            }
+        }
+
+        function updateCurrentLetterTarget() {
+            if (currentLetterIndex < currentWord.length) {
+                const char = currentWord[currentLetterIndex];
+                const targetNum = char.charCodeAt(0) - 64;
+                document.getElementById('currentTargetLetterBadge').innerText = `ตัวอักษร "${char}" (รหัสเลข: ${targetNum})`;
+            }
+        }
+
+        /* ========================================================
+           9. GAME 2: TARGET NUMBER HACKER
+           ======================================================== */
+        function pickRandomTargetNumber() {
+            const maxVal = (1 << game2BitLevel) - 1;
+            game2TargetNumber = Math.floor(Math.random() * maxVal) + 1;
+
+            document.getElementById('game2TargetNumberDisplay').innerText = game2TargetNumber;
+            document.getElementById('mascotSpeechText').innerText = `"ตัวเลขเป้าหมายคือ ${game2TargetNumber}! หนูต้องคิดเองว่าต้องเปิดบิตไหนบ้างนะ!"`;
+
+            resetAllBits();
+            replayVoicePrompt();
+        }
+
+        /* ========================================================
+           10. GAME 3: ASSEMBLY REGISTER DECODER
+           ======================================================== */
+        function startAssemblyRound() {
+            game3UserInput = "";
+            document.getElementById('assemblyAnswerInput').innerText = "?";
+
+            const container = document.getElementById('assemblyRegisterRow');
+            container.innerHTML = '';
+
+            if (game3Mode === 4) {
+                document.getElementById('assemblyModeLabel').innerText = "ระดับ 4 บิต (0000) [ค่า 0-15]";
+                game3BitsArray = [
+                    Math.random() > 0.5 ? 1 : 0,
+                    Math.random() > 0.5 ? 1 : 0,
+                    Math.random() > 0.5 ? 1 : 0,
+                    Math.random() > 0.5 ? 1 : 0
+                ];
+                if (game3BitsArray.every(b => b === 0)) game3BitsArray[3] = 1;
+
+                game3CorrectSum = (game3BitsArray[0] * 8) + (game3BitsArray[1] * 4) + (game3BitsArray[2] * 2) + (game3BitsArray[3] * 1);
+
+                container.innerHTML = `
+                    <div class="flex items-center gap-1.5 p-1.5 sm:p-2 bg-slate-800 rounded-xl border border-cyan-400">
+                        <span class="text-xs sm:text-sm text-amber-300 font-bold">REG AL:</span>
+                        ${renderNibbleHtml(game3BitsArray, [8, 4, 2, 1])}
+                    </div>
+                `;
+
+            } else if (game3Mode === 8) {
+                document.getElementById('assemblyModeLabel').innerText = "ระดับ 8 บิต (0000 0000) [ค่า 0-255]";
+                const highNibble = [Math.random() > 0.6 ? 1 : 0, Math.random() > 0.6 ? 1 : 0, Math.random() > 0.6 ? 1 : 0, Math.random() > 0.6 ? 1 : 0];
+                const lowNibble = [Math.random() > 0.5 ? 1 : 0, Math.random() > 0.5 ? 1 : 0, Math.random() > 0.5 ? 1 : 0, Math.random() > 0.5 ? 1 : 0];
+                
+                game3BitsArray = [...highNibble, ...lowNibble];
+                if (game3BitsArray.every(b => b === 0)) game3BitsArray[7] = 1;
+
+                const values = [128, 64, 32, 16, 8, 4, 2, 1];
+                game3CorrectSum = game3BitsArray.reduce((acc, bit, idx) => acc + (bit * values[idx]), 0);
+
+                container.innerHTML = `
+                    <div class="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 bg-slate-800 rounded-xl border border-cyan-400">
+                        <span class="text-xs sm:text-sm text-amber-300 font-bold">REG AX:</span>
+                        <div class="flex items-center gap-1">${renderNibbleHtml(highNibble, [128, 64, 32, 16])}</div>
+                        <span class="text-slate-400 font-bold">-</span>
+                        <div class="flex items-center gap-1">${renderNibbleHtml(lowNibble, [8, 4, 2, 1])}</div>
+                    </div>
+                `;
+
+            } else {
+                document.getElementById('assemblyModeLabel').innerText = "ระดับ 16 บิต (ADD AL, BL)";
+                const regA = [Math.random() > 0.5 ? 1 : 0, Math.random() > 0.5 ? 1 : 0, Math.random() > 0.5 ? 1 : 0, Math.random() > 0.5 ? 1 : 0];
+                const regB = [Math.random() > 0.5 ? 1 : 0, Math.random() > 0.5 ? 1 : 0, Math.random() > 0.5 ? 1 : 0, Math.random() > 0.5 ? 1 : 0];
+
+                const valA = (regA[0] * 8) + (regA[1] * 4) + (regA[2] * 2) + (regA[3] * 1);
+                const valB = (regB[0] * 8) + (regB[1] * 4) + (regB[2] * 2) + (regB[3] * 1);
+
+                game3CorrectSum = valA + valB;
+
+                container.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2">
+                        <div class="flex items-center gap-1.5 p-1.5 bg-slate-800 rounded-xl border border-cyan-400">
+                            <span class="text-xs text-amber-300 font-bold">AL:</span>
+                            ${renderNibbleHtml(regA, [8, 4, 2, 1])}
+                        </div>
+                        <span class="text-yellow-400 font-black text-sm sm:text-base">+</span>
+                        <div class="flex items-center gap-1.5 p-1.5 bg-slate-800 rounded-xl border border-cyan-400">
+                            <span class="text-xs text-pink-300 font-bold">BL:</span>
+                            ${renderNibbleHtml(regB, [8, 4, 2, 1])}
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('mascotSpeechText').innerText = `"ซีพียูกำลังประมวลผลบิตแอสเซมบลี! หนูบวกเลขจากบิตที่เปิด (1) แล้วกดตอบเลยจ้า!"`;
+            replayVoicePrompt();
+        }
+
+        function renderNibbleHtml(bitsArr, bitValuesArr) {
+            return bitsArr.map((b, i) => `
+                <div class="flex flex-col items-center">
+                    <span class="px-2 py-0.5 rounded text-xs sm:text-sm font-mono font-black ${b === 1 ? 'bg-cyan-400 text-slate-950 shadow-xs' : 'bg-slate-700 text-slate-400'}">${b}</span>
+                    <span class="text-[9px] text-slate-400 font-mono mt-0.5">${bitValuesArr[i]}</span>
+                </div>
+            `).join('');
+        }
+
+        function pressAssemblyNum(digit) {
+            AudioFX.playClick();
+            if (game3UserInput.length < 4) {
+                game3UserInput += digit.toString();
+                document.getElementById('assemblyAnswerInput').innerText = game3UserInput;
+            }
+        }
+
+        function clearAssemblyNum() {
+            AudioFX.playClick();
+            game3UserInput = "";
+            document.getElementById('assemblyAnswerInput').innerText = "?";
+        }
+
+        function backspaceAssemblyNum() {
+            AudioFX.playClick();
+            if (game3UserInput.length > 0) {
+                game3UserInput = game3UserInput.slice(0, -1);
+                document.getElementById('assemblyAnswerInput').innerText = game3UserInput === "" ? "?" : game3UserInput;
+            }
+        }
+
+        /* ========================================================
+           11. MASTER VERIFICATION & SUBMISSION CONTROLLER
+           ======================================================== */
+        function handleMasterSubmit() {
+            if (activeGameIndex === 1) {
+                const sum = calculateCurrentSum();
+                const target = getActiveTargetNumber();
+
+                if (sum === target && target > 0) {
+                    AudioFX.playCorrect();
+                    comboCount++;
+                    agentScore += 15 + (comboCount > 1 ? comboCount * 3 : 0);
+                    document.getElementById('agentScoreDisplay').innerText = agentScore;
+                    updateComboUI();
+
+                    unlockedLetters[currentLetterIndex] = true;
+                    currentLetterIndex++;
+                    renderWordSlots();
+
+                    if (currentLetterIndex >= currentWord.length) {
+                        handleGameSuccess(`กู้รหัสคำว่า "${currentWord}" สำเร็จ!`, `หนูถอดรหัสครบทุกตัวอักษรอย่างยอดเยี่ยม (ระดับคำ ${game1WordLength} ตัวอักษร)`, 50);
+                    } else {
+                        updateCurrentLetterTarget();
+                        resetAllBits();
+                        speakAI("ถูกต้องแล้วจ้า! ตัวอักษรต่อไปเลย!");
+                    }
+                } else {
+                    handleWrongSubmission(target, sum);
+                }
+
+            } else if (activeGameIndex === 2) {
+                const sum = calculateCurrentSum();
+
+                if (sum === game2TargetNumber) {
+                    AudioFX.playCorrect();
+                    comboCount++;
+                    agentScore += 20 + (comboCount > 1 ? comboCount * 4 : 0);
+                    document.getElementById('agentScoreDisplay').innerText = agentScore;
+                    updateComboUI();
+
+                    handleGameSuccess(`คิดเลขเป๊ะมาก! รวมได้ ${game2TargetNumber}`, `เลือกบิตพลังงานมารวมกันได้ถูกต้องสมบูรณ์แบบ!`, 30);
+                } else {
+                    handleWrongSubmission(game2TargetNumber, sum);
+                }
+
+            } else {
+                const ans = parseInt(game3UserInput, 10);
+                if (isNaN(ans)) {
+                    alert("กรุณากดตัวเลขคำตอบก่อนนะจ๊ะ!");
+                    return;
+                }
+
+                if (ans === game3CorrectSum) {
+                    AudioFX.playCorrect();
+                    comboCount++;
+                    agentScore += 25 + (comboCount > 1 ? comboCount * 5 : 0);
+                    document.getElementById('agentScoreDisplay').innerText = agentScore;
+                    updateComboUI();
+
+                    handleGameSuccess(`ซีพียูคำนวณถูกต้อง! ผลรวม = ${game3CorrectSum}`, `ถอดรหัสบิตของโปรแกรมแอสเซมบลีได้แม่นยำมาก!`, 40);
+                } else {
+                    AudioFX.playError();
+                    comboCount = 0;
+                    updateComboUI();
+                    triggerShake();
+                    speakAI(`ยังไม่ใช่นะจ๊ะ ผลรวมจริงคือ ${game3CorrectSum} จ้า ลองดูบิตที่เปิดนะ!`);
+                    clearAssemblyNum();
+                }
+            }
+        }
+
+        function handleWrongSubmission(expected, got) {
+            AudioFX.playError();
+            comboCount = 0;
+            updateComboUI();
+            triggerShake();
+
+            if (got > expected) {
+                speakAI(`พลังงานเกินไป ${got - expected} จ้า ปิดสวิตช์บางตัวลงนะ!`);
+            } else {
+                speakAI(`ยังขาดพลังงานอีก ${expected - got} จ้า เปิดสวิตช์บิตเพิ่มนะ!`);
+            }
+        }
+
+        function triggerShake() {
+            const stage = document.getElementById('mainGameStage');
+            stage.classList.add('screen-shake');
+            setTimeout(() => stage.classList.remove('screen-shake'), 350);
+        }
+
+        function handleGameSuccess(title, subtitle, points) {
+            AudioFX.playVictoryFanfare();
+            confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+
+            agentScore += points;
+            document.getElementById('agentScoreDisplay').innerText = agentScore;
+
+            document.getElementById('victoryModalTitle').innerText = title;
+            document.getElementById('victoryModalSubtitle').innerText = subtitle;
+            document.getElementById('victoryEarnedScore').innerText = `+${points} ⭐`;
+            document.getElementById('victoryModal').classList.remove('hidden');
+
+            speakAI("ยอดเยี่ยมมากจ้า! ผ่านด่านแล้ว!");
+        }
+
+        function advanceNextChallenge() {
+            AudioFX.playClick();
+            document.getElementById('victoryModal').classList.add('hidden');
+            startCurrentGameRound();
+        }
+
+        function updateComboUI() {
+            const banner = document.getElementById('comboBanner');
+            if (comboCount >= 2) {
+                document.getElementById('comboCountText').innerText = `COMBO x${comboCount}!`;
+                banner.classList.remove('hidden');
+                banner.classList.add('flex');
+            } else {
+                banner.classList.add('hidden');
+                banner.classList.remove('flex');
+            }
+        }
+
+        function replayVoicePrompt() {
+            if (activeGameIndex === 1) {
+                const char = currentWord[currentLetterIndex];
+                const targetNum = char.charCodeAt(0) - 64;
+                speakAI(`สับสวิตช์บิตให้ได้ผลรวมเท่ากับ ${targetNum} เพื่อปลดล็อกตัวอักษร ${char} จ้า!`);
+            } else if (activeGameIndex === 2) {
+                speakAI(`จงหาบิตมารวมกัน ให้ได้ตัวเลขเป้าหมาย ${game2TargetNumber} จ้า!`);
+            } else {
+                speakAI(`จงหาผลรวมของบิตที่มีค่าเป็น 1 ในโปรแกรมแอสเซมบลีจ้า!`);
+            }
+        }
+
+        /* ========================================================
+           12. DIFFICULTY SETTINGS MODAL
+           ======================================================== */
+        function openDifficultyModal() {
+            AudioFX.playClick();
+            const container = document.getElementById('difficultyOptionsContent');
+            container.innerHTML = '';
+
+            if (activeGameIndex === 1) {
+                container.innerHTML = `
+                    <div class="font-bold text-slate-800 mali-font mb-1.5 text-xs sm:text-sm">เลือกความยาวของคำศัพท์ภาษาอังกฤษ:</div>
+                    <div class="grid grid-cols-1 gap-1.5">
+                        ${[3, 4, 5, 6, 7].map(len => `
+                            <button onclick="setGame1WordLength(${len})" class="p-2 sm:p-2.5 rounded-xl border-2 flex items-center justify-between transition hover:border-sky-400 ${game1WordLength === len ? 'bg-sky-100 border-sky-500 font-black text-sky-950' : 'bg-slate-50 border-slate-200'}">
+                                <span class="text-xs sm:text-sm font-bold">คำศัพท์ความยาว ${len} ตัวอักษร</span>
+                                <span class="text-[11px] sm:text-xs bg-white px-2 py-0.5 rounded-lg border font-bold text-slate-600">${MASTER_WORDS_DICT[len].length}+ คำ</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (activeGameIndex === 2) {
+                container.innerHTML = `
+                    <div class="font-bold text-slate-800 mali-font mb-1.5 text-xs sm:text-sm">เลือกจำนวนบิตและขอบเขตตัวเลขเป้าหมาย:</div>
+                    <div class="grid grid-cols-1 gap-1.5">
+                        ${[4, 5, 6, 7, 8, 9].map(bits => `
+                            <button onclick="setGame2Bits(${bits})" class="p-2 sm:p-2.5 rounded-xl border-2 flex items-center justify-between transition hover:border-amber-400 ${game2BitLevel === bits ? 'bg-amber-100 border-amber-500 font-black text-amber-950' : 'bg-slate-50 border-slate-200'}">
+                                <span class="text-xs sm:text-sm font-bold">ระดับ ${bits} บิต (สวิตช์ 1 ถึง ${1 << (bits - 1)})</span>
+                                <span class="text-[11px] sm:text-xs font-mono font-black text-amber-700 bg-white px-2 py-0.5 rounded-lg border">เป้าหมาย 1 - ${(1 << bits) - 1}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="font-bold text-slate-800 mali-font mb-1.5 text-xs sm:text-sm">เลือกระดับรีจิสเตอร์แอสเซมบลี:</div>
+                    <div class="grid grid-cols-1 gap-1.5">
+                        <button onclick="setGame3Mode(4)" class="p-2.5 rounded-xl border-2 flex items-center justify-between transition hover:border-sky-400 ${game3Mode === 4 ? 'bg-sky-100 border-sky-500 font-black text-sky-950' : 'bg-slate-50 border-slate-200'}">
+                            <div class="text-left">
+                                <div class="font-bold text-xs sm:text-sm">ระดับ 4 บิต (Nibble 0000)</div>
+                                <div class="text-[10px] text-slate-500">บิต 8, 4, 2, 1 (ผลรวม 0 - 15)</div>
+                            </div>
+                            <span class="text-[11px] bg-white px-2 py-0.5 rounded-lg border font-bold">ง่าย</span>
+                        </button>
+                        <button onclick="setGame3Mode(8)" class="p-2.5 rounded-xl border-2 flex items-center justify-between transition hover:border-sky-400 ${game3Mode === 8 ? 'bg-sky-100 border-sky-500 font-black text-sky-950' : 'bg-slate-50 border-slate-200'}">
+                            <div class="text-left">
+                                <div class="font-bold text-xs sm:text-sm">ระดับ 8 บิต (Byte 0000 0000)</div>
+                                <div class="text-[10px] text-slate-500">บิต 128, 64, 32, 16 | 8, 4, 2, 1 (0 - 255)</div>
+                            </div>
+                            <span class="text-[11px] bg-white px-2 py-0.5 rounded-lg border font-bold">ปานกลาง</span>
+                        </button>
+                        <button onclick="setGame3Mode(16)" class="p-2.5 rounded-xl border-2 flex items-center justify-between transition hover:border-sky-400 ${game3Mode === 16 ? 'bg-sky-100 border-sky-500 font-black text-sky-950' : 'bg-slate-50 border-slate-200'}">
+                            <div class="text-left">
+                                <div class="font-bold text-xs sm:text-sm">ระดับ 16 บิต (คำสั่ง ADD AL, BL)</div>
+                                <div class="text-[10px] text-slate-500">บวกค่าระหว่าง 2 รีจิสเตอร์ CPU</div>
+                            </div>
+                            <span class="text-[11px] bg-white px-2 py-0.5 rounded-lg border font-bold">ท้าทาย</span>
+                        </button>
+                    </div>
+                `;
+            }
+
+            document.getElementById('difficultyModal').classList.remove('hidden');
+        }
+
+        function closeDifficultyModal() {
+            AudioFX.playClick();
+            document.getElementById('difficultyModal').classList.add('hidden');
+        }
+
+        function setGame1WordLength(len) {
+            game1WordLength = len;
+            closeDifficultyModal();
+            updateDifficultyBadgeText();
+            startCurrentGameRound();
+        }
+
+        function setGame2Bits(bits) {
+            game2BitLevel = bits;
+            closeDifficultyModal();
+            updateDifficultyBadgeText();
+            startCurrentGameRound();
+        }
+
+        function setGame3Mode(mode) {
+            game3Mode = mode;
+            closeDifficultyModal();
+            updateDifficultyBadgeText();
+            startCurrentGameRound();
+        }
+
+        /* ========================================================
+           13. CIPHER CHART MODAL (A=1 ... Z=26)
+           ======================================================== */
+        function openCipherChartModal() {
+            AudioFX.playClick();
+            const grid = document.getElementById('cipherAlphabetGrid');
+            grid.innerHTML = '';
+            for (let i = 1; i <= 26; i++) {
+                const char = String.fromCharCode(64 + i);
+                grid.innerHTML += `
+                    <div class="p-1.5 sm:p-2 rounded-xl bg-sky-50 border-2 border-sky-200 flex items-center justify-between shadow-xs">
+                        <span class="font-black text-sm sm:text-base text-sky-800 cyber-font">${char}</span>
+                        <span class="font-black text-xs sm:text-sm text-amber-600 font-mono">${i}</span>
+                    </div>
+                `;
+            }
+            document.getElementById('cipherChartModal').classList.remove('hidden');
+        }
+
+        function closeCipherChartModal() {
+            AudioFX.playClick();
+            document.getElementById('cipherChartModal').classList.add('hidden');
+        }
+
+        /* ========================================================
+           14. KEYBOARD SHORTCUTS & INIT
+           ======================================================== */
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                const victory = document.getElementById('victoryModal');
+                if (!victory.classList.contains('hidden')) {
+                    advanceNextChallenge();
+                } else {
+                    handleMasterSubmit();
+                }
+            } else if (e.key === 'r' || e.key === 'R') {
+                if (activeGameIndex !== 3) resetAllBits();
+            } else if (activeGameIndex === 3 && e.key >= '0' && e.key <= '9') {
+                pressAssemblyNum(e.key);
+            } else if (activeGameIndex === 3 && (e.key === 'Backspace')) {
+                backspaceAssemblyNum();
+            }
+        });
+
+        window.onload = () => {
+            document.getElementById('agentNameDisplay').innerText = getAgentName();
+            switchGameMode(1); // Start Game 1 initially
+        };
+    </script>
+</body>
+</html>
