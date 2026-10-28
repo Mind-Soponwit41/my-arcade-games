@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Number Alchemist: ปรุงเลขหรรษา สุ่มตัวเลข 0-9 พร้อมระบบเฉลย</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-body: #ffffff;
+      --bg-panel: #f8fafc;
+      --bg-card: #ffffff;
+      --border-soft: #e2e8f0;
+      --primary: #7c3aed;
+      --primary-light: #f5f3ff;
+      --primary-glow: rgba(124, 58, 237, 0.25);
+      --accent-cyan: #06b6d4;
+      --accent-cyan-light: #ecfeff;
+      --accent-mint: #10b981;
+      --accent-mint-light: #ecfdf5;
+      --accent-amber: #f59e0b;
+      --accent-amber-light: #fffbeb;
+      --accent-rose: #f43f5e;
+      --accent-rose-light: #fff1f2;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --shadow-sm: 0 4px 12px rgba(148, 163, 184, 0.12);
+      --shadow-md: 0 10px 25px rgba(148, 163, 184, 0.18);
+      --radius-xl: 22px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Prompt', sans-serif;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation */
+    header {
+      height: 58px;
+      background: #ffffff;
+      border-bottom: 2px solid var(--border-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-sm);
+      z-index: 10;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 10px var(--primary-glow);
+    }
+
+    .brand-icon svg { width: 22px; height: 22px; fill: currentColor; }
+
+    .brand-text h1 {
+      font-size: 1.15rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #7c3aed, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.1;
+    }
+
+    .brand-text p {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pill-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-family: inherit;
+      border: 1.5px solid var(--border-soft);
+      background: #ffffff;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .pill-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .mode-24 { background: var(--accent-amber-light); color: #b45309; border-color: #fde68a; }
+    .mode-target { background: var(--primary-light); color: var(--primary); border-color: #ddd6fe; }
+
+    .btn-reroll {
+      background: linear-gradient(135deg, #06b6d4, #0284c7);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 10px rgba(6, 182, 212, 0.3);
+    }
+
+    .voice-on { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .voice-off { background: #f1f5f9; color: #94a3b8; border-color: #cbd5e1; }
+
+    .stat-pill {
+      background: #f8fafc;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1.5px solid var(--border-soft);
+    }
+
+    .btn-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border-soft);
+      background: #ffffff;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-circle:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+      transform: scale(1.05);
+    }
+
+    .btn-circle svg { width: 18px; height: 18px; fill: currentColor; }
+
+    /* Main Workspace (Zero-Scroll 100vh) */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 12px;
+      padding: 10px 16px;
+      min-height: 0;
+      background: #f8fafc;
+    }
+
+    /* Left Card: Magic Cauldron & PEMDAS Spellbook */
+    .visual-panel {
+      background: #ffffff;
+      border-radius: var(--radius-xl);
+      border: 2px solid var(--border-soft);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    /* Target Floating Banner */
+    .target-crystal-card {
+      background: linear-gradient(135deg, #ffffff, #faf5ff);
+      border: 2px solid #e9d5ff;
+      border-radius: var(--radius-lg);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .target-label {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .target-number-badge {
+      font-size: 1.85rem;
+      font-weight: 900;
+      color: #7c3aed;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      text-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+    }
+
+    /* SVG Cauldron Stage */
+    .cauldron-viewport {
+      flex: 1;
+      background: radial-gradient(circle at center, #ffffff 0%, #f3e8ff 100%);
+      border-radius: var(--radius-lg);
+      border: 2px solid #e9d5ff;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      min-height: 0;
+    }
+
+    .stage-svg {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* Wizard Mascot Speech */
+    .mascot-speech-bubble {
+      background: #ffffff;
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      border: 2px solid #ddd6fe;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.06);
+      flex-shrink: 0;
+    }
+
+    .mascot-avatar {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+      background: #fef08a;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.45rem;
+      border: 2px solid #facc15;
+    }
+
+    .mascot-text {
+      font-size: 0.88rem;
+      line-height: 1.35;
+      font-weight: 600;
+      color: #4c1d95;
+    }
+
+    /* Step-by-Step PEMDAS Spellbook */
+    .spellbook-tray {
+      background: #f8fafc;
+      border: 2px dashed #cbd5e1;
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 105px;
+      min-height: 85px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .spellbook-header {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .step-line-item {
+      font-family: 'Prompt', monospace;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #6d28d9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border-left: 3.5px solid #8b5cf6;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+      animation: slideInStep 0.25s ease-out;
+    }
+
+    @keyframes slideInStep {
+      from { opacity: 0; transform: translateX(-8px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Right Card: Interactive Crucible Lab */
+    .alchemy-lab-panel {
+      background: #ffffff;
+      border-radius: var(--radius-xl);
+      border: 2px solid var(--border-soft);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      gap: 8px;
+      min-height: 0;
+    }
+
+    .lab-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .lab-title-row h2 {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Formula Dropzone Crucible */
+    .formula-dropzone {
+      min-height: 68px;
+      background: #faf5ff;
+      border: 2.5px dashed #c084fc;
+      border-radius: var(--radius-lg);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 6px;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .formula-dropzone:empty::before {
+      content: "✨ สัมผัสขวดน้ำยาและเครื่องหมายด้านล่างมาปรุงสูตรที่นี่...";
+      color: #a855f7;
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin: auto;
+    }
+
+    /* Formula Tokens */
+    .potion-token {
+      padding: 6px 14px;
+      border-radius: 14px;
+      font-size: 1.25rem;
+      font-weight: 900;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .potion-token:hover {
+      transform: translateY(-2px) scale(1.05);
+    }
+
+    .potion-token.num {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 2px solid #93c5fd;
+    }
+
+    .potion-token.op {
+      background: #fffbeb;
+      color: #b45309;
+      border: 2px solid #fcd34d;
+    }
+
+    .potion-token.paren {
+      background: #ecfdf5;
+      color: #047857;
+      border: 2px solid #6ee7b7;
+    }
+
+    /* Flask Bottles Shelf */
+    .shelf-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .shelf-headline {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .flasks-rack {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .bottle-item-btn {
+      background: #ffffff;
+      border: 2px solid #bfdbfe;
+      border-radius: var(--radius-md);
+      padding: 8px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.08);
+      position: relative;
+    }
+
+    .bottle-item-btn:hover:not(:disabled) {
+      transform: translateY(-3px) scale(1.03);
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .bottle-item-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      border-style: dashed;
+      background: #f1f5f9;
+      transform: none !important;
+    }
+
+    .bottle-digit {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #1e40af;
+      line-height: 1;
+    }
+
+    /* Operator Runes */
+    .runes-pad {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+    }
+
+    .rune-btn {
+      background: #ffffff;
+      border: 2px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      padding: 9px 0;
+      font-size: 1.35rem;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .rune-btn:hover {
+      transform: translateY(-2px);
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    .rune-btn.paren-op {
+      background: #f0fdf4;
+      border-color: #86efac;
+      color: #166534;
+    }
+
+    /* Edit Tool Buttons */
+    .edit-tools-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .tool-btn {
+      padding: 7px 12px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      font-family: inherit;
+      border: 1.5px solid var(--border-soft);
+      background: #ffffff;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .tool-btn:hover { background: #f1f5f9; }
+
+    /* Bottom Command Footer */
+    footer {
+      height: 58px;
+      background: #ffffff;
+      border-top: 2px solid var(--border-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      flex-shrink: 0;
+      box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
+    }
+
+    .tip-pill {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    .footer-action-buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-action-main {
+      padding: 8px 20px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 900;
+      font-family: inherit;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-brew-magic {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-brew-magic:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
+    }
+
+    .btn-solution {
+      background: #f5f3ff;
+      color: #7c3aed;
+      border: 1.5px solid #ddd6fe;
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.88rem;
+      transition: all 0.2s;
+    }
+
+    .btn-solution:hover {
+      background: #ede9fe;
+      border-color: #c4b5fd;
+      transform: translateY(-1px);
+    }
+
+    .btn-next-quest {
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);
+      display: none;
+    }
+
+    .btn-next-quest.show { display: flex; }
+
+    /* Toast Notification */
+    .toast-pill {
+      position: absolute;
+      top: 68px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #ffffff;
+      border-radius: 25px;
+      padding: 8px 20px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 60;
+      border: 2px solid transparent;
+    }
+
+    .toast-pill.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: all;
+    }
+
+    .toast-pill.success { border-color: #86efac; color: #15803d; background: #f0fdf4; }
+    .toast-pill.error { border-color: #fca5a5; color: #991b1b; background: #fef2f2; }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-sheet {
+      background: #ffffff;
+      border-radius: 24px;
+      width: 90%;
+      max-width: 480px;
+      padding: 22px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+    }
+
+    .solution-formula-card {
+      background: #faf5ff;
+      border: 2px dashed #c084fc;
+      border-radius: 16px;
+      padding: 12px 20px;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #6d28d9;
+      width: 100%;
+      letter-spacing: 1px;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header>
+    <div class="brand-group">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M19 19H5V8h14m-3-5v2H8V3H6v2H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2h-1V3m-4 8.5l-4.5 4.5 1.4 1.4 3.1-3.1 5.1 5.1 1.4-1.4z"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>NUMBER ALCHEMIST</h1>
+        <p>สุ่มตัวเลข 0–9 ปรุงสูตรคิดเลขไว (PEMDAS)</p>
+      </div>
+    </div>
+
+    <!-- Center Mode Switcher & Randomizer -->
+    <div class="nav-controls">
+      <button class="pill-btn mode-24" id="btn-mode-toggle" onclick="toggleGameMode()" title="สลับโหมดเกม 24 / เป้าหมายคำนวณ">
+        <span id="mode-label-text">🟡 โหมด: เกม 24 คลาสสิก</span>
+      </button>
+
+      <button class="pill-btn btn-reroll" onclick="rollNewRandomPuzzle()" title="สุ่มชุดตัวเลข 0-9 ใหม่ทันที">
+        <span>🎲 สุ่มเลขใหม่ (0–9)</span>
+      </button>
+
+      <button class="pill-btn voice-on" id="btn-voice-toggle" onclick="toggleVoiceAI()" title="เปิด/ปิดเสียงอ่านบรรยาย AI">
+        <span id="voice-label">🔊 AI: เปิด</span>
+      </button>
+    </div>
+
+    <!-- Right Stats -->
+    <div class="nav-controls">
+      <div class="stat-pill" title="คะแนนสะสม">
+        <span>⭐</span>
+        <span id="star-score">0</span>
+      </div>
+
+      <button class="btn-circle" onclick="speakCurrentChallenge()" title="อ่านโจทย์ให้ฟังอีกครั้ง">
+        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      </button>
+
+      <button class="btn-circle" onclick="toggleFullscreenMode()" title="โหมดเต็มจอ">
+        <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Canvas (Zero-Scroll 100vh) -->
+  <main>
+    <!-- Left Panel: Animated Cauldron & PEMDAS Spellbook -->
+    <section class="visual-panel">
+      <!-- Target Display Card -->
+      <div class="target-crystal-card">
+        <div class="target-label">
+          <span>🔮</span>
+          <div>
+            <div style="font-size:0.75rem; color:#8b5cf6;">เป้าหมายพลังเวทมนตร์</div>
+            <div style="font-size:0.85rem; color:#1e1b4b;" id="target-desc-sub">ปรุงสูตรให้ได้ผลลัพธ์นี้</div>
+          </div>
+        </div>
+        <div class="target-number-badge" id="target-number-badge">24</div>
+      </div>
+
+      <!-- Live SVG Cauldron -->
+      <div class="cauldron-viewport" id="cauldron-viewport-svg">
+        <!-- Injected dynamic animated Cauldron SVG -->
+      </div>
+
+      <!-- Mascot Speech -->
+      <div class="mascot-speech-bubble">
+        <div class="mascot-avatar">🧙‍♂️</div>
+        <div class="mascot-text" id="mascot-dialogue">
+          สุ่มขวดน้ำยาตัวเลข 0–9 เรียบร้อย! หากคิดไม่ออก สามารถกดปุ่ม "💡 ดูเฉลยสูตรลับ" ได้เลยนะจ๊ะ!
+        </div>
+      </div>
+
+      <!-- Step-by-Step PEMDAS Reduction Spellbook -->
+      <div class="spellbook-tray" id="spellbook-tray">
+        <div class="spellbook-header">
+          <span>📖 ลำดับการคำนวณเวทมนตร์ (PEMDAS Spellbook)</span>
+          <span style="color:#7c3aed;">วงเล็บ ( ) ➔ คูณ/หาร ➔ บวก/ลบ</span>
+        </div>
+        <div id="steps-history-list" style="display:flex; flex-direction:column; gap:3px;">
+          <div style="font-size:0.78rem; color:#94a3b8; font-style:italic;">รอการกด "ปรุงยาเวทมนตร์"...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Panel: Interactive Crucible & Ingredients -->
+    <section class="alchemy-lab-panel">
+      <div class="lab-title-row">
+        <h2>⚗️ หม้อปรุงสูตรเวท (Equation Crucible)</h2>
+        <span style="font-size:0.78rem; font-weight:800; color:var(--text-muted);">
+          ขวดที่ใช้แล้ว: <span id="flask-usage-counter" style="color:var(--primary); font-size:0.95rem;">0 / 4</span>
+        </span>
+      </div>
+
+      <!-- Crucible Formula Dropzone -->
+      <div class="formula-dropzone" id="formula-dropzone" onclick="handleTokenClick(event)">
+        <!-- Tokens rendered dynamically -->
+      </div>
+
+      <!-- Shelf 1: Random 0-9 Flasks -->
+      <div class="shelf-wrapper">
+        <div class="shelf-headline">
+          <span>🧪 ขวดน้ำยาตัวเลขสุ่ม (0–9) ต้องใช้ให้ครบทุกขวด:</span>
+          <span style="color:#0284c7; font-size:0.72rem;">*คลิกเพื่อใส่ในหม้อ</span>
+        </div>
+        <div class="flasks-rack" id="flasks-rack-shelf">
+          <!-- Dynamically generated bottles -->
+        </div>
+      </div>
+
+      <!-- Shelf 2: Operator Runes -->
+      <div class="shelf-wrapper">
+        <div class="shelf-headline">
+          <span>✨ รูนเครื่องหมายคำนวณและวงเล็บ:</span>
+        </div>
+        <div class="runes-pad">
+          <button class="rune-btn" onclick="addOperatorToken('+')">+</button>
+          <button class="rune-btn" onclick="addOperatorToken('-')">-</button>
+          <button class="rune-btn" onclick="addOperatorToken('×')">×</button>
+          <button class="rune-btn" onclick="addOperatorToken('÷')">÷</button>
+          <button class="rune-btn paren-op" onclick="addOperatorToken('(')">(</button>
+          <button class="rune-btn paren-op" onclick="addOperatorToken(')')">)</button>
+        </div>
+      </div>
+
+      <!-- Edit Tool Buttons -->
+      <div class="edit-tools-row">
+        <button class="tool-btn" onclick="removeLastToken()">
+          <span>⌫</span> ลบตัวสุดท้าย
+        </button>
+        <button class="tool-btn" onclick="clearAllTokens()" style="color:#e11d48;">
+          <span>🗑️</span> ล้างหม้อปรุงยา
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Command Footer -->
+  <footer>
+    <div class="tip-pill">
+      <span>💡</span>
+      <span id="footer-hint-text">คลิกที่ขวดน้ำยาในหม้อต้มเพื่อลบออก หรือกดปุ่ม "ดูเฉลยสูตรลับ" หากคิดไม่ออก</span>
+    </div>
+
+    <div class="footer-action-buttons">
+      <!-- Added Solution Button -->
+      <button class="btn-solution" id="btn-reveal-solution" onclick="openSolutionModal()">
+        <span>💡</span> ดูเฉลยสูตรลับ
+      </button>
+
+      <button class="btn-action-main btn-brew-magic" id="btn-brew-magic" onclick="evaluateBrewingFormula()">
+        <span>🧪</span> ปรุงยาเวทมนตร์ (คำนวณ)
+      </button>
+
+      <button class="btn-action-main btn-next-quest" id="btn-next-quest" onclick="rollNewRandomPuzzle()">
+        <span>สุ่มโจทย์ถัดไป ➔</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- Alert Toast -->
+  <div class="toast-pill" id="toast-pill">
+    <span id="toast-icon">✨</span>
+    <span id="toast-message">แจ้งเตือน</span>
+  </div>
+
+  <!-- Solution Modal (ปุ่มเฉลย) -->
+  <div class="modal-overlay" id="modal-solution">
+    <div class="modal-sheet">
+      <div style="font-size: 3rem;">📜✨</div>
+      <div style="font-size: 1.35rem; font-weight: 900; color: #6d28d9;">คัมภีร์เฉลยสูตรลับ</div>
+      <p style="color: var(--text-muted); font-size: 0.88rem;">นี่คือหนึ่งในสมการที่คำนวณได้ผลลัพธ์ตรงตามเป้าหมายเป๊ะ:</p>
+      
+      <!-- Big Formula Display -->
+      <div class="solution-formula-card" id="solution-formula-display">
+        ( 8 × 3 ) × ( 2 - 1 ) = 24
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px; width:100%; margin-top:6px;">
+        <button class="btn-action-main btn-brew-magic" style="width:100%; justify-content:center;" onclick="applySolutionToCauldron()">
+          <span>🪄</span> วางสูตรลงหม้อต้มให้เลย
+        </button>
+        <button class="tool-btn" style="width:100%; justify-content:center;" onclick="closeModal('modal-solution')">
+          เข้าใจแล้ว (ฉันจะลองกดเอง)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Victory Celebration Modal -->
+  <div class="modal-overlay" id="modal-celebration">
+    <div class="modal-sheet">
+      <div style="font-size: 3.5rem;">✨🔮✨</div>
+      <div style="font-size: 1.4rem; font-weight: 900; color: #7c3aed;">ปรุงยาเวทมนตร์สำเร็จ!</div>
+      <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;" id="celeb-desc-text">
+        สมการถูกต้อง ผลลัพธ์ตรงกับเป้าหมายตามลำดับ PEMDAS อย่างยอดเยี่ยม!
+      </p>
+      <div style="background: #f5f3ff; border: 2px dashed #c084fc; border-radius: 14px; padding: 10px 20px; font-weight: 800; color: #6b21a8;">
+        ได้รับดาว: <span style="color: #eab308; font-size: 1.25rem;">⭐⭐⭐</span>
+      </div>
+      <button class="btn-action-main btn-brew-magic" style="width: 100%; justify-content: center; margin-top: 6px;" onclick="closeModal('modal-celebration'); rollNewRandomPuzzle();">
+        สุ่มปรุงยาสูตรต่อไป 🚀
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================
+       1. WEB AUDIO API SYNTHESIZER
+       ========================================================= */
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(freq, type = 'sine', duration = 0.12, gain = 0.08) {
+      if (audioContext.state === 'suspended') audioContext.resume();
+      const osc = audioContext.createOscillator();
+      const g = audioContext.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+      g.gain.setValueAtTime(gain, audioContext.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
+      osc.connect(g);
+      g.connect(audioContext.destination);
+      osc.start();
+      osc.stop(audioContext.currentTime + duration);
+    }
+
+    const AudioFX = {
+      pop() { playSound(580, 'sine', 0.08, 0.08); },
+      bubble() {
+        [320, 420, 560].forEach((freq, i) => {
+          setTimeout(() => playSound(freq, 'triangle', 0.1, 0.07), i * 60);
+        });
+      },
+      stepPing() { playSound(880, 'sine', 0.12, 0.06); },
+      magic() {
+        [440, 554.37, 659.25, 880, 1108.73].forEach((freq, i) => {
+          setTimeout(() => playSound(freq, 'sine', 0.18, 0.08), i * 60);
+        });
+      },
+      correct() {
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+          setTimeout(() => playSound(freq, 'triangle', 0.22, 0.1), i * 75);
+        });
+      },
+      wrong() {
+        playSound(220, 'sawtooth', 0.18, 0.12);
+        setTimeout(() => playSound(160, 'sawtooth', 0.22, 0.12), 100);
+      }
+    };
+
+    /* =========================================================
+       2. WEB SPEECH API (THAI TTS)
+       ========================================================= */
+    function speakThai(text) {
+      if (!GameState.voiceEnabled) return;
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'th-TH';
+      utter.rate = 1.0;
+      utter.pitch = 1.15;
+      const voices = window.speechSynthesis.getVoices();
+      const th = voices.find(v => v.lang.includes('th') && (v.name.includes('Premwadee') || v.name.includes('Kanya') || v.name.includes('Thai')));
+      if (th) utter.voice = th;
+      window.speechSynthesis.speak(utter);
+    }
+
+    /* =========================================================
+       3. ADVANCED SOLVER & PROCEDURAL RANDOMIZER (0-9)
+       ========================================================= */
+    const GameState = {
+      mode: '24', // '24' or 'target'
+      voiceEnabled: true,
+      totalStars: 0,
+      targetNumber: 24,
+      flasks: [1, 2, 3, 4],
+      formulaTokens: [],
+      usedFlasks: new Set(),
+      isEvaluating: false,
+      currentSolution: null // Holds { text, tokens }
+    };
+
+    // Helper operator evaluator
+    function evalOp(a, op, b) {
+      if (op === '+') return a + b;
+      if (op === '-') return a - b;
+      if (op === '×') return a * b;
+      if (op === '÷') {
+        if (Math.abs(b) < 1e-7) return null;
+        return a / b;
+      }
+      return null;
+    }
+
+    // Comprehensive 24 / Target Equation Solver
+    function solveEquation(flaskArray, target) {
+      const ops = ['+', '-', '×', '÷'];
+      const items = flaskArray.map((val, idx) => ({ val, idx }));
+
+      // Permutations of 4 elements
+      function getPermutations(arr) {
+        if (arr.length <= 1) return [arr];
+        const res = [];
+        for (let i = 0; i < arr.length; i++) {
+          const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
+          const perms = getPermutations(rest);
+          for (const p of perms) res.push([arr[i], ...p]);
+        }
+        return res;
+      }
+
+      const permutations = getPermutations(items);
+
+      for (const p of permutations) {
+        const a = p[0], b = p[1], c = p[2], d = p[3];
+
+        for (const op1 of ops) {
+          for (const op2 of ops) {
+            for (const op3 of ops) {
+
+              // Form 1: ((a op1 b) op2 c) op3 d
+              let r1 = evalOp(a.val, op1, b.val);
+              if (r1 !== null) {
+                let r2 = evalOp(r1, op2, c.val);
+                if (r2 !== null) {
+                  let r3 = evalOp(r2, op3, d.val);
+                  if (r3 !== null && Math.abs(r3 - target) < 1e-5) {
+                    return {
+                      text: `( ( ${a.val} ${op1} ${b.val} ) ${op2} ${c.val} ) ${op3} ${d.val} = ${target}`,
+                      tokens: [
+                        { type: 'paren', val: '(' }, { type: 'paren', val: '(' },
+                        { type: 'num', val: a.val.toString(), flaskIndex: a.idx },
+                        { type: 'op', val: op1 },
+                        { type: 'num', val: b.val.toString(), flaskIndex: b.idx },
+                        { type: 'paren', val: ')' },
+                        { type: 'op', val: op2 },
+                        { type: 'num', val: c.val.toString(), flaskIndex: c.idx },
+                        { type: 'paren', val: ')' },
+                        { type: 'op', val: op3 },
+                        { type: 'num', val: d.val.toString(), flaskIndex: d.idx }
+                      ]
+                    };
+                  }
+                }
+              }
+
+              // Form 2: (a op1 (b op2 c)) op3 d
+              r1 = evalOp(b.val, op2, c.val);
+              if (r1 !== null) {
+                let r2 = evalOp(a.val, op1, r1);
+                if (r2 !== null) {
+                  let r3 = evalOp(r2, op3, d.val);
+                  if (r3 !== null && Math.abs(r3 - target) < 1e-5) {
+                    return {
+                      text: `( ${a.val} ${op1} ( ${b.val} ${op2} ${c.val} ) ) ${op3} ${d.val} = ${target}`,
+                      tokens: [
+                        { type: 'paren', val: '(' },
+                        { type: 'num', val: a.val.toString(), flaskIndex: a.idx },
+                        { type: 'op', val: op1 },
+                        { type: 'paren', val: '(' },
+                        { type: 'num', val: b.val.toString(), flaskIndex: b.idx },
+                        { type: 'op', val: op2 },
+                        { type: 'num', val: c.val.toString(), flaskIndex: c.idx },
+                        { type: 'paren', val: ')' },
+                        { type: 'paren', val: ')' },
+                        { type: 'op', val: op3 },
+                        { type: 'num', val: d.val.toString(), flaskIndex: d.idx }
+                      ]
+                    };
+                  }
+                }
+              }
+
+              // Form 3: (a op1 b) op2 (c op3 d)
+              r1 = evalOp(a.val, op1, b.val);
+              let r1_2 = evalOp(c.val, op3, d.val);
+              if (r1 !== null && r1_2 !== null) {
+                let r3 = evalOp(r1, op2, r1_2);
+                if (r3 !== null && Math.abs(r3 - target) < 1e-5) {
+                  return {
+                    text: `( ${a.val} ${op1} ${b.val} ) ${op2} ( ${c.val} ${op3} ${d.val} ) = ${target}`,
+                    tokens: [
+                      { type: 'paren', val: '(' },
+                      { type: 'num', val: a.val.toString(), flaskIndex: a.idx },
+                      { type: 'op', val: op1 },
+                      { type: 'num', val: b.val.toString(), flaskIndex: b.idx },
+                      { type: 'paren', val: ')' },
+                      { type: 'op', val: op2 },
+                      { type: 'paren', val: '(' },
+                      { type: 'num', val: c.val.toString(), flaskIndex: c.idx },
+                      { type: 'op', val: op3 },
+                      { type: 'num', val: d.val.toString(), flaskIndex: d.idx },
+                      { type: 'paren', val: ')' }
+                    ]
+                  };
+                }
+              }
+
+              // Form 4: a op1 ((b op2 c) op3 d)
+              r1 = evalOp(b.val, op2, c.val);
+              if (r1 !== null) {
+                let r2 = evalOp(r1, op3, d.val);
+                if (r2 !== null) {
+                  let r3 = evalOp(a.val, op1, r2);
+                  if (r3 !== null && Math.abs(r3 - target) < 1e-5) {
+                    return {
+                      text: `${a.val} ${op1} ( ( ${b.val} ${op2} ${c.val} ) ${op3} ${d.val} ) = ${target}`,
+                      tokens: [
+                        { type: 'num', val: a.val.toString(), flaskIndex: a.idx },
+                        { type: 'op', val: op1 },
+                        { type: 'paren', val: '(' },
+                        { type: 'paren', val: '(' },
+                        { type: 'num', val: b.val.toString(), flaskIndex: b.idx },
+                        { type: 'op', val: op2 },
+                        { type: 'num', val: c.val.toString(), flaskIndex: c.idx },
+                        { type: 'paren', val: ')' },
+                        { type: 'op', val: op3 },
+                        { type: 'num', val: d.val.toString(), flaskIndex: d.idx },
+                        { type: 'paren', val: ')' }
+                      ]
+                    };
+                  }
+                }
+              }
+
+              // Form 5: a op1 (b op2 (c op3 d))
+              r1 = evalOp(c.val, op3, d.val);
+              if (r1 !== null) {
+                let r2 = evalOp(b.val, op2, r1);
+                if (r2 !== null) {
+                  let r3 = evalOp(a.val, op1, r2);
+                  if (r3 !== null && Math.abs(r3 - target) < 1e-5) {
+                    return {
+                      text: `${a.val} ${op1} ( ${b.val} ${op2} ( ${c.val} ${op3} ${d.val} ) ) = ${target}`,
+                      tokens: [
+                        { type: 'num', val: a.val.toString(), flaskIndex: a.idx },
+                        { type: 'op', val: op1 },
+                        { type: 'paren', val: '(' },
+                        { type: 'num', val: b.val.toString(), flaskIndex: b.idx },
+                        { type: 'op', val: op2 },
+                        { type: 'paren', val: '(' },
+                        { type: 'num', val: c.val.toString(), flaskIndex: c.idx },
+                        { type: 'op', val: op3 },
+                        { type: 'num', val: d.val.toString(), flaskIndex: d.idx },
+                        { type: 'paren', val: ')' },
+                        { type: 'paren', val: ')' }
+                      ]
+                    };
+                  }
+                }
+              }
+
+            }
+          }
+        }
+      }
+      return null;
+    }
+
+    // Procedural Solvable Generator for Digits 0-9
+    function generateSolvablePuzzle(mode) {
+      if (mode === '24') {
+        let attempts = 0;
+        while (attempts < 600) {
+          attempts++;
+          const candidate = [
+            Math.floor(Math.random() * 10),
+            Math.floor(Math.random() * 10),
+            Math.floor(Math.random() * 10),
+            Math.floor(Math.random() * 10)
+          ];
+          const solution = solveEquation(candidate, 24);
+          if (solution) {
+            return { target: 24, flasks: candidate, solution };
+          }
+        }
+        const fallback = [3, 8, 2, 1];
+        return { target: 24, flasks: fallback, solution: solveEquation(fallback, 24) };
+      } else {
+        const candidateTargets = [12, 16, 18, 20, 25, 30, 36, 40, 48, 50];
+        let attempts = 0;
+        while (attempts < 600) {
+          attempts++;
+          const candidate = [
+            Math.floor(Math.random() * 10),
+            Math.floor(Math.random() * 10),
+            Math.floor(Math.random() * 10),
+            Math.floor(Math.random() * 10)
+          ];
+          const target = candidateTargets[Math.floor(Math.random() * candidateTargets.length)];
+          const solution = solveEquation(candidate, target);
+          if (solution) {
+            return { target, flasks: candidate, solution };
+          }
+        }
+        const fallback = [9, 4, 2, 1];
+        return { target: 36, flasks: fallback, solution: solveEquation(fallback, 36) };
+      }
+    }
+
+    /* =========================================================
+       4. GAMEPLAY CONTROLLER & STAGE RENDERING
+       ========================================================= */
+    function initGame() {
+      rollNewRandomPuzzle();
+    }
+
+    function toggleGameMode() {
+      AudioFX.pop();
+      GameState.mode = GameState.mode === '24' ? 'target' : '24';
+      const btn = document.getElementById('btn-mode-toggle');
+      const label = document.getElementById('mode-label-text');
+
+      if (GameState.mode === '24') {
+        btn.className = 'pill-btn mode-24';
+        label.innerText = '🟡 โหมด: เกม 24 คลาสสิก';
+        document.getElementById('target-desc-sub').innerText = 'ปรุงสูตรให้ได้ผลลัพธ์ 24 พอดี';
+        showToast('สลับเป็นโหมดเกม 24 (การันตีมีคำตอบ)', 'success');
+      } else {
+        btn.className = 'pill-btn mode-target';
+        label.innerText = '🔮 โหมด: เป้าหมายสุ่มไดนามิก';
+        document.getElementById('target-desc-sub').innerText = 'สุ่มเป้าหมายใหม่ที่แก้ได้จริง';
+        showToast('สลับเป็นโหมดเป้าหมายไดนามิก', 'success');
+      }
+
+      rollNewRandomPuzzle();
+    }
+
+    function rollNewRandomPuzzle() {
+      AudioFX.bubble();
+      GameState.formulaTokens = [];
+      GameState.usedFlasks.clear();
+      GameState.isEvaluating = false;
+
+      const puzzle = generateSolvablePuzzle(GameState.mode);
+      GameState.targetNumber = puzzle.target;
+      GameState.flasks = puzzle.flasks;
+      GameState.currentSolution = puzzle.solution;
+
+      // Update UI Header
+      document.getElementById('target-number-badge').innerText = puzzle.target;
+      document.getElementById('btn-next-quest').classList.remove('show');
+      document.getElementById('btn-brew-magic').disabled = false;
+
+      // Update Mascot Speech
+      const speechMsg = `สุ่มขวดน้ำยาตัวเลข [ ${puzzle.flasks.join(', ')} ] จงใช้ให้ครบทุกขวด ปรุงให้ได้พลัง ${puzzle.target} นะครับ!`;
+      document.getElementById('mascot-dialogue').innerText = speechMsg;
+
+      // Reset PEMDAS Spellbook
+      document.getElementById('steps-history-list').innerHTML = `
+        <div style="font-size:0.78rem; color:#94a3b8; font-style:italic;">รอการกด "ปรุงยาเวทมนตร์"...</div>
+      `;
+
+      // Render Flasks Rack
+      renderFlasksRack();
+
+      // Render Active Formula Tray
+      renderFormulaDropzone();
+
+      // Render Dynamic SVG Cauldron
+      renderCauldronSVG('normal');
+
+      // Thai Speech
+      setTimeout(() => {
+        speakThai(speechMsg);
+      }, 350);
+    }
+
+    function renderFlasksRack() {
+      const rack = document.getElementById('flasks-rack-shelf');
+      rack.innerHTML = GameState.flasks.map((val, idx) => `
+        <button class="bottle-item-btn" id="flask-bottle-${idx}" onclick="addFlaskToken(${val}, ${idx})">
+          <span style="font-size:1.45rem;">🧪</span>
+          <span class="bottle-digit">${val}</span>
+        </button>
+      `).join('');
+      updateFlaskCounter();
+    }
+
+    function updateFlaskCounter() {
+      document.getElementById('flask-usage-counter').innerText = `${GameState.usedFlasks.size} / ${GameState.flasks.length}`;
+    }
+
+    function renderCauldronSVG(state = 'normal') {
+      const liquidColor = state === 'success' ? '#10b981' : (state === 'error' ? '#ef4444' : '#a855f7');
+      const bubbleGlow = state === 'success' ? '#34d399' : '#c084fc';
+
+      document.getElementById('cauldron-viewport-svg').innerHTML = `
+      <svg class="stage-svg" viewBox="0 0 400 240">
+        <!-- Magic Circle Halo -->
+        <circle cx="200" cy="140" r="88" fill="${liquidColor}" opacity="0.12"/>
+        <circle cx="200" cy="140" r="98" fill="none" stroke="${liquidColor}" stroke-width="2" stroke-dasharray="6,4" opacity="0.4">
+          <animateTransform attributeName="transform" type="rotate" from="0 200 140" to="360 200 140" dur="25s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- Animated Steam Bubbles -->
+        <g fill="${bubbleGlow}" opacity="0.8">
+          <circle cx="160" cy="${state==='eval'?80:95}" r="7">
+            <animate attributeName="cy" values="100;60;100" dur="2s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="200" cy="${state==='eval'?70:85}" r="9">
+            <animate attributeName="cy" values="90;50;90" dur="1.6s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.9;0.1;0.9" dur="1.6s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="235" cy="${state==='eval'?75:90}" r="6">
+            <animate attributeName="cy" values="95;55;95" dur="2.3s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.7;0.2;0.7" dur="2.3s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+
+        <!-- Cauldron Body -->
+        <ellipse cx="200" cy="195" rx="55" ry="12" fill="#1e1b4b" opacity="0.3"/>
+        <path d="M120 120 C120 190, 280 190, 280 120 Z" fill="#312e81"/>
+        <ellipse cx="200" cy="120" rx="80" ry="20" fill="#1e1b4b"/>
+        
+        <!-- Potion Broth -->
+        <ellipse cx="200" cy="122" rx="72" ry="16" fill="${liquidColor}"/>
+        
+        <!-- Glowing Rune Icon -->
+        <circle cx="200" cy="155" r="16" fill="none" stroke="#facc15" stroke-width="2.5" stroke-dasharray="6,3"/>
+        <text x="194" y="161" fill="#facc15" font-weight="bold" font-size="14">✦</text>
+
+        <!-- Status Floating Text -->
+        <text x="200" y="42" text-anchor="middle" fill="${liquidColor}" font-weight="900" font-size="15">
+          ${state === 'success' ? '✨ ปรุงยาสำเร็จตามเป้าหมาย!' : (state === 'error' ? '💥 ควันดำคลุ้ง! ลองคิดใหม่นะ' : '🔮 หม้อต้มยากำลังเดือดปุดๆ')}
+        </text>
+      </svg>`;
+    }
+
+    /* =========================================================
+       5. SOLUTION REVEAL MODAL CONTROLLER (ปุ่มเฉลย)
+       ========================================================= */
+    function openSolutionModal() {
+      if (!GameState.currentSolution) {
+        showToast('⚠️ กำลังประมวลผลสูตรลับ กรุณารอสักครู่', 'error');
+        return;
+      }
+      AudioFX.magic();
+      document.getElementById('solution-formula-display').innerText = GameState.currentSolution.text;
+      document.getElementById('modal-solution').classList.add('active');
+      speakThai(`สูตรลับสำหรับข้อนี้คือ ${GameState.currentSolution.text.replace(/×/g, 'คูณ').replace(/÷/g, 'หาร')} จ้า`);
+    }
+
+    function applySolutionToCauldron() {
+      AudioFX.magic();
+      closeModal('modal-solution');
+
+      // Clear current tokens and set the solution tokens directly
+      GameState.formulaTokens = [...GameState.currentSolution.tokens];
+      GameState.usedFlasks = new Set([0, 1, 2, 3]);
+
+      // Disable all flask bottles on the shelf
+      document.querySelectorAll('.bottle-item-btn').forEach(b => b.disabled = true);
+      updateFlaskCounter();
+      renderFormulaDropzone();
+
+      showToast('🪄 วางสูตรลับลงหม้อต้มเรียบร้อย! กดปรุงยาได้เลย', 'success');
+    }
+
+    /* =========================================================
+       6. CRUCIBLE TOKEN ACTIONS
+       ========================================================= */
+    function addFlaskToken(val, flaskIdx) {
+      if (GameState.isEvaluating) return;
+      if (GameState.usedFlasks.has(flaskIdx)) return;
+
+      AudioFX.pop();
+      GameState.formulaTokens.push({ type: 'num', val: val.toString(), flaskIndex: flaskIdx });
+      GameState.usedFlasks.add(flaskIdx);
+
+      // Disable button
+      document.getElementById(`flask-bottle-${flaskIdx}`).disabled = true;
+      updateFlaskCounter();
+      renderFormulaDropzone();
+    }
+
+    function addOperatorToken(op) {
+      if (GameState.isEvaluating) return;
+      AudioFX.pop();
+      const type = (op === '(' || op === ')') ? 'paren' : 'op';
+      GameState.formulaTokens.push({ type: type, val: op });
+      renderFormulaDropzone();
+    }
+
+    function renderFormulaDropzone() {
+      const dropzone = document.getElementById('formula-dropzone');
+      dropzone.innerHTML = GameState.formulaTokens.map((t, idx) => `
+        <span class="potion-token ${t.type}" data-idx="${idx}" title="คลิกเพื่อลบ">${t.val}</span>
+      `).join('');
+    }
+
+    function handleTokenClick(e) {
+      if (GameState.isEvaluating) return;
+      const chip = e.target.closest('.potion-token');
+      if (!chip) return;
+
+      const idx = parseInt(chip.getAttribute('data-idx'));
+      removeTokenAtIndex(idx);
+    }
+
+    function removeTokenAtIndex(idx) {
+      AudioFX.pop();
+      const removed = GameState.formulaTokens.splice(idx, 1)[0];
+      if (removed.type === 'num' && removed.flaskIndex !== undefined) {
+        GameState.usedFlasks.delete(removed.flaskIndex);
+        const btn = document.getElementById(`flask-bottle-${removed.flaskIndex}`);
+        if (btn) btn.disabled = false;
+        updateFlaskCounter();
+      }
+      renderFormulaDropzone();
+    }
+
+    function removeLastToken() {
+      if (GameState.isEvaluating || GameState.formulaTokens.length === 0) return;
+      removeTokenAtIndex(GameState.formulaTokens.length - 1);
+    }
+
+    function clearAllTokens() {
+      if (GameState.isEvaluating) return;
+      AudioFX.pop();
+      GameState.formulaTokens = [];
+      GameState.usedFlasks.clear();
+      document.querySelectorAll('.bottle-item-btn').forEach(b => b.disabled = false);
+      updateFlaskCounter();
+      renderFormulaDropzone();
+    }
+
+    /* =========================================================
+       7. STEP-BY-STEP PEMDAS EVALUATION ENGINE
+       ========================================================= */
+    function evaluateBrewingFormula() {
+      const tokens = GameState.formulaTokens;
+
+      // Rule: Must use all 4 flasks
+      if (GameState.usedFlasks.size < GameState.flasks.length) {
+        showToast(`⚠️ ต้องใช้ขวดน้ำยาตัวเลขให้ครบทั้ง ${GameState.flasks.length} ขวดนะจ๊ะ!`, 'error');
+        AudioFX.wrong();
+        return;
+      }
+
+      // Syntax Validation
+      const errorMsg = validateSyntaxTokens(tokens);
+      if (errorMsg) {
+        showToast(`⚠️ ข้อผิดพลาด: ${errorMsg}`, 'error');
+        AudioFX.wrong();
+        speakThai(`ข้อผิดพลาด ${errorMsg}`);
+        return;
+      }
+
+      GameState.isEvaluating = true;
+      document.getElementById('btn-brew-magic').disabled = true;
+      AudioFX.bubble();
+      renderCauldronSVG('eval');
+
+      try {
+        const reductionSteps = computePEMDASReduction(tokens);
+        displaySpellbookSteps(reductionSteps);
+
+        setTimeout(() => {
+          const finalResult = reductionSteps[reductionSteps.length - 1].value;
+          const isCorrect = Math.abs(finalResult - GameState.targetNumber) < 0.001;
+
+          GameState.isEvaluating = false;
+          document.getElementById('btn-brew-magic').disabled = false;
+
+          if (isCorrect) {
+            AudioFX.correct();
+            renderCauldronSVG('success');
+            GameState.totalStars += 3;
+            document.getElementById('star-score').innerText = GameState.totalStars;
+
+            showToast(`🎉 ปรุงยาสำเร็จ! ได้พลัง ${GameState.targetNumber} ตรงเป๊ะ!`, 'success');
+            speakThai(`ปรุงยาสำเร็จ ได้ผลลัพธ์ ${GameState.targetNumber} ถูกต้องตามลำดับการคำนวณแล้วค่ะ`);
+
+            document.getElementById('modal-celebration').classList.add('active');
+            document.getElementById('btn-next-quest').classList.add('show');
+          } else {
+            AudioFX.wrong();
+            renderCauldronSVG('error');
+
+            showToast(`💥 ผลลัพธ์ได้ ${Number(finalResult.toFixed(2))} ยังไม่เท่ากับเป้าหมาย ${GameState.targetNumber}`, 'error');
+            speakThai(`ผลลัพธ์ได้ ${Number(finalResult.toFixed(2))} ยังไม่ตรงกับเป้าหมาย ${GameState.targetNumber} ค่ะ ลองกดดูเฉลยได้นะคะ`);
+          }
+        }, reductionSteps.length * 350 + 400);
+
+      } catch (err) {
+        GameState.isEvaluating = false;
+        document.getElementById('btn-brew-magic').disabled = false;
+        renderCauldronSVG('error');
+        AudioFX.wrong();
+        showToast(`⚠️ เกิดข้อผิดพลาด: ${err.message}`, 'error');
+      }
+    }
+
+    function validateSyntaxTokens(tokens) {
+      if (tokens.length === 0) return "หม้อต้มยายังว่างเปล่า";
+
+      let pCount = 0;
+      for (const t of tokens) {
+        if (t.val === '(') pCount++;
+        if (t.val === ')') pCount--;
+        if (pCount < 0) return "ใส่วงเล็บปิดเกิน หรือวางวงเล็บผิดตำแหน่ง";
+      }
+      if (pCount !== 0) return "ใส่วงเล็บเปิด-ปิด ไม่ครบสมบูรณ์";
+
+      const first = tokens[0].val;
+      const last = tokens[tokens.length - 1].val;
+      if (['+', '-', '×', '÷'].includes(first)) return "ห้ามขึ้นต้นสมการด้วยเครื่องหมายคำนวณ";
+      if (['+', '-', '×', '÷'].includes(last)) return "ห้ามลงท้ายสมการด้วยเครื่องหมายคำนวณ";
+
+      for (let i = 0; i < tokens.length - 1; i++) {
+        const curr = tokens[i].val;
+        const next = tokens[i + 1].val;
+
+        if (['+', '-', '×', '÷'].includes(curr) && ['+', '-', '×', '÷'].includes(next)) {
+          return "ห้ามใส่เครื่องหมายคำนวณติดกันสองตัว";
+        }
+        if (curr === '(' && ['+', '×', '÷'].includes(next)) {
+          return "หลังวงเล็บเปิดห้ามเป็นเครื่องหมายคำนวณ";
+        }
+        if (['+', '-', '×', '÷'].includes(curr) && next === ')') {
+          return "ก่อนวงเล็บปิดต้องเป็นตัวเลข";
+        }
+        if (curr === '(' && next === ')') {
+          return "ในวงเล็บต้องมีตัวเลข ห้ามเป็นวงเล็บว่าง";
+        }
+        if (tokens[i].type === 'num' && tokens[i+1].type === 'num') {
+          return "ตัวเลขต้องคั่นด้วยเครื่องหมายคำนวณ";
+        }
+        if (tokens[i].type === 'num' && next === '(') {
+          return "ระหว่างตัวเลขกับวงเล็บเปิด ต้องมีเครื่องหมายคำนวณ (เช่น ×)";
+        }
+        if (curr === ')' && tokens[i+1].type === 'num') {
+          return "ระหว่างวงเล็บปิดกับตัวเลข ต้องมีเครื่องหมายคำนวณ (เช่น ×)";
+        }
+      }
+      return null;
+    }
+
+    function computePEMDASReduction(initialTokens) {
+      let arr = initialTokens.map(t => t.val);
+      const steps = [];
+
+      function formatExpr(a) { return a.join(' ').replace(/\s+/g, ' '); }
+
+      steps.push({ expr: formatExpr(arr), desc: "สูตรเริ่มต้น" });
+
+      while (arr.length > 1) {
+        let openIdx = -1, closeIdx = -1;
+
+        for (let i = 0; i < arr.length; i++) {
+          if (arr[i] === '(') openIdx = i;
+          if (arr[i] === ')') { closeIdx = i; break; }
+        }
+
+        if (openIdx !== -1 && closeIdx !== -1) {
+          const sub = arr.slice(openIdx + 1, closeIdx);
+          if (sub.length === 1) {
+            arr.splice(openIdx, 3, sub[0]);
+            steps.push({ expr: formatExpr(arr), desc: "ถอดวงเล็บ" });
+            continue;
+          }
+
+          const reducedSub = reduceSingleOperation(sub);
+          arr.splice(openIdx + 1, sub.length, ...reducedSub.result);
+          steps.push({ expr: formatExpr(arr), desc: `ทำในวงเล็บ: ${reducedSub.opDesc}` });
+          continue;
+        }
+
+        const reduced = reduceSingleOperation(arr);
+        arr = reduced.result;
+        steps.push({ expr: formatExpr(arr), desc: reduced.opDesc });
+      }
+
+      const finalVal = parseFloat(arr[0]);
+      steps[steps.length - 1].value = finalVal;
+      return steps;
+    }
+
+    function reduceSingleOperation(tokens) {
+      let targetIdx = -1;
+      for (let i = 0; i < tokens.length; i++) {
+        if (tokens[i] === '×' || tokens[i] === '÷') { targetIdx = i; break; }
+      }
+      if (targetIdx === -1) {
+        for (let i = 0; i < tokens.length; i++) {
+          if (tokens[i] === '+' || tokens[i] === '-') { targetIdx = i; break; }
+        }
+      }
+
+      if (targetIdx === -1) return { result: tokens, opDesc: "" };
+
+      const a = parseFloat(tokens[targetIdx - 1]);
+      const op = tokens[targetIdx];
+      const b = parseFloat(tokens[targetIdx + 1]);
+      let res = 0;
+
+      if (op === '+') res = a + b;
+      else if (op === '-') res = a - b;
+      else if (op === '×') res = a * b;
+      else if (op === '÷') {
+        if (Math.abs(b) < 1e-7) throw new Error("ห้ามหารด้วยศูนย์");
+        res = a / b;
+      }
+
+      res = Math.round(res * 10000) / 10000;
+      const nextTokens = [...tokens];
+      nextTokens.splice(targetIdx - 1, 3, res.toString());
+
+      return {
+        result: nextTokens,
+        opDesc: `คำนวณ ${a} ${op} ${b} = ${res}`
+      };
+    }
+
+    function displaySpellbookSteps(steps) {
+      const list = document.getElementById('steps-history-list');
+      list.innerHTML = '';
+
+      steps.forEach((s, idx) => {
+        setTimeout(() => {
+          AudioFX.stepPing();
+          const item = document.createElement('div');
+          item.className = 'step-line-item';
+          item.innerHTML = `
+            <span style="color:#94a3b8; font-size:0.75rem;">ขั้นที่ ${idx+1}:</span>
+            <span>${s.expr}</span>
+            <span style="font-size:0.72rem; color:#64748b; margin-left:auto;">(${s.desc})</span>
+          `;
+          list.appendChild(item);
+          list.scrollTop = list.scrollHeight;
+        }, idx * 350);
+      });
+    }
+
+    /* =========================================================
+       8. UTILITIES
+       ========================================================= */
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast-pill');
+      document.getElementById('toast-icon').innerText = type === 'success' ? '✨' : '⚠️';
+      document.getElementById('toast-message').innerText = msg;
+      toast.className = `toast-pill show ${type}`;
+      setTimeout(() => toast.classList.remove('show'), 3600);
+    }
+
+    function toggleVoiceAI() {
+      GameState.voiceEnabled = !GameState.voiceEnabled;
+      const btn = document.getElementById('btn-voice-toggle');
+      const label = document.getElementById('voice-label');
+
+      if (GameState.voiceEnabled) {
+        AudioFX.pop();
+        btn.className = 'pill-btn voice-on';
+        label.innerText = '🔊 AI: เปิด';
+        showToast('เปิดเสียงบรรยาย AI แล้ว', 'success');
+        speakThai('เปิดเสียงบรรยายแล้วค่ะ');
+      } else {
+        window.speechSynthesis.cancel();
+        btn.className = 'pill-btn voice-off';
+        label.innerText = '🔇 AI: ปิด';
+        showToast('ปิดเสียงบรรยาย AI แล้ว', 'error');
+      }
+    }
+
+    function speakCurrentChallenge() {
+      AudioFX.pop();
+      speakThai(`ขวดน้ำยาคือ ${GameState.flasks.join(', ')} จงปรุงให้ได้ผลลัพธ์ ${GameState.targetNumber} นะคะ`);
+    }
+
+    function toggleFullscreenMode() {
+      AudioFX.pop();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    window.addEventListener('DOMContentLoaded', initGame);
+  </script>
+</body>
+</html>
