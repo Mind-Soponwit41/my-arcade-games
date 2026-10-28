@@ -1,0 +1,2319 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Smart City Kids: ผู้พิทักษ์ 20 วิกฤตเมืองจิ๋ว (Nested Logic Edition)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-body: #ffffff;
+      --bg-panel: #f8fafc;
+      --bg-card: #ffffff;
+      --border-soft: #e2e8f0;
+      --primary-blue: #2563eb;
+      --primary-soft: #eff6ff;
+      --mint-green: #059669;
+      --mint-soft: #ecfdf5;
+      --sunny-amber: #d97706;
+      --sunny-soft: #fffbeb;
+      --rose-red: #e11d48;
+      --rose-soft: #fff1f2;
+      --purple-nested: #7c3aed;
+      --purple-soft: #f5f3ff;
+      --cyan-tech: #0891b2;
+      --cyan-soft: #ecfeff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --shadow-sm: 0 4px 12px rgba(148, 163, 184, 0.12);
+      --shadow-md: 0 8px 24px rgba(148, 163, 184, 0.16);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Prompt', sans-serif;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Bar (Height: 56px) */
+    header {
+      height: 56px;
+      background: #ffffff;
+      border-bottom: 2px solid var(--border-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-sm);
+      z-index: 10;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #60a5fa, #2563eb);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+    }
+
+    .brand-icon svg { width: 20px; height: 20px; fill: currentColor; }
+
+    .brand-text h1 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--primary-blue);
+      line-height: 1.1;
+    }
+
+    .brand-text p {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .nav-tools {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-btn {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      font-family: inherit;
+      border: 1.5px solid var(--border-soft);
+      background: #ffffff;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .pill-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .diff-easy { background: var(--mint-soft); color: var(--mint-green); border-color: #a7f3d0; }
+    .diff-med { background: var(--sunny-soft); color: var(--sunny-amber); border-color: #fde68a; }
+    .diff-hard { background: var(--purple-soft); color: var(--purple-nested); border-color: #ddd6fe; }
+
+    .voice-on { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .voice-off { background: #f1f5f9; color: #94a3b8; border-color: #cbd5e1; }
+
+    .stat-badge {
+      background: #f8fafc;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: 1.5px solid var(--border-soft);
+    }
+
+    .combo-badge {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: none;
+      animation: bounce 0.6s infinite alternate;
+    }
+
+    .combo-badge.active { display: inline-flex; }
+
+    @keyframes bounce {
+      from { transform: scale(1); }
+      to { transform: scale(1.08); }
+    }
+
+    .btn-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border-soft);
+      background: #ffffff;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-circle:hover {
+      background: var(--primary-soft);
+      color: var(--primary-blue);
+      transform: scale(1.05);
+    }
+
+    .btn-circle svg { width: 17px; height: 17px; fill: currentColor; }
+
+    /* Main Workspace (Zero-Scroll 100vh) */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 10px;
+      padding: 8px 12px;
+      min-height: 0;
+      background: #f8fafc;
+    }
+
+    /* Left Panel: Cute Visual Simulator */
+    .sim-card {
+      background: #ffffff;
+      border-radius: var(--radius-xl);
+      border: 2px solid var(--border-soft);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      gap: 6px;
+      min-height: 0;
+    }
+
+    .sim-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .badge-crisis {
+      background: var(--rose-soft);
+      color: var(--rose-red);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid #fecdd3;
+      animation: alertGlow 2s infinite ease-in-out;
+    }
+
+    @keyframes alertGlow {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+
+    .stage-svg-frame {
+      flex: 1;
+      background: linear-gradient(180deg, #f0fdf4 0%, #e0f2fe 100%);
+      border-radius: var(--radius-lg);
+      border: 2px solid #bae6fd;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      min-height: 0;
+    }
+
+    .stage-svg {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* Mascot Speech */
+    .mascot-box {
+      background: #ffffff;
+      border-radius: var(--radius-md);
+      padding: 6px 10px;
+      border: 1.5px solid #bfdbfe;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.05);
+      flex-shrink: 0;
+    }
+
+    .mascot-avatar {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      background: #fef08a;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      border: 2px solid #facc15;
+    }
+
+    .mascot-text {
+      font-size: 0.83rem;
+      line-height: 1.3;
+      font-weight: 600;
+      color: #1e3a8a;
+    }
+
+    /* Compact 4-Sensor Bar */
+    .sensors-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .sensor-item {
+      background: #ffffff;
+      border: 1.5px solid var(--border-soft);
+      border-radius: 8px;
+      padding: 5px 6px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sensor-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--primary-blue);
+      border-radius: 4px 0 0 4px;
+    }
+
+    .sensor-item.warning::before { background: var(--rose-red); }
+
+    .sensor-name {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sensor-val {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: baseline;
+      gap: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Right Panel: Nested Logic Architecture */
+    .flow-card {
+      background: #ffffff;
+      border-radius: var(--radius-xl);
+      border: 2px solid var(--border-soft);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      gap: 6px;
+      min-height: 0;
+    }
+
+    .flow-head-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .flow-head-row h2 {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .speed-btn-group {
+      display: flex;
+      align-items: center;
+      background: #f1f5f9;
+      border-radius: 12px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .speed-btn {
+      border: none;
+      background: transparent;
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .speed-btn.active {
+      background: #ffffff;
+      color: var(--primary-blue);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    }
+
+    /* Diagram Viewport */
+    .diagram-viewport {
+      flex: 1;
+      background: #f8fafc;
+      border-radius: var(--radius-lg);
+      border: 2px dashed #cbd5e1;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-evenly;
+      position: relative;
+      min-height: 0;
+    }
+
+    .node-slot {
+      border-radius: var(--radius-md);
+      padding: 5px 10px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.82rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .node-slot.terminal {
+      background: #e0f2fe;
+      border: 1.5px solid #7dd3fc;
+      color: #0369a1;
+      border-radius: 24px;
+      padding: 2px 16px;
+      font-size: 0.75rem;
+      cursor: default;
+    }
+
+    .node-slot.condition-1 {
+      width: 90%;
+      min-height: 40px;
+      background: #ffffff;
+      border: 2px dashed #3b82f6;
+      color: #2563eb;
+    }
+
+    .node-slot.condition-1.filled {
+      border-style: solid;
+      background: #eff6ff;
+      border-color: #2563eb;
+      color: #1d4ed8;
+    }
+
+    .node-slot.condition-nested {
+      width: 100%;
+      min-height: 38px;
+      background: #ffffff;
+      border: 2px dashed #8b5cf6;
+      color: #7c3aed;
+    }
+
+    .node-slot.condition-nested.filled {
+      border-style: solid;
+      background: #f5f3ff;
+      border-color: #7c3aed;
+      color: #5b21b6;
+    }
+
+    .node-slot.action-slot {
+      width: 100%;
+      min-height: 38px;
+      background: #ffffff;
+      border: 2px dashed #f59e0b;
+      color: #b45309;
+      font-size: 0.78rem;
+    }
+
+    .node-slot.action-slot.filled {
+      border-style: solid;
+      background: #fffbeb;
+      border-color: #f59e0b;
+      color: #92400e;
+    }
+
+    .node-slot:hover:not(.terminal) {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tier-split-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      width: 98%;
+      gap: 8px;
+    }
+
+    .nested-subgrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+      gap: 5px;
+      margin-top: 3px;
+    }
+
+    .branch-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      width: 100%;
+    }
+
+    .tag-rule {
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 10px;
+    }
+
+    .tag-rule.true-tag { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .tag-rule.false-tag { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+    /* Trace Pulse & Bug Alert Animation */
+    .node-slot.trace-pulse {
+      transform: scale(1.05) !important;
+      border-color: #facc15 !important;
+      box-shadow: 0 0 14px rgba(250, 204, 21, 0.8) !important;
+      background: #fef08a !important;
+      color: #854d0e !important;
+    }
+
+    .node-slot.bug-alert {
+      animation: shakeNode 0.5s ease;
+      background: #fee2e2 !important;
+      border-color: #ef4444 !important;
+      color: #991b1b !important;
+    }
+
+    @keyframes shakeNode {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-5px); }
+      40% { transform: translateX(5px); }
+      60% { transform: translateX(-3px); }
+      80% { transform: translateX(3px); }
+    }
+
+    /* Bottom Footer (Height: 58px) */
+    footer {
+      height: 58px;
+      background: #ffffff;
+      border-top: 2px solid var(--border-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+      flex-shrink: 0;
+      box-shadow: 0 -3px 12px rgba(0,0,0,0.03);
+    }
+
+    .hint-label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    .foot-buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-action {
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      font-family: inherit;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-run-cmd {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-run-cmd:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 14px rgba(16, 185, 129, 0.5);
+    }
+
+    .btn-advance-chain {
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+      color: #ffffff;
+      box-shadow: 0 3px 10px rgba(139, 92, 246, 0.35);
+      display: none;
+    }
+
+    .btn-advance-chain.show { display: flex; }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1.5px solid var(--border-soft);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.82rem;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: #e2e8f0;
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* Modal Overlay & Card Sheets */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-sheet {
+      background: #ffffff;
+      border-radius: 20px;
+      width: 92%;
+      max-width: 650px;
+      padding: 18px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .modal-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .opt-choice-card {
+      background: #ffffff;
+      border: 2px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      font-family: inherit;
+      color: var(--text-main);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .opt-choice-card:hover {
+      background: #eff6ff;
+      border-color: #60a5fa;
+      transform: translateX(3px);
+      color: var(--primary-blue);
+    }
+
+    /* 20 Mission Stage Selector with Filter Tabs */
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .filter-tab-btn {
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border: 1px solid var(--border-soft);
+      background: #f8fafc;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .filter-tab-btn.active {
+      background: var(--primary-blue);
+      color: #ffffff;
+      border-color: var(--primary-blue);
+    }
+
+    .stage-choice-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+      gap: 8px;
+      max-height: 55vh;
+      overflow-y: auto;
+      padding: 4px;
+    }
+
+    .stage-card-item {
+      background: #ffffff;
+      border: 2px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .stage-card-item:hover {
+      border-color: var(--primary-blue);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .stage-card-item.selected {
+      border-color: var(--primary-blue);
+      background: var(--primary-soft);
+    }
+
+    /* Achievement Badges Showcase */
+    .badge-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .badge-item {
+      background: #f8fafc;
+      border: 1.5px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-item.unlocked {
+      background: #ecfdf5;
+      border-color: #86efac;
+    }
+
+    .badge-icon {
+      font-size: 1.6rem;
+    }
+
+    /* Toast Notification */
+    .toast-pill {
+      position: absolute;
+      top: 66px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 7px 18px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 60;
+      border: 2px solid transparent;
+    }
+
+    .toast-pill.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: all;
+    }
+
+    .toast-pill.success { border-color: #86efac; color: #15803d; background: #f0fdf4; }
+    .toast-pill.error { border-color: #fca5a5; color: #991b1b; background: #fef2f2; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header>
+    <div class="brand-group">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 14.5h-2v-2h2v2zm0-4h-2V7h2v5.5z"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>SMART CITY KIDS</h1>
+        <p>20 วิกฤตตรรกะซ้อนตรรกะ (Algorithms)</p>
+      </div>
+    </div>
+
+    <!-- Center Nav Controls -->
+    <div class="nav-tools">
+      <button class="pill-btn diff-hard" id="btn-difficulty-toggle" onclick="cycleDifficultyMode()" title="คลิกเปลี่ยนระดับความยาก">
+        <span>🔴 ท้าทาย (ตรรกะซ้อน)</span>
+      </button>
+
+      <button class="pill-btn" onclick="openStageSelectModal()">
+        <span>🗺️ เลือกด่าน (<span id="stage-badge-number">1</span>/20)</span>
+      </button>
+
+      <button class="pill-btn voice-on" id="btn-voice-toggle" onclick="toggleVoiceAI()" title="เปิด/ปิดเสียงอ่านบรรยาย AI">
+        <span id="voice-label">🔊 AI: เปิด</span>
+      </button>
+
+      <button class="pill-btn" style="background:#fef3c7; color:#b45309; border-color:#fde68a;" onclick="openBadgesModal()" title="ดูเหรียญเกียรติยศ">
+        <span>🎖️ เหรียญ</span>
+      </button>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="nav-tools">
+      <span class="combo-badge" id="combo-pill">COMBO x2!</span>
+
+      <div class="stat-badge" title="คะแนนดาวสะสม">
+        <span>⭐</span>
+        <span id="star-score">0</span>
+      </div>
+
+      <button class="btn-circle" onclick="speakCurrentMission()" title="อ่านโจทย์ให้ฟังอีกครั้ง">
+        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      </button>
+
+      <button class="btn-circle" onclick="toggleFullscreenMode()" title="โหมดเต็มจอ">
+        <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace (Zero-Scroll 100vh) -->
+  <main>
+    <!-- Left Section: Cute City Visual Simulation -->
+    <section class="sim-card">
+      <div class="sim-header-row">
+        <div class="badge-crisis">
+          <span>⚠️</span> <span id="crisis-title-text">กำลังโหลดภารกิจ...</span>
+        </div>
+        <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">
+          หมวด: <span id="category-tag" style="color: var(--primary-blue);">สิ่งแวดล้อม</span> |
+          โซน: <span id="zone-title" style="color: var(--text-main);">ริมคลองเมือง</span>
+        </div>
+      </div>
+
+      <!-- Live Inline SVG Dynamic Viewport -->
+      <div class="stage-svg-frame" id="stage-svg-viewport">
+        <!-- Dynamically Rendered Cute SVG -->
+      </div>
+
+      <!-- Mascot Guidance Speech Box -->
+      <div class="mascot-box">
+        <div class="mascot-avatar">🤖</div>
+        <div class="mascot-text" id="mascot-dialogue-text">
+          ยินดีต้อนรับสู่ศูนย์ควบคุมเมืองอัจฉริยะ! เลือกตรรกะให้ถูกต้องเพื่อแก้ปัญหานะครับ
+        </div>
+      </div>
+
+      <!-- Compact 4 Sensors Telemetry Tray -->
+      <div class="sensors-grid" id="sensors-grid-tray">
+        <!-- 4 Live Telemetry Gauges -->
+      </div>
+    </section>
+
+    <!-- Right Section: Real Nested Logic Flowchart -->
+    <section class="flow-card">
+      <div class="flow-head-row">
+        <h2>📊 แผนผังการตัดสินใจ (Algorithm Flowchart)</h2>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <!-- Speed Control 1x / 2x -->
+          <div class="speed-btn-group">
+            <button class="speed-btn active" id="spd-1x" onclick="setSimSpeed(1)">1x</button>
+            <button class="speed-btn" id="spd-2x" onclick="setSimSpeed(2)">2x Fast</button>
+          </div>
+          <button class="btn-secondary" style="padding:3px 8px; font-size:0.75rem;" onclick="showCurrentHint()">
+            💡 ขอคำใบ้
+          </button>
+        </div>
+      </div>
+
+      <!-- Dynamic Flowchart Diagram Stage -->
+      <div class="diagram-viewport" id="diagram-viewport-canvas">
+        <!-- Injected dynamically based on difficulty mode -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Action Command Bar -->
+  <footer>
+    <div class="hint-label">
+      <span>💡</span>
+      <span id="hint-tip-text">คลิกเลือกบล็อกในผังงานเพื่อวางตรรกะซ้อนให้ครบถ้วน</span>
+    </div>
+
+    <div class="foot-buttons">
+      <button class="btn-secondary" onclick="generateRandomScenario()" title="สุ่มวิกฤตใหม่จาก 20 สถานการณ์">
+        🎲 สุ่มวิกฤต (ไม่รู้จบ)
+      </button>
+
+      <button class="btn-action btn-run-cmd" id="btn-run-simulation" onclick="executeAlgorithmSimulation()">
+        <span>▶</span> ทดสอบคำสั่ง (Run)
+      </button>
+
+      <button class="btn-action btn-advance-chain" id="btn-advance-chain" onclick="handleAdvanceMission()">
+        <span id="advance-btn-title">ภารกิจถัดไป ➔</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- Alert Toast -->
+  <div class="toast-pill" id="toast-pill">
+    <span id="toast-icon">✨</span>
+    <span id="toast-message">แจ้งเตือนระบบ</span>
+  </div>
+
+  <!-- Multi-Choice Options Modal -->
+  <div class="modal-overlay" id="modal-picker-dialog">
+    <div class="modal-sheet">
+      <div class="modal-header-row">
+        <span id="modal-picker-title">เลือกตัวเลือกคำสั่ง</span>
+        <button class="btn-circle" onclick="closeModal('modal-picker-dialog')">✕</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;" id="modal-options-tray">
+        <!-- Injected Choices -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 20 Stages Selection Modal with Category Tabs -->
+  <div class="modal-overlay" id="modal-stages-dialog">
+    <div class="modal-sheet" style="max-width: 720px;">
+      <div class="modal-header-row">
+        <span>🗺️ เลือกด่าน 20 วิกฤตเมืองจำลอง</span>
+        <button class="btn-circle" onclick="closeModal('modal-stages-dialog')">✕</button>
+      </div>
+      <div class="filter-tabs">
+        <button class="filter-tab-btn active" onclick="filterStages('all', this)">ทั้งหมด (20)</button>
+        <button class="filter-tab-btn" onclick="filterStages('env', this)">🌿 สิ่งแวดล้อม (5)</button>
+        <button class="filter-tab-btn" onclick="filterStages('traffic', this)">🚗 คมนาคม (5)</button>
+        <button class="filter-tab-btn" onclick="filterStages('energy', this)">⚡ พลังงาน (5)</button>
+        <button class="filter-tab-btn" onclick="filterStages('school', this)">🏫 โรงเรียน & ชุมชน (5)</button>
+      </div>
+      <div class="stage-choice-grid" id="stage-cards-grid">
+        <!-- 20 Stage Cards -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Badges / Achievements Modal -->
+  <div class="modal-overlay" id="modal-badges-dialog">
+    <div class="modal-sheet" style="max-width: 500px;">
+      <div class="modal-header-row">
+        <span>🎖️ เหรียญเกียรติยศนักคิดแก้วิกฤต</span>
+        <button class="btn-circle" onclick="closeModal('modal-badges-dialog')">✕</button>
+      </div>
+      <div class="badge-grid" id="badge-display-grid">
+        <!-- Injected Badges -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Victory Celebration Modal -->
+  <div class="modal-overlay" id="modal-victory-dialog">
+    <div class="modal-sheet" style="text-align: center; align-items: center; max-width: 440px;">
+      <div style="font-size: 3.2rem;">🎉</div>
+      <div style="font-size: 1.35rem; font-weight: 800; color: #15803d;">ภารกิจสำเร็จสมบูรณ์แบบ!</div>
+      <p style="color: var(--text-muted); font-size: 0.92rem; line-height: 1.45;" id="victory-summary-text">
+        คุณออกแบบตรรกะซ้อนแก้ปัญหาเมืองอัจฉริยะได้อย่างยอดเยี่ยม เมืองปลอดภัย 100%!
+      </p>
+      <div style="background: #f0fdf4; border: 2px dashed #86efac; border-radius: 12px; padding: 8px 18px; font-weight: 700; color: #166534; font-size:0.95rem;">
+        ได้รับดาว: <span style="color: #eab308; font-size: 1.2rem;">⭐⭐⭐</span> <span id="combo-bonus-text" style="color:#d97706; font-size:0.85rem;"></span>
+      </div>
+      <button class="btn-action btn-run-cmd" style="width: 100%; justify-content: center;" onclick="closeModal('modal-victory-dialog')">
+        ลุยภารกิจถัดไป 🚀
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================
+       1. WEB AUDIO SYNTHESIZER
+       ========================================================= */
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(freq, type = 'sine', duration = 0.12, gain = 0.08) {
+      if (audioContext.state === 'suspended') audioContext.resume();
+      const osc = audioContext.createOscillator();
+      const g = audioContext.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+      g.gain.setValueAtTime(gain, audioContext.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
+      osc.connect(g);
+      g.connect(audioContext.destination);
+      osc.start();
+      osc.stop(audioContext.currentTime + duration);
+    }
+
+    const SFX = {
+      click() { playSound(540, 'sine', 0.07, 0.07); },
+      step() { playSound(340, 'triangle', 0.08, 0.06); },
+      correct(combo = 1) {
+        const base = 523.25 * (1 + (combo - 1) * 0.1);
+        [base, base * 1.25, base * 1.5, base * 2].forEach((freq, i) => {
+          setTimeout(() => playSound(freq, 'triangle', 0.18, 0.09), i * 70);
+        });
+      },
+      wrong() {
+        playSound(220, 'sawtooth', 0.16, 0.12);
+        setTimeout(() => playSound(175, 'sawtooth', 0.22, 0.12), 90);
+      },
+      levelClear() {
+        [440, 554.37, 659.25, 880].forEach((f, i) => {
+          setTimeout(() => playSound(f, 'sine', 0.22, 0.08), i * 75);
+        });
+      }
+    };
+
+    /* =========================================================
+       2. WEB SPEECH API (THAI TTS) WITH MUTE/UNMUTE TOGGLE
+       ========================================================= */
+    function speakThai(text) {
+      if (!GameState.voiceEnabled) return;
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'th-TH';
+      utter.rate = 1.0;
+      utter.pitch = 1.15;
+      const voices = window.speechSynthesis.getVoices();
+      const th = voices.find(v => v.lang.includes('th') && (v.name.includes('Premwadee') || v.name.includes('Kanya') || v.name.includes('Thai')));
+      if (th) utter.voice = th;
+      window.speechSynthesis.speak(utter);
+    }
+
+    /* =========================================================
+       3. 20 DIVERSE SCENARIOS DATASET (REAL NESTED LOGIC READY)
+       ========================================================= */
+    const MISSIONS = [
+      // 1-5: สิ่งแวดล้อม (Environment)
+      {
+        id: 1, title: "วิกฤตน้ำท่วมคลองสายรุ้ง", cat: "env", zone: "ริมคลองและประตูระบายน้ำ", badge: "⚠️ น้ำท่วมฉับพลัน",
+        mascot: "ระดับน้ำคลองสูง 85% จากฝนตกหนัก! แถมมีขยะลอยมาติดตะแกรงเครื่องสูบน้ำจนเครื่องร้อน 88°C ต้องวางตรรกะซ้อนเพื่อเปิดประตูระบายน้ำและตักขยะออกทันที!",
+        hint: "สังเกตระดับน้ำว่าเกิน 75% ไหม และเครื่องสูบน้ำร้อนเกิน 80°C เพราะขยะติดหรือไม่",
+        sensors: [
+          { name: "ระดับน้ำในคลอง", value: "85%", unit: "เตือนภัย (>75%)", warn: true },
+          { name: "เซนเซอร์ตะแกรง", value: "มีขยะติด", unit: "ความหนาแน่นสูง", warn: true },
+          { name: "เรดาร์ฝนตก", value: "ตกหนักมาก", unit: "50 มม./ชม.", warn: true },
+          { name: "ความร้อนเครื่อง", value: "88°C", unit: "ร้อนจัด (>80°C)", warn: true }
+        ],
+        cond1Options: [
+          { text: "ระดับน้ำคลอง > 75% และ ฝนตกหนัก", isCorrect: true },
+          { text: "ระดับน้ำคลอง > 75% หรือ ท้องฟ้าแจ่มใส", isCorrect: false },
+          { text: "ระดับน้ำคลอง < 40%", isCorrect: false },
+          { text: "ระดับน้ำคลองเป็น 0% สนิท", isCorrect: false },
+          { text: "อุณหภูมิอากาศกลางแจ้ง > 38°C", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "มีขยะติดตะแกรง หรือ อุณหภูมิเครื่อง > 80°C", isCorrect: true },
+          { text: "ตะแกรงระบายน้ำสะอาดหมดจด", isCorrect: false },
+          { text: "เครื่องสูบน้ำเย็นปกติ 25°C", isCorrect: false },
+          { text: "กระแสน้ำหยุดนิ่งสนิท", isCorrect: false },
+          { text: "ความดันอากาศในท่อเป็นศูนย์", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "ปิดประตูระบายน้ำ และรักษาระดับน้ำกักเก็บตามปกติ", isCorrect: true },
+          { text: "สั่งอพยพคนขึ้นภูเขาสูง", isCorrect: false },
+          { text: "ตัดสัญญาณเตือนภัยรอบเมือง", isCorrect: false },
+          { text: "เปิดไฟประดับริมคลอง", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "เปิดประตูระบายน้ำทิศใต้ + สั่งแขนกลอัตโนมัติตักขยะออกทันที", isCorrect: true },
+          { text: "เร่งเครื่องสูบน้ำโดยไม่ต้องตักขยะ", isCorrect: false },
+          { text: "ปิดประตูระบายน้ำให้สนิทเพื่อดักขยะ", isCorrect: false },
+          { text: "ฉีดโฟมดับเพลิงใส่บานประตู", isCorrect: false },
+          { text: "รอสังเกตการณ์ต่อไปอีก 3 ชั่วโมง", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "เปิดประตูระบายน้ำทิศใต้ตามรอบปกติ (ระบบไหลสะดวก)", isCorrect: true },
+          { text: "สั่งปิดเครื่องสูบน้ำทุกตัวทันที", isCorrect: false },
+          { text: "เปิดสปริงเกอร์ฉีดน้ำรอบสถานี", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#e0f2fe"/><rect x="0" y="150" width="400" height="90" fill="#cbd5e1"/><rect x="180" y="70" width="40" height="140" fill="#64748b" rx="4"/><rect x="186" y="${s==='success'?80:130}" width="28" height="60" fill="#f59e0b" rx="4"/><rect x="0" y="${s==='success'?175:120}" width="400" height="${s==='success'?65:120}" fill="#38bdf8" opacity="0.85" rx="6"/><circle cx="100" cy="${s==='success'?168:114}" r="10" fill="#facc15"/><text x="120" y="40" fill="#0369a1" font-weight="bold" font-size="13">${s==='success'?'✨ ประตูเปิด + แขนกลตักขยะแล้ว':'⚠️ วิกฤตน้ำท่วมคลอง'}</text></svg>`
+      },
+      {
+        id: 2, title: "สวนสัตว์เพนกวินและคลื่นความร้อน", cat: "env", zone: "โซนขั้วโลกจำลอง", badge: "☀️ ร้อนจัด + สระแห้ง",
+        mascot: "กรงเพนกวินร้อนถึง 38°C และน้ำในสระยังลดเหลือ 15%! ต้องวางตรรกะซ้อนเพื่อเปิดสปริงเกอร์ละอองน้ำและเติมน้ำสะอาดด่วน!",
+        hint: "ตรวจว่าอุณหภูมิกรงร้อนเกิน 35°C หรือไม่ และระดับน้ำในสระแห้งต่ำกว่า 20% หรือเปล่า",
+        sensors: [
+          { name: "อุณหภูมิกรง", value: "38°C", unit: "ร้อนจัด (>35°C)", warn: true },
+          { name: "ระดับน้ำในสระ", value: "15%", unit: "แห้งขอด (<20%)", warn: true },
+          { name: "ความชื้นอากาศ", value: "28%", unit: "แห้งแล้งมาก", warn: true },
+          { name: "ถังน้ำใต้ดิน", value: "100%", unit: "พร้อมเติม", warn: false }
+        ],
+        cond1Options: [
+          { text: "อุณหภูมิกรง > 35°C หรือ ความชื้น < 40%", isCorrect: true },
+          { text: "อุณหภูมิเย็นฉ่ำ 18°C", isCorrect: false },
+          { text: "เพนกวินนอนหลับสบาย", isCorrect: false },
+          { text: "มีนักท่องเที่ยว 10 คน", isCorrect: false },
+          { text: "น้ำหนักเพนกวินลดลง", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "ระดับน้ำในสระ < 20% และ มีน้ำสำรองพร้อม", isCorrect: true },
+          { text: "น้ำในสระเต็ม 100%", isCorrect: false },
+          { text: "น้ำในสระกลายเป็นน้ำแข็ง", isCorrect: false },
+          { text: "ถังน้ำสำรองว่างเปล่า", isCorrect: false },
+          { text: "ฝนตกในอาคาร", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "เปิดพัดลมระบายอากาศตามรอบปกติ", isCorrect: true },
+          { text: "เปิดฮีตเตอร์เพิ่มความอบอุ่น", isCorrect: false },
+          { text: "ปิดม่านบังแสงทุกจุด", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "เปิดสปริงเกอร์ละอองน้ำเย็น + สั่งเปิดวาล์วเติมน้ำลงสระทันที", isCorrect: true },
+          { text: "เปิดสปริงเกอร์แต่ปล่อยให้น้ำในสระแห้งต่อไป", isCorrect: false },
+          { text: "ย้ายเพนกวินไปไว้กลางแจ้ง", isCorrect: false },
+          { text: "สั่งปิดสวนสัตว์ทั้งเดือน", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "เปิดเฉพาะสปริงเกอร์ละอองน้ำ (น้ำในสระยังเพียงพอ)", isCorrect: true },
+          { text: "สั่งระบายน้ำออกจากสระให้หมด", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#fef3c7"/><circle cx="340" cy="50" r="30" fill="#f59e0b"/><polygon points="80,220 140,130 200,220" fill="#bae6fd"/><ellipse cx="230" cy="170" rx="16" ry="24" fill="#0f172a"/><ellipse cx="230" cy="172" rx="11" ry="17" fill="#ffffff"/><rect x="100" y="80" width="12" height="140" fill="#64748b"/><circle cx="106" cy="75" r="8" fill="#38bdf8"/><text x="120" y="40" fill="#b45309" font-weight="bold" font-size="13">${s==='success'?'✨ ฉีดละอองน้ำ + เติมสระเต็มแล้ว':'☀️ กรงเพนกวินร้อนจัด'}</text></svg>`
+      },
+      {
+        id: 3, title: "พิทักษ์อากาศสดใส (PM2.5)", cat: "env", zone: "สวนสาธารณะเมือง", badge: "🌫️ ฝุ่นพิษ + ลมนิ่ง",
+        mascot: "เซนเซอร์ PM2.5 พุ่งสูง 145 µg/m³ แถมลมนิ่งสนิท และน้ำในถังพ่นไอน้ำลดเหลือ 18%! ต้องสั่งพ่นละอองดักฝุ่นและดึงน้ำบำบัดมาเติมทันที!",
+        hint: "ดูค่าฝุ่นว่าเกิน 90 หรือไม่ และน้ำในถังพ่นลดต่ำกว่า 20% หรือเปล่า",
+        sensors: [
+          { name: "ดัชนี PM2.5", value: "145 µg", unit: "เกณฑ์สีแดง", warn: true },
+          { name: "น้ำถังพ่น", value: "18%", unit: "ใกล้หมด (<20%)", warn: true },
+          { name: "ความเร็วลม", value: "1.2 กม.", unit: "ลมนิ่งสนิท", warn: true },
+          { name: "น้ำบ่อบำบัด", value: "100%", unit: "พร้อมใช้", warn: false }
+        ],
+        cond1Options: [
+          { text: "PM2.5 > 90 µg/m³ และ ความเร็วลม < 5 กม./ชม.", isCorrect: true },
+          { text: "PM2.5 < 25 µg/m³ อากาศบริสุทธิ์", isCorrect: false },
+          { text: "ฝนตกฟ้าร้องรุนแรง", isCorrect: false },
+          { text: "ต้นไม้ในสวนโตขึ้น 1 ซม.", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "น้ำในถังพ่น < 20% และ มีน้ำบ่อบำบัดพร้อม", isCorrect: true },
+          { text: "ถังน้ำพ่นเต็มเปี่ยม 100%", isCorrect: false },
+          { text: "น้ำในบ่อบำบัดเน่าเสีย", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "แสดงสัญญาณไฟเขียว (สภาวะอากาศปกติ)", isCorrect: true },
+          { text: "ปิดสวนสาธารณะถาวร", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "สั่งเสาพ่นละอองน้ำทำงาน + เปิดวาล์วดึงน้ำรีไซเคิลมาเติมถัง", isCorrect: true },
+          { text: "เปิดเสาพ่นน้ำแต่ปล่อยให้ถังแห้งจนไหม้", isCorrect: false },
+          { text: "สั่งห้ามทุกคนหายใจในสวน", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "สั่งเสาพ่นละอองน้ำทำงานตามปกติ", isCorrect: true },
+          { text: "ดับเครื่องฟอกอากาศทั้งหมด", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#f0fdf4"/><circle cx="80" cy="140" r="35" fill="#86efac"/><circle cx="320" cy="130" r="40" fill="#4ade80"/><rect width="400" height="240" fill="#fef08a" opacity="${s==='success'?0.15:0.6}"/><rect x="190" y="80" width="20" height="120" rx="4" fill="#64748b"/><circle cx="200" cy="75" r="14" fill="#38bdf8"/><text x="120" y="40" fill="#15803d" font-weight="bold" font-size="13">${s==='success'?'✨ อากาศสะอาด สวนสดใสแล้ว':'🌫️ ฝุ่นฟุ้งกระจายเต็มสวน'}</text></svg>`
+      },
+      {
+        id: 4, title: "ไฟไหม้ป่าชายเลนและควันหนา", cat: "env", zone: "ป่าชายเลนปากแม่น้ำ", badge: "🔥 ไฟป่า + ควันหนา",
+        mascot: "เซนเซอร์ความร้อนตรวจพบประกายไฟป่าลุกลาม และมีลมกระโชกแรงพัดเข้าหาหมู่บ้าน! ต้องสั่งเรือดับเพลิงฉีดสกัดและแจ้งเตือนแนวกันไฟ!",
+        hint: "ตรวจเงื่อนไขไฟป่าลุกลามและทิศทางลมที่พัดเข้าหาบ้านเรือน",
+        sensors: [
+          { name: "เซนเซอร์ไฟป่า", value: "ตรวจพบไฟ", unit: "ลุกลามเร็ว", warn: true },
+          { name: "ความเร็วลม", value: "35 กม./ชม.", unit: "พัดเข้าหาชุมชน", warn: true },
+          { name: "เรือดับเพลิง", value: "พร้อมลุย", unit: "จอดท่าปากอ่าว", warn: false },
+          { name: "ระบบม่านน้ำ", value: "STANDBY", unit: "รอคำสั่ง", warn: false }
+        ],
+        cond1Options: [
+          { text: "ตรวจพบไฟป่าลุกลาม และ มีลมพัดแรง", isCorrect: true },
+          { text: "ไม่มีไฟป่า อากาศชื้นเย็น", isCorrect: false },
+          { text: "ระดับน้ำขึ้นสูงสุดในรอบปี", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "ทิศทางลมพัดเข้าหาชุมชน และ เรือดับเพลิงพร้อม", isCorrect: true },
+          { text: "ลมพัดออกสู่ทะเลลึก", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "ส่งโดรนบินตรวจการณ์ลาดตระเวนตามรอบปกติ", isCorrect: true },
+          { text: "เปิดหวูดเตือนภัยระดับสูงสุด", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "สั่งเรือดับเพลิงฉีดม่านน้ำสกัดแนวหน้า + เปิดแนวม่านน้ำกันไฟชุมชน", isCorrect: true },
+          { text: "สั่งให้ชาวบ้านวิ่งเข้าไปดับไฟด้วยตนเอง", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "สั่งเรือดับเพลิงฉีดน้ำควบคุมจุดเกิดเหตุด้านนอก", isCorrect: true },
+          { text: "สั่งถอยเรือดับเพลิงออกจากพื้นที่", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#ecfeff"/><rect x="0" y="160" width="400" height="80" fill="#0284c7"/><circle cx="100" cy="140" r="25" fill="#15803d"/><circle cx="140" cy="130" r="30" fill="#16a34a"/>${s==='success'?'<path d="M260 170 Q 200 130, 150 140" stroke="#38bdf8" stroke-width="8" fill="none"/>':'<circle cx="150" cy="140" r="16" fill="#ef4444"/><circle cx="150" cy="140" r="10" fill="#f59e0b"/>'}<text x="120" y="40" fill="#0369a1" font-weight="bold" font-size="13">${s==='success'?'✨ ฉีดน้ำสกัดไฟป่าสำเร็จ':'🔥 ไฟป่าคุกรุ่นริมป่าชายเลน'}</text></svg>`
+      },
+      {
+        id: 5, title: "ถังขยะอัจฉริยะล้นในงานกาชาด", cat: "env", zone: "ลานกิจกรรมกลางเมือง", badge: "🗑️ ขยะล้น + เครื่องอัดติด",
+        mascot: "ถังขยะอัจฉริยะในงานเทศบาลเต็ม 95% และใบมีดบดอัดขยะติดขัดจากกระป๋องอะลูมิเนียม! ต้องสั่งตัดไฟใบมีดและเรียกรถเก็บขยะด่วน!",
+        hint: "ตรวจสอบความจุขยะว่าเกิน 90% หรือไม่ และมอเตอร์ใบมีดอัดติดขัดหรือไม่",
+        sensors: [
+          { name: "ความจุขยะ", value: "95%", unit: "ขยะล้นถัง", warn: true },
+          { name: "มอเตอร์บดอัด", value: "JAM (ติดขัด)", unit: "กระแสไฟเกิน", warn: true },
+          { name: "รถเก็บขยะ EV", value: "สแตนด์บาย", unit: "พร้อมวิ่งมาเก็บ", warn: false },
+          { name: "จำนวนคนในงาน", value: "1,200 คน", unit: "คนหนาแน่น", warn: false }
+        ],
+        cond1Options: [
+          { text: "ความจุขยะ > 90% และ มีคนในงานหนาแน่น", isCorrect: true },
+          { text: "ถังขยะว่างเปล่า 0%", isCorrect: false },
+          { text: "งานกาชาดยังไม่เปิด", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "มอเตอร์บดอัดติดขัด (JAM) จากสิ่งแปลกปลอม", isCorrect: true },
+          { text: "มอเตอร์หมุนคล่องตัวปกติ", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "เปิดถังขยะรับตามรอบปกติ", isCorrect: true },
+          { text: "ปิดไฟรอบบริเวณงานทั้งหมด", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "ตัดไฟมอเตอร์บดอัดชั่วคราว + เรียกรถเก็บขยะ EV มาถ่ายเทด่วน", isCorrect: true },
+          { text: "ฝืนเร่งมอเตอร์บดอัดจนมอเตอร์ไหม้", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "สั่งระบบบดอัดอัตโนมัติทำงานตามรอบ", isCorrect: true },
+          { text: "เทขยะลงบนพื้นถนน", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#f8fafc"/><rect x="150" y="80" width="100" height="130" rx="10" fill="#64748b"/><rect x="160" y="100" width="80" height="100" rx="6" fill="${s==='success'?'#10b981':'#ef4444'}"/><text x="180" y="150" fill="#fff" font-weight="bold" font-size="20">🗑️</text><text x="120" y="40" fill="#1e293b" font-weight="bold" font-size="13">${s==='success'?'✨ ถังขยะว่าง สะอาดเรียบร้อย':'🗑️ ขยะล้นถังอัจฉริยะ'}</text></svg>`
+      },
+
+      // 6-10: คมนาคม (Transportation)
+      {
+        id: 6, title: "สี่แยกกู้ภัยไฟแดงฉุกเฉิน", cat: "traffic", zone: "สี่แยกโรงพยาบาลกลาง", badge: "🚑 ผู้ป่วยฉุกเฉิน + ทางปิด",
+        mascot: "มีรถพยาบาลเปิดไซเรนขอทางด่วน และกล้องตรวจพบกิ่งไม้ใหญ่หักขวางเลนข้างหน้า! ต้องวางตรรกะซ้อนเพื่อเปิดไฟเขียวและสั่งเบี่ยงเลนฉุกเฉินทันที!",
+        hint: "ตรวจว่ามีรถพยาบาลในเลน B และมีสิ่งกีดขวางในเลนหรือไม่",
+        sensors: [
+          { name: "ไซเรนฉุกเฉิน", value: "ตรวจพบ 1 คัน", unit: "เลน B ขอทางด่วน", warn: true },
+          { name: "กล้องตรวจเลน", value: "มีกิ่งไม้ขวาง", unit: "เลนซ้ายติดขัด", warn: true },
+          { name: "รถสะสมเลน A", value: "28 คัน", unit: "รถหนาแน่น", warn: false },
+          { name: "ความเร็วรถพยาบาล", value: "75 กม./ชม.", unit: "ความเร็วสูง", warn: true }
+        ],
+        cond1Options: [
+          { text: "ตรวจพบรถพยาบาลฉุกเฉินในเลน B", isCorrect: true },
+          { text: "รถสะสมเลน A มากกว่า 50 คัน", isCorrect: false },
+          { text: "สัญญาณไฟเสียทุกดวง", isCorrect: false },
+          { text: "เป็นเวลาเที่ยงคืน", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "มีสิ่งกีดขวางเลน และ รถวิ่งด้วยความเร็วสูง", isCorrect: true },
+          { text: "ถนนโล่ง ไร้สิ่งกีดขวาง", isCorrect: false },
+          { text: "รถพยาบาลจอดนิ่งสนิท", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "เปิดไฟเขียวระบายรถเลน A ตามรอบปกติ", isCorrect: true },
+          { text: "สั่งปิดไฟแดงทุกเลน 30 นาที", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "เปิดไฟเขียวเลน B + เปิดป้ายไฟเตือน 'เบี่ยงขวาเข้าเลนฉุกเฉิน'", isCorrect: true },
+          { text: "เปิดไฟเขียวเลน B แต่ปล่อยให้รถพยาบาลชนกิ่งไม้", isCorrect: false },
+          { text: "สั่งหยุดรถพยาบาลกะทันหัน", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "เปิดไฟเขียวให้เลน B วิ่งตรงต่อไปตามปกติ", isCorrect: true },
+          { text: "สั่งเลี้ยวกลับรถทุกคัน", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#f1f5f9"/><rect x="150" y="0" width="100" height="240" fill="#cbd5e1"/><rect x="0" y="70" width="400" height="100" fill="#cbd5e1"/><rect x="265" y="20" width="24" height="42" rx="6" fill="#1e293b"/><circle cx="277" cy="41" r="7" fill="${s==='success'?'#10b981':'#ef4444'}"/><g transform="translate(182, 160)"><rect width="36" height="58" rx="8" fill="#ffffff" stroke="#ef4444" stroke-width="2"/><circle cx="18" cy="8" r="5" fill="#38bdf8"/></g><text x="120" y="40" fill="#1e293b" font-weight="bold" font-size="13">${s==='success'?'✨ ไฟเขียว + เบี่ยงเลนปลอดภัย':'🚑 รถพยาบาลขอทางด่วน'}</text></svg>`
+      },
+      {
+        id: 7, title: "โดรนส่งยาฉุกเฉินสู้ลมพายุ", cat: "traffic", zone: "น่านฟ้าเมืองอัจฉริยะ", badge: "🌪️ ลมแรงจัด + โดมล็อก",
+        mascot: "โดรนส่งวัคซีนเจอลมพายุ 82 กม./ชม. บินต่อไม่ได้ และหลังคาโดมแท่นจอดฉุกเฉินปิดล็อกอยู่! ต้องวางตรรกะซ้อนเพื่อสั่งลงจอดและยิงรหัสปลดล็อกโดมทันที!",
+        hint: "ตรวจความเร็วลมว่าเกิน 60 กม./ชม. หรือไม่ และตรวจว่าประตูลานจอดล็อกอยู่หรือไม่",
+        sensors: [
+          { name: "ความเร็วลม", value: "82 กม./ชม.", unit: "พายุรุนแรง (>60)", warn: true },
+          { name: "ประตูลานจอด", value: "LOCKED", unit: "ระบบเซฟตี้ทำงาน", warn: true },
+          { name: "เสถียรภาพโดรน", value: "18%", unit: "เซไปมาอันตราย", warn: true },
+          { name: "ความเย็นกล่องยา", value: "เริ่มลดลง", unit: "ต้องรีบเก็บ", warn: true }
+        ],
+        cond1Options: [
+          { text: "ความเร็วลม > 60 กม./ชม. หรือ โดรนเสียการทรงตัว", isCorrect: true },
+          { text: "ลมสงบ ท้องฟ้าโปร่งใส", isCorrect: false },
+          { text: "โดรนบินด้วยความเร็วเสียง", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "ประตูลานจอดล็อก และ ต้องส่งยาเร่งด่วน", isCorrect: true },
+          { text: "ประตูลานจอดเปิดกว้างพร้อมลงจอด", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "บินส่งของต่อไปตามเส้นทางเดิม", isCorrect: true },
+          { text: "สั่งหยุดใบพัดกลางอากาศ", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "สั่งโดรนลงจอดฉุกเฉิน + ยิงสัญญาณรหัสปลดล็อกหลังคาโดมทันที", isCorrect: true },
+          { text: "สั่งโดรนบินฝ่าพายุไปข้างหน้า", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "สั่งโดรนลงจอดบนลานจอดเปิดโล่งตามปกติ", isCorrect: true },
+          { text: "ให้โดรนลอยตัวนิ่งกลางสายฝน", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#e2e8f0"/><rect x="150" y="150" width="100" height="90" fill="#334155" rx="8"/><ellipse cx="200" cy="150" rx="40" ry="12" fill="#facc15"/><g transform="translate(180, ${s==='success'?140:60})"><rect x="10" y="10" width="20" height="15" rx="4" fill="#ef4444"/><circle cx="0" cy="8" r="7" fill="#38bdf8"/><circle cx="40" cy="8" r="7" fill="#38bdf8"/></g><text x="110" y="40" fill="#0369a1" font-weight="bold" font-size="13">${s==='success'?'✨ ปลดล็อกโดม + โดรนลงจอดปลอดภัย':'🌪️ พายุพัดแรง โดรนทรงตัวยาก'}</text></svg>`
+      },
+      {
+        id: 8, title: "สะพานแก้วสกายวอล์กร้าว", cat: "traffic", zone: "สะพานชมวิวหน้าผา", badge: "🌉 กระจกร้าว + คนแน่น",
+        mascot: "เซนเซอร์แรงสั่นสะเทือนตรวจพบรอยร้าวที่แผ่นกระจกสะพานแก้ว และมีนักท่องเที่ยวอยู่บนสะพาน 45 คน! ต้องสั่งปิดประตูทางเข้าและนำคนออกทันที!",
+        hint: "ตรวจหารอยร้าวบนแผ่นกระจกและจำนวนคนบนสะพาน",
+        sensors: [
+          { name: "เซนเซอร์รอยร้าว", value: "ตรวจพบรอยแตก", unit: "ระดับ 2 เสี่ยงสูง", warn: true },
+          { name: "คนบนสะพาน", value: "45 คน", unit: "ต้องอพยพด่วน", warn: true },
+          { name: "ประตูทางเข้า", value: "OPEN", unit: "คนยังเดินเข้า", warn: true },
+          { name: "ลมปะทะสะพาน", value: "20 กม./ชม.", unit: "ลมปานกลาง", warn: false }
+        ],
+        cond1Options: [
+          { text: "ตรวจพบรอยร้าวบนกระจกสะพาน", isCorrect: true },
+          { text: "กระจกสะพานใสสะอาด ไร้รอย", isCorrect: false },
+          { text: "สะพานไม่มีใครเดินเลย", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "ยังมีคนอยู่บนสะพาน > 0 คน และ ประตูเปิดอยู่", isCorrect: true },
+          { text: "สะพานว่างเปล่าไร้ผู้คน", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "เปิดสะพานแก้วให้นักท่องเที่ยวเข้าชมตามปกติ", isCorrect: true },
+          { text: "สั่งรื้อถอนสะพานทิ้ง", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "สั่งล็อกประตูด้านนอกห้ามเข้า + เปิดประตูออกและนำคนอพยพออกทันที", isCorrect: true },
+          { text: "เปิดเพลงให้นักท่องเที่ยวเต้นบนกระจก", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "สั่งปิดสะพานชั่วคราวเพื่อรอทีมช่างวิศวกรเข้าซ่อม", isCorrect: true },
+          { text: "เปิดให้วิ่งแข่งบนสะพาน", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#f0f9ff"/><rect x="40" y="120" width="320" height="20" rx="6" fill="${s==='success'?'#38bdf8':'#f43f5e'}" opacity="0.8"/><line x1="80" y1="120" x2="60" y2="240" stroke="#64748b" stroke-width="4"/><line x1="320" y1="120" x2="340" y2="240" stroke="#64748b" stroke-width="4"/><text x="120" y="40" fill="#0f172a" font-weight="bold" font-size="13">${s==='success'?'✨ อพยพคนปลอดภัย + ปิดซ่อม':'⚠️ ตรวจพบรอยร้าวบนสะพาน'}</text></svg>`
+      },
+      {
+        id: 9, title: "เรือข้ามฟากไฟฟ้าแบตเตอรี่เตือน", cat: "traffic", zone: "ท่าเรือแม่น้ำสายหลัก", badge: "⛴️ แบตต่ำ + คลื่นแรง",
+        mascot: "เรือข้ามฟากไฟฟ้ากำลังพาผู้โดยสาร 80 คนข้ามฝั่ง แต่แบตเตอรี่ลดเหลือ 8% ท่ามกลางกระแสน้ำเชี่ยว! ต้องสั่งเปิดมอเตอร์สำรองและเรียกเรือลากจูง!",
+        hint: "ดูระดับแบตเตอรี่ว่าต่ำกว่า 10% หรือไม่ และมีกระแสน้ำเชี่ยวหรือไม่",
+        sensors: [
+          { name: "แบตเตอรี่เรือ", value: "8%", unit: "วิกฤต (<10%)", warn: true },
+          { name: "กระแสน้ำ", value: "เชี่ยวกราก", unit: "พัดออกนอกทิศ", warn: true },
+          { name: "ผู้โดยสาร", value: "80 คน", unit: "บนเรือ", warn: false },
+          { name: "เรือลากจูง", value: "พร้อมที่ท่า", unit: "ระยะ 200 ม.", warn: false }
+        ],
+        cond1Options: [
+          { text: "แบตเตอรี่เรือ < 10% และ มีผู้โดยสารบนเรือ", isCorrect: true },
+          { text: "แบตเตอรี่เต็ม 100%", isCorrect: false },
+          { text: "เรือจอดเทียบท่าสนิทแล้ว", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "กระแสน้ำเชี่ยวกราก เสี่ยงลอยออกนอกร่องน้ำ", isCorrect: true },
+          { text: "น้ำนิ่งสนิท ไร้คลื่นลม", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "แล่นเรือข้ามฟากตามตารางปกติ", isCorrect: true },
+          { text: "ทอดสมอกลางร่องน้ำเดินเรือพาณิชย์", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "สลับใช้ไฟแบตเตอรี่สำรองฉุกเฉิน + ส่งสัญญาณเรียกเรือลากจูงมาเทียบท่า", isCorrect: true },
+          { text: "ดับเครื่องยนต์เรือทุกลำปล่อยลอยตามน้ำ", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "ใช้กำลังไฟสำรองประคองเรือเข้าท่าเรือใกล้ที่สุด", isCorrect: true },
+          { text: "ให้ผู้โดยสารว่ายน้ำเข้าฝั่ง", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#bae6fd"/><rect x="0" y="130" width="400" height="110" fill="#0284c7"/><g transform="translate(${s==='success'?220:120}, 110)"><rect width="90" height="35" rx="6" fill="#f8fafc"/><rect x="20" y="5" width="45" height="20" rx="4" fill="#3b82f6"/><text x="40" y="20" fill="#fff" font-size="10">FERRY</text></g><text x="110" y="40" fill="#0369a1" font-weight="bold" font-size="13">${s==='success'?'✨ เรือลากจูงเทียบท่าปลอดภัย':'⛴️ แบตเตอรี่เรือต่ำฉุกเฉิน'}</text></svg>`
+      },
+      {
+        id: 10, title: "รถไฟฟ้ารางเบาหินตกขวางราง", cat: "traffic", zone: "ทางรถไฟรอบเขา", badge: "🚝 หินขวางราง + ฝนตก",
+        mascot: "เซนเซอร์รางรถไฟตรวจพบก้อนหินขนาดใหญ่ตกขวางหน้ารถไฟรางเบาในระยะ 300 เมตร! ต้องสั่งเปิดระบบเบรกแม่เหล็กและสับรางเบี่ยงขบวนรถ!",
+        hint: "ตรวจสอบสิ่งกีดขวางบนรางและระยะเบรกปลอดภัย",
+        sensors: [
+          { name: "เซนเซอร์บนราง", value: "มีก้อนหินขวาง", unit: "ระยะ 300 เมตร", warn: true },
+          { name: "ความเร็วรถไฟ", value: "60 กม./ชม.", unit: "ต้องการระยะเบรก", warn: true },
+          { name: "รางเบี่ยงสำรอง", value: "ว่าง ปลอดภัย", unit: "พร้อมสับราง", warn: false },
+          { name: "ระบบเบรกฉุกเฉิน", value: "พร้อมทำงาน", unit: "เบรกแม่เหล็ก", warn: false }
+        ],
+        cond1Options: [
+          { text: "ตรวจพบสิ่งกีดขวางบนรางในระยะประชิด", isCorrect: true },
+          { text: "รางรถไฟโล่ง สะอาด ปลอดภัย", isCorrect: false },
+          { text: "รถไฟจอดรับผู้โดยสารที่สถานี", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "ความเร็วรถไฟสูง และ รางเบี่ยงสำรองว่าง", isCorrect: true },
+          { text: "รถไฟหยุดสนิทแล้ว", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "อนุญาตให้รถไฟวิ่งด้วยความเร็วปกติตามตาราง", isCorrect: true },
+          { text: "สั่งหยุดรถไฟทุกขบวนในจังหวัด", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "สั่งเบรกแม่เหล็กฉุกเฉินทันที + สับรางเข้าเส้นทางเบี่ยงสำรอง", isCorrect: true },
+          { text: "เร่งความเร็วรถไฟชนก้อนหินให้กระเด็น", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "สั่งลดความเร็วและจอดเทียบสถานีก่อนถึงจุดขวาง", isCorrect: true },
+          { text: "ตัดกระแสไฟรางรถไฟทั้งหมดกะทันหัน", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#f1f5f9"/><rect x="0" y="140" width="400" height="15" fill="#475569"/><rect x="0" y="170" width="400" height="15" fill="#475569"/><rect x="280" y="125" width="30" height="30" rx="4" fill="${s==='success'?'#10b981':'#78350f'}"/><g transform="translate(${s==='success'?80:160}, 125)"><rect width="80" height="30" rx="6" fill="#3b82f6"/><text x="15" y="20" fill="#fff" font-weight="bold" font-size="11">MONORAIL</text></g><text x="120" y="40" fill="#1e293b" font-weight="bold" font-size="13">${s==='success'?'✨ สับรางเบี่ยง + เบรกปลอดภัย':'🚝 หินก้อนใหญ่ขวางราง'}</text></svg>`
+      },
+
+      // 11-15: พลังงาน (Energy)
+      {
+        id: 11, title: "ฟาร์มโซลาร์เซลล์ไฟดับฉุกเฉิน", cat: "energy", zone: "ทุ่งพลังงานแสงอาทิตย์", badge: "⚡ ไฟฟ้าดับ + แบตเตอรี่ต่ำ",
+        mascot: "แผงโซลาร์เซลล์ดับสนิทจากเมฆฝนบดบัง และแบตเตอรี่สำรองลดเหลือเพียง 25%! ต้องวางตรรกะซ้อนเพื่อสลับจ่ายไฟสำรองและตัดไฟประดับที่ไม่จำเป็นออก!",
+        hint: "ตรวจว่ากำลังไฟโซลาร์เป็น 0 หรือไม่ และแบตเตอรี่ต่ำกว่า 30% หรือเปล่า",
+        sensors: [
+          { name: "ไฟโซลาร์เซลล์", value: "0 kW", unit: "ไฟดับสนิท", warn: true },
+          { name: "ความจุแบตเตอรี่", value: "25%", unit: "เตือนภัย (<30%)", warn: true },
+          { name: "ไฟประดับสวนสนุก", value: "ON", unit: "กินไฟสูงมาก", warn: true },
+          { name: "ห้องผ่าตัด รพ.", value: "ต้องการไฟด่วน", unit: "สำคัญสูงสุด", warn: true }
+        ],
+        cond1Options: [
+          { text: "กำลังไฟโซลาร์เป็น 0 kW (ไฟหลักดับ)", isCorrect: true },
+          { text: "แดดส่องจ้า แผงทำงาน 100%", isCorrect: false },
+          { text: "กำลังไฟโซลาร์เกิน 1,000 kW", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "แบตเตอรี่ < 30% และ มีไฟประดับเปิดอยู่", isCorrect: true },
+          { text: "แบตเตอรี่เหลือมากกว่า 80%", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "ใช้พลังงานแสงอาทิตย์จ่ายไฟเข้าระบบตามปกติ", isCorrect: true },
+          { text: "ดับไฟทั้งเมืองเพื่อประหยัดเงิน", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "สลับใช้ไฟแบตเตอรี่สำรอง + สั่งปิดไฟประดับ สงวนไฟให้ห้องผ่าตัด", isCorrect: true },
+          { text: "เปิดไฟประดับสวนสนุกเพิ่มให้สว่างขึ้น", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "จ่ายไฟจากแบตเตอรี่สำรองเข้าทุกอาคารตามปกติ", isCorrect: true },
+          { text: "ปิดสวิตช์ระบบไฟฟ้าทั้งหมด", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#0f172a"/><polygon points="50,180 120,180 150,140 80,140" fill="#1e293b" stroke="#475569" stroke-width="2"/><rect x="250" y="80" width="110" height="120" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/><rect x="270" y="100" width="25" height="30" rx="4" fill="${s==='success'?'#fef08a':'#334155'}"/><text x="120" y="40" fill="#38bdf8" font-weight="bold" font-size="13">${s==='success'?'✨ ไฟสำรองจ่ายเข้าโรงพยาบาลแล้ว':'⚡ ไฟฟ้าหลักดับสนิท'}</text></svg>`
+      },
+      {
+        id: 12, title: "กังหันลมหมุนเร็วเกินพิกัด", cat: "energy", zone: "ทุ่งกังหันลมยอดดอย", badge: "💨 ลมพายุหมุนเร็วจัด",
+        mascot: "ลมพายุพัดแรงจัดจนใบพัดกังหันลมหมุนทะลุ 90 รอบ/นาที เสี่ยงต่อการหักโค่น! ต้องสั่งปรับองศาใบพัดลู่ลมและเปิดระบบเบรกแม่เหล็ก!",
+        hint: "ตรวจความเร็วรอบกังหันลมว่าเกิน 80 RPM หรือไม่",
+        sensors: [
+          { name: "ความเร็วรอบกังหัน", value: "92 RPM", unit: "อันตราย (>80)", warn: true },
+          { name: "ความเร็วลมยอดเขา", value: "75 กม./ชม.", unit: "พายุลมกระโชก", warn: true },
+          { name: "เบรกแม่เหล็ก", value: "READY", unit: "พร้อมล็อกแกน", warn: false },
+          { name: "กำลังไฟที่ผลิต", value: "โอเวอร์โหลด", unit: "แรงดันเกิน", warn: true }
+        ],
+        cond1Options: [
+          { text: "ความเร็วรอบกังหัน > 80 RPM หรือ ลม > 70 กม./ชม.", isCorrect: true },
+          { text: "ลมสงบ กังหันนิ่งสนิท", isCorrect: false },
+          { text: "กังหันลมหมุนช้าๆ 10 RPM", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "กำลังไฟโอเวอร์โหลด และ เบรกแม่เหล็กพร้อมทำงาน", isCorrect: true },
+          { text: "กำลังไฟฟ้าระดับต่ำมาก", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "ปล่อยให้กังหันลมผลิตไฟฟ้าตามรอบธรรมชาติ", isCorrect: true },
+          { text: "สั่งถอดใบพัดกังหันลมออก", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "สั่งปรับองศาใบพัดลู่ตามลม (Pitch Control) + เปิดเบรกแม่เหล็กชะลอทันที", isCorrect: true },
+          { text: "เร่งให้กังหันลมหมุนเร็วขึ้นอีก", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "ปรับมุมใบพัดเพื่อลดแรงต้านลมเบื้องต้น", isCorrect: true },
+          { text: "สั่งตัดสายไฟกังหันลมทิ้ง", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#e0f2fe"/><rect x="195" y="80" width="10" height="140" fill="#64748b"/><circle cx="200" cy="80" r="12" fill="#334155"/><line x1="200" y1="80" x2="160" y2="30" stroke="${s==='success'?'#10b981':'#ef4444'}" stroke-width="6" stroke-linecap="round"/><line x1="200" y1="80" x2="240" y2="30" stroke="${s==='success'?'#10b981':'#ef4444'}" stroke-width="6" stroke-linecap="round"/><text x="110" y="40" fill="#0369a1" font-weight="bold" font-size="13">${s==='success'?'✨ ปรับใบพัดลู่ลม ปลอดภัย':'💨 กังหันลมหมุนเร็วอันตราย'}</text></svg>`
+      },
+      {
+        id: 13, title: "เสาเรดาร์ตรวจอากาศนกเกาะ", cat: "energy", zone: "สถานีอุตุนิยมวิทยา", badge: "📡 สัญญาณรบกวน + นกเกาะ",
+        mascot: "เซนเซอร์เรดาร์ส่งสัญญาณเตือนว่ามีฝูงนกบินมาเกาะจานรับสัญญาณจนคลื่นเรดาร์เพี้ยน! ต้องสั่งเปิดคลื่นเสียงความถี่สูงไล่นกและรีเซ็ตระบบรับสัญญาณ!",
+        hint: "ตรวจคลื่นสัญญาณรบกวนและเซนเซอร์ตรวจจับสิ่งแปลกปลอมบนจานเรดาร์",
+        sensors: [
+          { name: "สัญญาณเรดาร์", value: "NOISE (เพี้ยน)", unit: "คลื่นถูกบดบัง", warn: true },
+          { name: "ตรวจจับสิ่งกีดขวาง", value: "ฝูงนก 20 ตัว", unit: "เกาะบนจาน", warn: true },
+          { name: "ลำโพงอัลตราโซนิก", value: "พร้อมทำงาน", unit: "คลื่นไล่นก", warn: false },
+          { name: "พยากรณ์พายุ", value: "ต้องการข้อมูลด่วน", unit: "เร่งด่วน", warn: true }
+        ],
+        cond1Options: [
+          { text: "สัญญาณเรดาร์มีคลื่นรบกวน และ ตรวจพบนกเกาะ", isCorrect: true },
+          { text: "สัญญาณเรดาร์ชัดเจน 100%", isCorrect: false },
+          { text: "จานเรดาร์หมุนปกติ", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "ต้องการข้อมูลพยากรณ์ด่วน และ ลำโพงไล่นกพร้อม", isCorrect: true },
+          { text: "ไม่มีความจำเป็นต้องใช้เรดาร์", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "หมุนสแกนข้อมูลสภาพอากาศตามรอบปกติ", isCorrect: true },
+          { text: "ปิดสถานีตรวจอากาศชั่วคราว", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "เปิดคลื่นเสียงความถี่สูงไล่นกไม่เป็นอันตราย + ปรับจูนคลื่นเรดาร์ใหม่ทันที", isCorrect: true },
+          { text: "ยิงพลุใส่จานเรดาร์", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "สั่งหมุนส่ายจานเรดาร์เพื่อให้นกบินหนีไปเอง", isCorrect: true },
+          { text: "ปิดจานเรดาร์ทิ้งไว้ข้ามวัน", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#f8fafc"/><rect x="190" y="100" width="20" height="120" fill="#475569"/><circle cx="200" cy="80" r="40" fill="none" stroke="${s==='success'?'#10b981':'#ef4444'}" stroke-width="8"/><circle cx="200" cy="80" r="10" fill="#3b82f6"/><text x="120" y="40" fill="#1e293b" font-weight="bold" font-size="13">${s==='success'?'✨ ส่งคลื่นไล่นก สัญญาณชัดเจน':'📡 เรดาร์ถูกฝูงนกบดบัง'}</text></svg>`
+      },
+      {
+        id: 14, title: "ลูกแมวติดยอดเสาไฟโซลาร์", cat: "energy", zone: "ลานจอดรถพลังงานสะอาด", badge: "🐱 ลูกแมวติดเสาไฟ",
+        mascot: "กล้อง AI ตรวจพบน้องแมวปีนขึ้นไปติดอยู่บนยอดแผงโซลาร์เซลล์ของเสาไฟส่องสว่าง และแผงเริ่มสะสมความร้อน 50°C! ต้องลดแผงลงและส่งกระเช้าไปช่วย!",
+        hint: "ตรวจพบสิ่งมีชีวิตติดบนเสาไฟโซลาร์เซลล์และความร้อนแผง",
+        sensors: [
+          { name: "กล้อง AI ตรวจจับ", value: "ลูกแมว 1 ตัว", unit: "ติดบนยอดเสา", warn: true },
+          { name: "ความร้อนแผงไฟ", value: "52°C", unit: "ร้อนจัด", warn: true },
+          { name: "ระบบเสาไฮดรอลิก", value: "ปรับระดับได้", unit: "พร้อมลดเสา", warn: false },
+          { name: "ทีมกู้ภัยเมือง", value: "ถึงที่เกิดเหตุ", unit: "พร้อมเบาะรอง", warn: false }
+        ],
+        cond1Options: [
+          { text: "ตรวจพบสิ่งมีชีวิตติดอยู่บนเสาไฟ และ แผงมีความร้อน", isCorrect: true },
+          { text: "เสาไฟทำงานปกติ ไม่มีสิ่งแปลกปลอม", isCorrect: false },
+          { text: "เป็นเวลากลางคืนไฟติดสว่าง", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "ระบบเสาไฮดรอลิกพร้อม และ ทีมกู้ภัยมีเบาะรอง", isCorrect: true },
+          { text: "ไม่มีใครอยู่แถวนั้นเลย", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "เปิดไฟส่องสว่างตามรอบเวลาปกติ", isCorrect: true },
+          { text: "ฉีดน้ำแรงดันสูงใส่เสาไฟ", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "ตัดกระแสไฟแผงโซลาร์ชั่วคราว + สั่งลดระดับเสาไฮดรอลิกลงมาช่วยน้องแมว", isCorrect: true },
+          { text: "เขย่าเสาไฟแรงๆ ให้น้องแมวกระโดดลงมาเอง", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "กางเบาะลมกู้ภัยรอบโคนเสาไฟเพื่อความปลอดภัย", isCorrect: true },
+          { text: "เปิดสวิตช์ช็อตไฟฟ้าบนเสา", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#ecfeff"/><rect x="195" y="${s==='success'?120:70}" width="10" height="${s==='success'?100:150}" fill="#64748b"/><polygon points="170,70 230,70 210,60 190,60" fill="#3b82f6"/><text x="190" y="${s==='success'?120:60}" font-size="20">🐱</text><text x="120" y="40" fill="#0369a1" font-weight="bold" font-size="13">${s==='success'?'✨ ลดเสาลง ช่วยน้องแมวปลอดภัย':'🐱 น้องแมวติดบนเสาไฟ'}</text></svg>`
+      },
+      {
+        id: 15, title: "ลานสเก็ตน้ำแข็งแอร์ตัด", cat: "energy", zone: "ศูนย์กีฬาเยาวชน", badge: "⛸️ น้ำแข็งละลาย + คอมแอร์ตัด",
+        mascot: "คอมเพรสเซอร์ทำความเย็นลานสเก็ตตัดการทำงานเพราะความร้อนสะสม ผิวน้ำแข็งเริ่มละลายกลายเป็นแอ่งน้ำ! ต้องสลับใช้ชิลเลอร์สำรองและเกลี่ยน้ำแข็งด่วน!",
+        hint: "ตรวจอุณหภูมิผิวน้ำแข็งว่าสูงกว่า 0°C หรือไม่ และคอมเพรสเซอร์ตัดการทำงานหรือไม่",
+        sensors: [
+          { name: "อุณหภูมิผิวน้ำแข็ง", value: "3.5°C", unit: "เริ่มละลาย (>0°C)", warn: true },
+          { name: "คอมเพรสเซอร์หลัก", value: "TRIP (ตัดไฟ)", unit: "ความร้อนเกิน", warn: true },
+          { name: "ชิลเลอร์สำรอง B", value: "พร้อมเดินเครื่อง", unit: "ระบบสำรอง", warn: false },
+          { name: "คนเล่นสเก็ต", value: "25 คน", unit: "เสี่ยงลื่นล้ม", warn: true }
+        ],
+        cond1Options: [
+          { text: "อุณหภูมิน้ำแข็ง > 0°C หรือ คอมเพรสเซอร์หลักตัดไฟ", isCorrect: true },
+          { text: "น้ำแข็งแข็งตัวดี -5°C", isCorrect: false },
+          { text: "ลานสเก็ตปิดทำการ", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "มีคนอยู่ในลานสเก็ต และ ชิลเลอร์สำรองพร้อม", isCorrect: true },
+          { text: "ชิลเลอร์สำรองเสียหาย", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "ควบคุมความเย็นตามอุณหภูมิมาตรฐาน", isCorrect: true },
+          { text: "เปิดฮีตเตอร์เป่าลานสเก็ต", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "สลับเดินเครื่องชิลเลอร์สำรอง B ทันที + ประกาศให้คนทยอยออกจากลานชั่วคราว", isCorrect: true },
+          { text: "ปล่อยให้น้ำแข็งละลายกลายเป็นสระว่ายน้ำ", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "เดินเครื่องชิลเลอร์สำรอง B ปรับความเย็นให้คงที่", isCorrect: true },
+          { text: "เทน้ำร้อนลงบนลานน้ำแข็ง", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#f0f9ff"/><ellipse cx="200" cy="150" rx="160" ry="60" fill="${s==='success'?'#bae6fd':'#38bdf8'}"/><ellipse cx="200" cy="150" rx="140" ry="45" fill="${s==='success'?'#e0f2fe':'#0284c7'}" opacity="0.8"/><text x="110" y="40" fill="#0369a1" font-weight="bold" font-size="13">${s==='success'?'✨ ชิลเลอร์สำรองทำงาน น้ำแข็งคงตัว':'⛸️ น้ำแข็งในลานเริ่มละลาย'}</text></svg>`
+      },
+
+      // 16-20: โรงเรียน & ชุมชน (School & Community)
+      {
+        id: 16, title: "ตู้แช่อาหารกลางวันโรงเรียน", cat: "school", zone: "ครัวกลางโรงเรียน", badge: "❄️ อุณหภูมิพุ่ง + น้ำแข็งเกาะ",
+        mascot: "ประตูห้องเย็นเปิดค้างจนอุณหภูมิพุ่งแตะ 15°C และยังมีเกล็ดน้ำแข็งอุดตันท่อลมเย็น! ต้องวางตรรกะซ้อนเพื่อสั่งปิดประตูและเปิดขดลวดละลายน้ำแข็ง!",
+        hint: "ตรวจอุณหภูมิตู้แช่ว่าสูงเกิน 8°C และมีน้ำแข็งอุดตันท่อลมหรือไม่",
+        sensors: [
+          { name: "อุณหภูมิตู้แช่", value: "15°C", unit: "เกณฑ์อันตราย (>8°C)", warn: true },
+          { name: "น้ำแข็งเกาะท่อ", value: "หนา 5 ซม.", unit: "อุดตันท่อลม", warn: true },
+          { name: "ประตูห้องเย็น", value: "เปิดค้าง 10 นาที", unit: "ไอเย็นรั่วไหล", warn: true },
+          { name: "ขดลวดความร้อน", value: "STANDBY", unit: "พร้อมละลายน้ำแข็ง", warn: false }
+        ],
+        cond1Options: [
+          { text: "อุณหภูมิตู้แช่ > 8°C หรือ ประตูเปิดค้าง", isCorrect: true },
+          { text: "อุณหภูมิเย็นฉ่ำ 2°C ไร้ที่ติ", isCorrect: false },
+          { text: "ไม่มีอาหารในตู้แช่เลย", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "มีน้ำแข็งเกาะหนา และ ท่อระบายลมตัน", isCorrect: true },
+          { text: "ท่อระบายลมโล่ง สะอาด", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "รักษาอุณหภูมิตู้แช่ตามรอบปกติ", isCorrect: true },
+          { text: "ถอดปลั๊กตู้แช่ทิ้งไว้", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "สั่งปิดประตูไฮดรอลิกอัตโนมัติ + เปิดขดลวดละลายน้ำแข็งทันที", isCorrect: true },
+          { text: "สั่งทิ้งอาหารกลางวันทั้งหมดทันที", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "สั่งปิดประตูไฮดรอลิกอัตโนมัติ (ท่อลมยังใช้งานได้)", isCorrect: true },
+          { text: "เปิดไฟสปอร์ตไลท์ส่องในตู้", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#ecfeff"/><rect x="80" y="50" width="240" height="150" rx="16" fill="#cbd5e1" stroke="#0284c7" stroke-width="4"/><rect x="${s==='success'?180:130}" y="65" width="80" height="120" rx="8" fill="#38bdf8"/><text x="100" y="38" fill="#0369a1" font-weight="bold" font-size="13">${s==='success'?'✨ ประตูปิดสนิท + ละลายน้ำแข็งแล้ว':'❄️ ตู้แช่อุณหภูมิสูง นมเสี่ยงบูด'}</text></svg>`
+      },
+      {
+        id: 17, title: "รถบัสโรงเรียน EV แบตเตอรี่ต่ำ", cat: "school", zone: "เส้นทางรับส่งนักเรียน", badge: "🚌 แบตเตอรี่เตือน + รถติด",
+        mascot: "รถบัสไฟฟ้ารับส่งนักเรียนแบตเตอรี่ลดเหลือ 12% ขณะรถติดอยู่บนถนนใหญ่! ต้องสั่งตัดแอร์ห้องสัมภาระและเบี่ยงเข้าสถานีชาร์จเร็วข้างหน้าทันที!",
+        hint: "ตรวจแบตเตอรี่รถบัสว่าต่ำกว่า 15% และมีนักเรียนบนรถหรือไม่",
+        sensors: [
+          { name: "แบตเตอรี่รถบัส", value: "12%", unit: "ต่ำมาก (<15%)", warn: true },
+          { name: "นักเรียนบนรถ", value: "32 คน", unit: "กำลังกลับบ้าน", warn: false },
+          { name: "จุดชาร์จเร็ว DC", value: "ข้างหน้า 500 ม.", unit: "แท่นชาร์จว่าง", warn: false },
+          { name: "สภาพจราจร", value: "ติดขัดปานกลาง", unit: "ขยับช้าๆ", warn: true }
+        ],
+        cond1Options: [
+          { text: "แบตเตอรี่รถบัส < 15% และ มีนักเรียนอยู่บนรถ", isCorrect: true },
+          { text: "แบตเตอรี่เต็ม 100% พร้อมวิ่งข้ามจังหวัด", isCorrect: false },
+          { text: "รถบัสจอดในโรงรถโรงเรียนแล้ว", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "มีจุดชาร์จเร็วข้างหน้า และ การจราจรชะลอตัว", isCorrect: true },
+          { text: "ไม่มีสถานีชาร์จไฟในระยะ 50 กม.", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "ขับรถบัสส่งนักเรียนตามเส้นทางปกติ", isCorrect: true },
+          { text: "จอดรถทิ้งไว้กลางสี่แยกไฟแดง", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "เปิดโหมดประหยัดพลังงาน ECO + เลี้ยวเข้าจุดชาร์จเร็ว 10 นาทีทันที", isCorrect: true },
+          { text: "เหยียบคันเร่งแข่งกับรถคันอื่นบนถนน", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "ขับตรงไปยังโรงเรียนโดยลดความเร็วลงเพื่อประหยัดไฟ", isCorrect: true },
+          { text: "สั่งให้นักเรียนช่วยกันเข็นรถ", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#f8fafc"/><rect x="0" y="140" width="400" height="70" fill="#64748b"/><g transform="translate(${s==='success'?200:100}, 110)"><rect width="110" height="45" rx="8" fill="#facc15"/><circle cx="25" cy="45" r="10" fill="#0f172a"/><circle cx="85" cy="45" r="10" fill="#0f172a"/><text x="25" y="25" fill="#000" font-weight="bold" font-size="10">SCHOOL BUS</text></g><text x="110" y="40" fill="#1e293b" font-weight="bold" font-size="13">${s==='success'?'✨ เข้าชาร์จไฟด่วน ปลอดภัย':'🚌 รถบัส EV แบตเตอรี่เตือน'}</text></svg>`
+      },
+      {
+        id: 18, title: "ท่อดักไขมันโรงอาหารอุดตัน", cat: "school", zone: "จุดล้างจานโรงอาหาร", badge: "🚰 น้ำล้นอ่าง + ไขมันเกาะ",
+        mascot: "น้ำล้างจานในโรงอาหารเอ่อล้นอ่างล้างเพราะก้อนไขมันอุดตันท่อดัก และปั๊มสูบระบายเริ่มร้อนจัด! ต้องสั่งตัดน้ำเข้าและเปิดตัวย่อยไขมันชีวภาพ!",
+        hint: "ตรวจระดับน้ำในอ่างว่าล้นเกณฑ์และท่อดักไขมันอุดตันหรือไม่",
+        sensors: [
+          { name: "ระดับน้ำในอ่าง", value: "ล้น 98%", unit: "เอ่อล้นอ่าง", warn: true },
+          { name: "เซนเซอร์ท่อดัก", value: "ไขมันตัน", unit: "น้ำไม่ไหลผ่าน", warn: true },
+          { name: "ระบบเอนไซม์", value: "พร้อมฉีด", unit: "จุลินทรีย์ย่อยสลาย", warn: false },
+          { name: "ปั๊มน้ำทิ้ง", value: "ร้อน 82°C", unit: "ทำงานหนัก", warn: true }
+        ],
+        cond1Options: [
+          { text: "ระดับน้ำในอ่างล้น > 90% หรือ ท่อดักไขมันอุดตัน", isCorrect: true },
+          { text: "ท่อน้ำไหลคล่องตัว สะอาด", isCorrect: false },
+          { text: "ไม่มีใครล้างจานในโรงอาหาร", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "ระบบเอนไซม์พร้อมฉีด และ ปั๊มน้ำทิ้งร้อนจัด", isCorrect: true },
+          { text: "ปั๊มน้ำทิ้งหยุดทำงานสนิท", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "ระบายน้ำทิ้งตามระบบหมุนเวียนปกติ", isCorrect: true },
+          { text: "เทน้ำมันพืชเพิ่มลงไปในท่อ", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "ปิดวาล์วน้ำเข้าอ่างชั่วคราว + ฉีดเอนไซม์ย่อยไขมันสลายท่ออุดตันทันที", isCorrect: true },
+          { text: "เปิดก๊อกน้ำล้างจานเบอร์แรงสุดให้น้ำท่วมพื้น", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "พักการใช้อ่างล้างจานชุดนี้ชั่วคราว", isCorrect: true },
+          { text: "ทุบท่อระบายน้ำทิ้งให้แตก", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#f0fdf4"/><rect x="100" y="80" width="200" height="90" rx="10" fill="#cbd5e1" stroke="#64748b" stroke-width="4"/><rect x="110" y="90" width="180" height="${s==='success'?20:70}" rx="6" fill="#38bdf8"/><text x="120" y="40" fill="#15803d" font-weight="bold" font-size="13">${s==='success'?'✨ ย่อยไขมัน ท่อน้ำไหลคล่อง':'🚰 น้ำล้นอ่าง ท่อไขมันอุดตัน'}</text></svg>`
+      },
+      {
+        id: 19, title: "หุ่นยนต์จัดหนังสือห้องสมุดติดขัด", cat: "school", zone: "ห้องสมุดอัจฉริยะ", badge: "📚 หุ่นยนต์ติด + สายพานหยุด",
+        mascot: "หุ่นยนต์แขนกลเก็บหนังสือคืนชั้นเกิดอาการติดขัดเพราะมีหนังสือเล่มหนาเกินขนาดขวางสายพาน! ต้องสั่งหยุดสายพานและหมุนถอยหลังเพื่อปลดล็อก!",
+        hint: "ตรวจเซนเซอร์สิ่งกีดขวางบนสายพานและสถานะแขนกล",
+        sensors: [
+          { name: "เซนเซอร์สายพาน", value: "ติดขัด (JAM)", unit: "หนังสือหนาขวาง", warn: true },
+          { name: "มอเตอร์สายพาน", value: "แรงบิดเกิน", unit: "กระแสไฟพุ่ง", warn: true },
+          { name: "ระบบหมุนถอยหลัง", value: "READY", unit: "พร้อมทำงาน", warn: false },
+          { name: "จำนวนหนังสือค้าง", value: "14 เล่ม", unit: "รอคัดแยก", warn: false }
+        ],
+        cond1Options: [
+          { text: "เซนเซอร์สายพานตรวจพบการติดขัด (JAM)", isCorrect: true },
+          { text: "สายพานลำเลียงเลื่อนไหลปกติ", isCorrect: false },
+          { text: "ไม่มีหนังสือในห้องสมุดเลย", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "มอเตอร์มีแรงบิดเกิน และ ระบบหมุนถอยหลังพร้อม", isCorrect: true },
+          { text: "มอเตอร์เย็นปกติ ไร้แรงเสียดทาน", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "ให้หุ่นยนต์จัดเก็บหนังสือเข้าชั้นตามลำดับหมวดหมู่ปกติ", isCorrect: true },
+          { text: "ปิดไฟห้องสมุดเพื่อให้นักเรียนกลับบ้าน", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "สั่งหยุดสายพานชั่วคราว + สั่งหมุนย้อนกลับ 3 วินาทีเพื่อคลายหนังสือติดขัด", isCorrect: true },
+          { text: "เร่งความเร็วสายพานให้หนังสือฉีกขาด", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "สั่งหยุดแขนกลแล้วแจ้งเตือนบรรณารักษ์มาหยิบออก", isCorrect: true },
+          { text: "โยนหนังสือทิ้งลงถังขยะทั้งหมด", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#fefce8"/><rect x="60" y="140" width="280" height="25" rx="6" fill="#475569"/><rect x="${s==='success'?120:180}" y="120" width="35" height="20" rx="3" fill="#ef4444"/><rect x="${s==='success'?165:190}" y="115" width="30" height="25" rx="3" fill="#3b82f6"/><text x="120" y="40" fill="#854d0e" font-weight="bold" font-size="13">${s==='success'?'✨ ถอยสายพาน คลายหนังสือแล้ว':'📚 แขนกลและสายพานติดขัด'}</text></svg>`
+      },
+      {
+        id: 20, title: "แปลงผักไฮโดรโปนิกส์น้ำแห้ง", cat: "school", zone: "ฟาร์มผักอัจฉริยะโรงเรียน", badge: "🌱 น้ำปุ๋ยแห้ง + ปั๊มตัดไฟ",
+        mascot: "แปลงผักไฮโดรโปนิกส์ของโรงเรียนน้ำสารละลายปุ๋ยลดเหลือ 5% เพราะท่อจ่ายน้ำรั่วซึม! ต้องสั่งสลับวาล์วท่อสำรองและเปิดปั๊มสูบน้ำผสมปุ๋ยทันที!",
+        hint: "ตรวจระดับน้ำสารอาหารในถังว่าต่ำกว่า 10% หรือไม่ และมีท่อสำรองพร้อมใช้งานไหม",
+        sensors: [
+          { name: "ระดับน้ำสารอาหาร", value: "5%", unit: "แห้งขอดวิกฤต", warn: true },
+          { name: "เซนเซอร์ท่อจ่าย", value: "ตรวจพบจุดรั่ว", unit: "แรงดันตก", warn: true },
+          { name: "วาล์วท่อสำรอง B", value: "พร้อมสลับ", unit: "แรงดันปกติ", warn: false },
+          { name: "แปลงผักสลัด", value: "เริ่มเหี่ยวเฉา", unit: "ต้องการน้ำด่วน", warn: true }
+        ],
+        cond1Options: [
+          { text: "ระดับน้ำสารอาหาร < 10% หรือ ท่อจ่ายน้ำรั่วซึม", isCorrect: true },
+          { text: "น้ำสารอาหารเต็มถัง 100%", isCorrect: false },
+          { text: "ผักสลัดโตเต็มที่พร้อมรับประทาน", isCorrect: false }
+        ],
+        cond2Options: [
+          { text: "วาล์วท่อสำรอง B พร้อมสลับ และ แปลงผักต้องการน้ำ", isCorrect: true },
+          { text: "แปลงผักไม่มีต้นผักปลูกอยู่", isCorrect: false }
+        ],
+        act1FalseOptions: [
+          { text: "สูบจ่ายสารอาหารพืชตามรอบเวลาปกติ", isCorrect: true },
+          { text: "ถอนต้นผักสลัดทิ้งทั้งหมด", isCorrect: false }
+        ],
+        act2TrueOptions: [
+          { text: "สั่งปิดวาล์วจุดรั่ว + สลับเปิดวาล์วท่อสำรอง B ปั๊มน้ำเติมสารอาหารทันที", isCorrect: true },
+          { text: "ปล่อยให้ต้นผักแห้งเหี่ยวตายกลางแดด", isCorrect: false }
+        ],
+        act2FalseOptions: [
+          { text: "สั่งลดอัตราการจ่ายน้ำเพื่อรอการซ่อมท่อหลัก", isCorrect: true },
+          { text: "รดน้ำด้วยน้ำเกลือ", isCorrect: false }
+        ],
+        svg: (s) => `<svg class="stage-svg" viewBox="0 0 400 240"><rect width="400" height="240" fill="#f0fdf4"/><rect x="60" y="140" width="280" height="30" rx="8" fill="#e2e8f0"/><g transform="translate(80, 115)"><circle cx="15" cy="15" r="14" fill="${s==='success'?'#10b981':'#ca8a04'}"/><circle cx="65" cy="15" r="14" fill="${s==='success'?'#10b981':'#ca8a04'}"/><circle cx="115" cy="15" r="14" fill="${s==='success'?'#10b981':'#ca8a04'}"/><circle cx="165" cy="15" r="14" fill="${s==='success'?'#10b981':'#ca8a04'}"/><circle cx="215" cy="15" r="14" fill="${s==='success'?'#10b981':'#ca8a04'}"/></g><text x="110" y="40" fill="#15803d" font-weight="bold" font-size="13">${s==='success'?'✨ สลับท่อสำรอง ผักสดชื่นแล้ว':'🌱 น้ำปุ๋ยแห้ง ผักเริ่มเหี่ยว'}</text></svg>`
+      }
+    ];
+
+    /* =========================================================
+       4. GAME STATE & ACHIEVEMENTS SYSTEM
+       ========================================================= */
+    const DIFFICULTIES = [
+      { id: 'hard', label: '🔴 ท้าทาย (ตรรกะซ้อน)', cls: 'diff-hard', desc: 'ตรรกะซ้อนตรรกะ (Nested If-Else)' },
+      { id: 'med', label: '🟡 ปานกลาง (ถ้า-มิฉะนั้น)', cls: 'diff-med', desc: 'เงื่อนไขทางเลือกเดียว (If-Then-Else)' },
+      { id: 'easy', label: '🟢 ง่าย (1 เงื่อนไข)', cls: 'diff-easy', desc: 'เงื่อนไขตรงไปตรงมา (If-Then)' }
+    ];
+
+    const BADGES = [
+      { id: 'first_win', name: 'วิศวกรฝึกหัด', desc: 'ผ่านภารกิจแรกสำเร็จ', icon: '🥉' },
+      { id: 'combo_3', name: 'คอมโบไฟแรง', desc: 'ตอบถูกต่อเนื่อง 3 ด่านติด', icon: '🔥' },
+      { id: 'nested_master', name: 'เจ้าแห่งตรรกะซ้อน', desc: 'ผ่านโหมดตรรกะซ้อน 5 ด่าน', icon: '🧠' },
+      { id: 'city_hero', name: 'สุดยอดผู้ว่าการเมือง', desc: 'ผ่านครบทั้ง 20 ภารกิจ', icon: '👑' }
+    ];
+
+    const GameState = {
+      diffIndex: 0,
+      missionIndex: 0,
+      voiceEnabled: true,
+      totalStars: 0,
+      comboStreak: 0,
+      simSpeed: 1, // 1x or 2x
+      unlockedBadges: [],
+      passedMissions: new Set(),
+      selections: {
+        cond1: null, cond2: null, act1False: null, act2True: null, act2False: null
+      },
+      isRunning: false
+    };
+
+    function initGame() {
+      renderStageCardsGrid('all');
+      renderBadgesDisplay();
+      loadMission(0);
+    }
+
+    function setSimSpeed(spd) {
+      GameState.simSpeed = spd;
+      document.getElementById('spd-1x').classList.toggle('active', spd === 1);
+      document.getElementById('spd-2x').classList.toggle('active', spd === 2);
+      SFX.click();
+    }
+
+    /* =========================================================
+       5. DYNAMIC FLOWCHART RENDERER
+       ========================================================= */
+    function renderFlowchartCanvas() {
+      const mode = DIFFICULTIES[GameState.diffIndex].id;
+      const canvas = document.getElementById('diagram-viewport-canvas');
+
+      if (mode === 'hard') {
+        canvas.innerHTML = `
+          <div class="node-slot terminal" id="node-start">● เริ่มต้น (Start)</div>
+          <svg width="16" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+
+          <!-- Condition 1 (Primary Diamond) -->
+          <div class="node-slot condition-1" id="slot-cond-1" onclick="openNodePicker('cond1')">
+            <span id="txt-cond-1">🔍 1. เลือกเงื่อนไขหลัก (Condition 1)</span>
+          </div>
+
+          <!-- Tier 1 Branches -->
+          <div class="tier-split-grid">
+            <!-- Left: Cond 1 TRUE -> Nested Condition 2 -->
+            <div class="branch-col">
+              <span class="tag-rule true-tag">✓ ถ้าเงื่อนไข 1 เป็น "จริง"</span>
+              <svg width="14" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+
+              <!-- Condition 2 (Nested Diamond) -->
+              <div class="node-slot condition-nested" id="slot-cond-2" onclick="openNodePicker('cond2')">
+                <span id="txt-cond-2">🔍 2. เงื่อนไขซ้อน (Nested Condition)</span>
+              </div>
+
+              <!-- Nested Subgrid -->
+              <div class="nested-subgrid">
+                <div class="branch-col">
+                  <span class="tag-rule true-tag" style="font-size:0.62rem;">จริงคู่ (2A)</span>
+                  <div class="node-slot action-slot" id="slot-act-2-true" onclick="openNodePicker('act2True')">
+                    <span id="txt-act-2-true">⚙️ คำสั่งเมื่อจริงคู่</span>
+                  </div>
+                </div>
+                <div class="branch-col">
+                  <span class="tag-rule false-tag" style="font-size:0.62rem;">จริงแต่เท็จ (2B)</span>
+                  <div class="node-slot action-slot" id="slot-act-2-false" onclick="openNodePicker('act2False')">
+                    <span id="txt-act-2-false">⚙️ คำสั่งเมื่อเท็จ</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Cond 1 FALSE -> Direct Action -->
+            <div class="branch-col">
+              <span class="tag-rule false-tag">✕ ถ้าเงื่อนไข 1 เป็น "เท็จ"</span>
+              <svg width="14" height="10" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+              <div class="node-slot action-slot" id="slot-act-1-false" onclick="openNodePicker('act1False')">
+                <span id="txt-act-1-false">⚙️ คำสั่งเมื่อเงื่อนไข 1 เท็จ</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (mode === 'med') {
+        canvas.innerHTML = `
+          <div class="node-slot terminal" id="node-start">● เริ่มต้น (Start)</div>
+          <svg width="16" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+
+          <div class="node-slot condition-1" id="slot-cond-1" onclick="openNodePicker('cond1')">
+            <span id="txt-cond-1">🔍 เลือกเงื่อนไขตรวจสอบ (Condition)</span>
+          </div>
+
+          <div class="tier-split-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="branch-col">
+              <span class="tag-rule true-tag">✓ ถ้าเงื่อนไขเป็น "จริง"</span>
+              <svg width="14" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+              <div class="node-slot action-slot" id="slot-act-2-true" onclick="openNodePicker('act2True')">
+                <span id="txt-act-2-true">⚙️ คำสั่งเมื่อจริง</span>
+              </div>
+            </div>
+            <div class="branch-col">
+              <span class="tag-rule false-tag">✕ ถ้าเงื่อนไขเป็น "เท็จ"</span>
+              <svg width="14" height="10" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+              <div class="node-slot action-slot" id="slot-act-1-false" onclick="openNodePicker('act1False')">
+                <span id="txt-act-1-false">⚙️ คำสั่งเมื่อเท็จ</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        canvas.innerHTML = `
+          <div class="node-slot terminal" id="node-start">● เริ่มต้น (Start)</div>
+          <svg width="16" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+
+          <div class="node-slot condition-1" id="slot-cond-1" onclick="openNodePicker('cond1')">
+            <span id="txt-cond-1">🔍 เลือกเงื่อนไขตรวจสอบ (Condition)</span>
+          </div>
+
+          <svg width="16" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+
+          <div class="node-slot action-slot" style="width: 85%;" id="slot-act-2-true" onclick="openNodePicker('act2True')">
+            <span id="txt-act-2-true">⚙️ คำสั่งปฏิบัติการที่ถูกต้อง</span>
+          </div>
+        `;
+      }
+    }
+
+    function loadMission(idx) {
+      GameState.missionIndex = idx;
+      GameState.selections = { cond1: null, cond2: null, act1False: null, act2True: null, act2False: null };
+      const m = MISSIONS[idx];
+
+      // Update Header & Info
+      document.getElementById('stage-badge-number').innerText = m.id;
+      document.getElementById('crisis-title-text').innerText = m.badge;
+      document.getElementById('category-tag').innerText = getCatName(m.cat);
+      document.getElementById('zone-title').innerText = m.zone;
+      document.getElementById('mascot-dialogue-text').innerText = m.mascot;
+      document.getElementById('btn-advance-chain').classList.remove('show');
+      document.getElementById('btn-run-simulation').disabled = false;
+
+      // Render 4 Sensors
+      const sensorsTray = document.getElementById('sensors-grid-tray');
+      sensorsTray.innerHTML = m.sensors.map(s => `
+        <div class="sensor-item ${s.warn ? 'warning' : ''}">
+          <span class="sensor-name">${s.name}</span>
+          <div class="sensor-val">${s.value}</div>
+        </div>
+      `).join('');
+
+      // Render Dynamic SVG
+      document.getElementById('stage-svg-viewport').innerHTML = m.svg('normal');
+
+      // Rebuild Flowchart Canvas
+      renderFlowchartCanvas();
+
+      // Read Thai speech
+      setTimeout(() => {
+        speakThai(m.mascot);
+      }, 350);
+    }
+
+    function getCatName(cat) {
+      if (cat === 'env') return '🌿 สิ่งแวดล้อม';
+      if (cat === 'traffic') return '🚗 คมนาคม';
+      if (cat === 'energy') return '⚡ พลังงาน';
+      return '🏫 โรงเรียน';
+    }
+
+    /* =========================================================
+       6. PICKER MODAL (5-6 DIVERSE CHOICES PER NODE)
+       ========================================================= */
+    let currentPickingSlot = null;
+
+    function openNodePicker(slotType) {
+      if (GameState.isRunning) return;
+      SFX.click();
+      currentPickingSlot = slotType;
+      const m = MISSIONS[GameState.missionIndex];
+      const modal = document.getElementById('modal-picker-dialog');
+      const heading = document.getElementById('modal-picker-title');
+      const tray = document.getElementById('modal-options-tray');
+
+      let options = [];
+      if (slotType === 'cond1') {
+        heading.innerText = '◇ 1. เลือกเงื่อนไขหลัก (Condition 1)';
+        options = m.cond1Options;
+      } else if (slotType === 'cond2') {
+        heading.innerText = '◇ 2. เลือกเงื่อนไขซ้อน (Nested Condition 2)';
+        options = m.cond2Options;
+      } else if (slotType === 'act1False') {
+        heading.innerText = '□ เลือกคำสั่งเมื่อเงื่อนไขหลักเป็น "เท็จ" (False)';
+        options = m.act1FalseOptions;
+      } else if (slotType === 'act2True') {
+        heading.innerText = '□ เลือกคำสั่งเมื่อเงื่อนไขเป็น "จริง" ทั้งคู่ (True)';
+        options = m.act2TrueOptions;
+      } else if (slotType === 'act2False') {
+        heading.innerText = '□ เลือกคำสั่งเมื่อเงื่อนไขหลักจริง แต่เงื่อนไขซ้อนเท็จ';
+        options = m.act2FalseOptions;
+      }
+
+      tray.innerHTML = options.map((opt, i) => `
+        <button class="opt-choice-card" onclick="applyNodeChoice(${i})">
+          <span>${slotType.includes('cond') ? '🔍' : '⚙️'}</span>
+          <span>${opt.text}</span>
+        </button>
+      `).join('');
+
+      modal.classList.add('active');
+    }
+
+    function applyNodeChoice(index) {
+      SFX.click();
+      const m = MISSIONS[GameState.missionIndex];
+      let chosen = null;
+
+      if (currentPickingSlot === 'cond1') {
+        chosen = m.cond1Options[index];
+        GameState.selections.cond1 = chosen;
+        document.getElementById('txt-cond-1').innerText = chosen.text;
+        document.getElementById('slot-cond-1').classList.add('filled');
+      } else if (currentPickingSlot === 'cond2') {
+        chosen = m.cond2Options[index];
+        GameState.selections.cond2 = chosen;
+        document.getElementById('txt-cond-2').innerText = chosen.text;
+        document.getElementById('slot-cond-2').classList.add('filled');
+      } else if (currentPickingSlot === 'act1False') {
+        chosen = m.act1FalseOptions[index];
+        GameState.selections.act1False = chosen;
+        document.getElementById('txt-act-1-false').innerText = chosen.text;
+        document.getElementById('slot-act-1-false').classList.add('filled');
+      } else if (currentPickingSlot === 'act2True') {
+        chosen = m.act2TrueOptions[index];
+        GameState.selections.act2True = chosen;
+        document.getElementById('txt-act-2-true').innerText = chosen.text;
+        document.getElementById('slot-act-2-true').classList.add('filled');
+      } else if (currentPickingSlot === 'act2False') {
+        chosen = m.act2FalseOptions[index];
+        GameState.selections.act2False = chosen;
+        document.getElementById('txt-act-2-false').innerText = chosen.text;
+        document.getElementById('slot-act-2-false').classList.add('filled');
+      }
+
+      closeModal('modal-picker-dialog');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    /* =========================================================
+       7. SIMULATION & STEP-BY-STEP NESTED TRACING
+       ========================================================= */
+    function executeAlgorithmSimulation() {
+      const mode = DIFFICULTIES[GameState.diffIndex].id;
+      const sel = GameState.selections;
+
+      if (!sel.cond1 || !sel.act2True) {
+        showToast('⚠️ โปรดเลือกบล็อกในผังงานให้ครบก่อนนะจ๊ะ', 'error');
+        SFX.wrong();
+        return;
+      }
+      if (mode === 'med' && !sel.act1False) {
+        showToast('⚠️ โปรดเลือกคำสั่งฝั่งเท็จให้ครบด้วยนะ', 'error');
+        SFX.wrong();
+        return;
+      }
+      if (mode === 'hard' && (!sel.cond2 || !sel.act1False || !sel.act2False)) {
+        showToast('⚠️ ในโหมดตรรกะซ้อน โปรดเลือกบล็อกทั้ง 5 จุดให้ครบถ้วนจ้า', 'error');
+        SFX.wrong();
+        return;
+      }
+
+      GameState.isRunning = true;
+      document.getElementById('btn-run-simulation').disabled = true;
+
+      const delay = GameState.simSpeed === 2 ? 350 : 650;
+
+      // Step 1: Start
+      SFX.step();
+      pulseHighlight('node-start');
+
+      setTimeout(() => {
+        // Step 2: Cond 1
+        SFX.step();
+        clearPulses();
+        pulseHighlight('slot-cond-1');
+
+        setTimeout(() => {
+          clearPulses();
+
+          if (mode === 'hard') {
+            // Step 3: Nested Cond 2
+            SFX.step();
+            pulseHighlight('slot-cond-2');
+
+            setTimeout(() => {
+              clearPulses();
+              pulseHighlight('slot-act-2-true');
+
+              const isPassed = sel.cond1.isCorrect && sel.cond2.isCorrect && sel.act2True.isCorrect && sel.act1False.isCorrect && sel.act2False.isCorrect;
+              setTimeout(() => {
+                clearPulses();
+                evaluateOutcome(isPassed);
+              }, delay);
+
+            }, delay);
+          } else {
+            pulseHighlight('slot-act-2-true');
+            const isPassed = sel.cond1.isCorrect && sel.act2True.isCorrect && (mode === 'easy' || sel.act1False.isCorrect);
+            setTimeout(() => {
+              clearPulses();
+              evaluateOutcome(isPassed);
+            }, delay);
+          }
+
+        }, delay);
+      }, delay * 0.8);
+    }
+
+    function pulseHighlight(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('trace-pulse');
+    }
+
+    function clearPulses() {
+      document.querySelectorAll('.node-slot').forEach(el => el.classList.remove('trace-pulse'));
+    }
+
+    function evaluateOutcome(isPassed) {
+      GameState.isRunning = false;
+      document.getElementById('btn-run-simulation').disabled = false;
+      const m = MISSIONS[GameState.missionIndex];
+
+      if (isPassed) {
+        GameState.comboStreak += 1;
+        const comboBonus = GameState.comboStreak > 1 ? GameState.comboStreak : 1;
+        SFX.correct(comboBonus);
+
+        document.getElementById('stage-svg-viewport').innerHTML = m.svg('success');
+        GameState.totalStars += 3 * comboBonus;
+        document.getElementById('star-score').innerText = GameState.totalStars;
+
+        // Update Combo Pill
+        const comboPill = document.getElementById('combo-pill');
+        if (GameState.comboStreak > 1) {
+          comboPill.innerText = `COMBO x${GameState.comboStreak}!`;
+          comboPill.classList.add('active');
+        }
+
+        // Track Badges
+        GameState.passedMissions.add(m.id);
+        checkBadges();
+
+        showToast(`🎉 ตรรกะถูกต้องสมบูรณ์! ${GameState.comboStreak > 1 ? 'COMBO x' + GameState.comboStreak : ''}`, 'success');
+        speakThai('ตรรกะถูกต้องสมบูรณ์แบบ เมืองปลอดภัยแล้วค่ะ');
+
+        document.getElementById('combo-bonus-text').innerText = GameState.comboStreak > 1 ? `(โบนัส Combo x${GameState.comboStreak})` : '';
+        document.getElementById('modal-victory-dialog').classList.add('active');
+        document.getElementById('advance-btn-title').innerText = 'ภารกิจถัดไป ➔';
+        document.getElementById('btn-advance-chain').classList.add('show');
+      } else {
+        GameState.comboStreak = 0;
+        document.getElementById('combo-pill').classList.remove('active');
+        SFX.wrong();
+
+        showToast('❌ ตรวจพบบั๊กในผังงาน! ตรวจสอบเงื่อนไขแล้วลองใหม่นะ', 'error');
+        speakThai('ตรวจพบบั๊กในคำสั่งค่ะ ลองปรับเงื่อนไขดูใหม่อีกครั้งนะคะ');
+
+        if (!GameState.selections.cond1.isCorrect) {
+          document.getElementById('slot-cond-1')?.classList.add('bug-alert');
+        } else if (GameState.selections.cond2 && !GameState.selections.cond2.isCorrect) {
+          document.getElementById('slot-cond-2')?.classList.add('bug-alert');
+        } else {
+          document.getElementById('slot-act-2-true')?.classList.add('bug-alert');
+        }
+      }
+    }
+
+    function handleAdvanceMission() {
+      SFX.levelClear();
+      const nextIdx = (GameState.missionIndex + 1) % MISSIONS.length;
+      loadMission(nextIdx);
+    }
+
+    /* =========================================================
+       8. STAGE PICKER & BADGES
+       ========================================================= */
+    function filterStages(cat, btn) {
+      document.querySelectorAll('.filter-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderStageCardsGrid(cat);
+      SFX.click();
+    }
+
+    function renderStageCardsGrid(cat) {
+      const grid = document.getElementById('stage-cards-grid');
+      const filtered = cat === 'all' ? MISSIONS : MISSIONS.filter(m => m.cat === cat);
+
+      grid.innerHTML = filtered.map(m => `
+        <div class="stage-card-item ${m.id - 1 === GameState.missionIndex ? 'selected' : ''}" onclick="pickStageDirectly(${m.id - 1})">
+          <div style="font-weight: 800; color: var(--primary-blue); font-size: 0.85rem;">ด่านที่ ${m.id} ${GameState.passedMissions.has(m.id) ? '⭐' : ''}</div>
+          <div style="font-weight: 700; font-size: 0.78rem; color: var(--text-main); line-height:1.2;">${m.title}</div>
+          <div style="font-size: 0.68rem; color: var(--text-muted);">${getCatName(m.cat)}</div>
+        </div>
+      `).join('');
+    }
+
+    function pickStageDirectly(idx) {
+      SFX.click();
+      closeModal('modal-stages-dialog');
+      loadMission(idx);
+    }
+
+    function openStageSelectModal() {
+      SFX.click();
+      renderStageCardsGrid('all');
+      document.getElementById('modal-stages-dialog').classList.add('active');
+    }
+
+    function checkBadges() {
+      if (GameState.passedMissions.size >= 1) unlockBadge('first_win');
+      if (GameState.comboStreak >= 3) unlockBadge('combo_3');
+      if (GameState.passedMissions.size >= 5) unlockBadge('nested_master');
+      if (GameState.passedMissions.size >= 20) unlockBadge('city_hero');
+    }
+
+    function unlockBadge(id) {
+      if (!GameState.unlockedBadges.includes(id)) {
+        GameState.unlockedBadges.push(id);
+        const b = BADGES.find(x => x.id === id);
+        showToast(`🎖️ ปลดล็อกเหรียญเกียรติยศ: ${b.name}!`, 'success');
+        renderBadgesDisplay();
+      }
+    }
+
+    function renderBadgesDisplay() {
+      const grid = document.getElementById('badge-display-grid');
+      grid.innerHTML = BADGES.map(b => {
+        const isUnlocked = GameState.unlockedBadges.includes(b.id);
+        return `
+          <div class="badge-item ${isUnlocked ? 'unlocked' : ''}">
+            <div class="badge-icon">${isUnlocked ? b.icon : '🔒'}</div>
+            <div>
+              <div style="font-weight: 800; font-size: 0.85rem; color:${isUnlocked ? '#15803d' : '#64748b'};">${b.name}</div>
+              <div style="font-size: 0.72rem; color: #64748b;">${b.desc}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openBadgesModal() {
+      SFX.click();
+      renderBadgesDisplay();
+      document.getElementById('modal-badges-dialog').classList.add('active');
+    }
+
+    /* =========================================================
+       9. CONTROLS: DIFFICULTY, VOICE, HINTS & ENDLESS
+       ========================================================= */
+    function cycleDifficultyMode() {
+      SFX.click();
+      GameState.diffIndex = (GameState.diffIndex + 1) % DIFFICULTIES.length;
+      const cur = DIFFICULTIES[GameState.diffIndex];
+      const btn = document.getElementById('btn-difficulty-toggle');
+      btn.className = `pill-btn ${cur.cls}`;
+      btn.querySelector('span').innerText = cur.label;
+      renderFlowchartCanvas();
+      showToast(`เปลี่ยนเป็น ${cur.label}`, 'success');
+    }
+
+    function toggleVoiceAI() {
+      GameState.voiceEnabled = !GameState.voiceEnabled;
+      const btn = document.getElementById('btn-voice-toggle');
+      const label = document.getElementById('voice-label');
+
+      if (GameState.voiceEnabled) {
+        SFX.click();
+        btn.className = 'pill-btn voice-on';
+        label.innerText = '🔊 AI: เปิด';
+        showToast('เปิดเสียงบรรยาย AI แล้ว', 'success');
+        speakThai('เปิดเสียงบรรยายแล้วค่ะ');
+      } else {
+        window.speechSynthesis.cancel();
+        btn.className = 'pill-btn voice-off';
+        label.innerText = '🔇 AI: ปิด';
+        showToast('ปิดเสียงบรรยาย AI แล้ว', 'error');
+      }
+    }
+
+    function generateRandomScenario() {
+      SFX.click();
+      const randIdx = Math.floor(Math.random() * MISSIONS.length);
+      loadMission(randIdx);
+      showToast('🎲 สุ่มสถานการณ์วิกฤตใหม่เรียบร้อย!', 'success');
+    }
+
+    function showCurrentHint() {
+      SFX.click();
+      const m = MISSIONS[GameState.missionIndex];
+      showToast(`💡 คำใบ้: ${m.hint}`, 'success');
+      speakThai(`คำใบ้: ${m.hint}`);
+    }
+
+    function speakCurrentMission() {
+      SFX.click();
+      const m = MISSIONS[GameState.missionIndex];
+      speakThai(`${m.badge}. ${m.mascot}`);
+    }
+
+    function toggleFullscreenMode() {
+      SFX.click();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast-pill');
+      document.getElementById('toast-icon').innerText = type === 'success' ? '✨' : '⚠️';
+      document.getElementById('toast-message').innerText = msg;
+      toast.className = `toast-pill show ${type}`;
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    window.addEventListener('DOMContentLoaded', initGame);
+  </script>
+</body>
+</html>
