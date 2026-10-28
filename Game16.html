@@ -1,0 +1,1977 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full w-full overflow-hidden">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ไตรยางศ์ มาสเตอร์ (Triyang Master) - อักษร ๓ หมู่ ป.๔-๖</title>
+  
+  <!-- Google Fonts: Prompt (หัวข้อโมเดิร์น คมชัด) & Sarabun (เนื้อหาอ่านง่าย ถูกต้องตามหลักภาษา) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700;800;900&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome 6 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            prompt: ['Prompt', 'sans-serif'],
+            sarabun: ['Sarabun', 'sans-serif'],
+          },
+          colors: {
+            high: { light: '#FFF7ED', border: '#FED7AA', text: '#C2410C', bg: '#EA580C', hover: '#C2410C' },
+            mid: { light: '#ECFDF5', border: '#A7F3D0', text: '#047857', bg: '#059669', hover: '#047857' },
+            low: { light: '#F0F9FF', border: '#BAE6FD', text: '#0369A1', bg: '#0284C7', hover: '#0369A1' },
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Strict Zero-Scroll Lock */
+    html, body {
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden !important;
+      position: fixed;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: 'Sarabun', sans-serif;
+      background-color: #F8FAFC;
+    }
+
+    h1, h2, h3, h4, .font-prompt {
+      font-family: 'Prompt', sans-serif;
+    }
+
+    /* Tactile button feedback */
+    .btn-tactile {
+      transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-tactile:active {
+      transform: scale(0.96);
+    }
+
+    /* Keyframe animations */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .anim-shake {
+      animation: shake 0.35s ease-in-out;
+    }
+
+    @keyframes popBounce {
+      0% { transform: scale(0.88); opacity: 0.6; }
+      50% { transform: scale(1.06); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .anim-pop {
+      animation: popBounce 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Laser Scanner Beam */
+    @keyframes scanLine {
+      0% { top: 0%; opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { top: 100%; opacity: 0; }
+    }
+    .scanner-beam {
+      animation: scanLine 1.1s ease-in-out infinite;
+    }
+
+    /* Custom subtle scrollbar for modals only */
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #F1F5F9;
+      border-radius: 8px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 8px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+  </style>
+</head>
+<body class="flex flex-col text-slate-800 antialiased selection:bg-emerald-200">
+
+  <!-- ================================================================= -->
+  <!-- TOP NAVIGATION & MASTERY BAR (Zero-Scroll Fixed Bar)              -->
+  <!-- ================================================================= -->
+  <header class="h-14 bg-white border-b border-slate-200 px-2 sm:px-5 flex items-center justify-between shrink-0 shadow-xs z-30">
+    
+    <!-- App Logo & Info -->
+    <div class="flex items-center space-x-2 sm:space-x-2.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-prompt font-extrabold flex items-center justify-center text-lg shadow-xs">
+        ตร
+      </div>
+      <div class="leading-tight">
+        <div class="flex items-center space-x-1.5">
+          <span class="font-prompt font-extrabold text-sm sm:text-base text-slate-900 tracking-tight">ไตรยางศ์ มาสเตอร์</span>
+          <span class="hidden md:inline-block px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 font-prompt">ป.๔ - ๖</span>
+        </div>
+        <p class="text-[10px] text-slate-400 hidden lg:block">ห้องเรียน & คลังฝึกฝนอักษร ๓ หมู่ ๑๒๐+ คำ</p>
+      </div>
+    </div>
+
+    <!-- Mode Selectors (Tabs: Lesson, Reflex, Bubble, X-Ray) -->
+    <nav class="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl text-xs sm:text-sm font-prompt">
+      <button onclick="nav.switch('lesson')" id="tab-lesson" class="nav-btn px-2 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center space-x-1.5 bg-white text-emerald-700 shadow-xs">
+        <i class="fa-solid fa-graduation-cap text-emerald-600"></i>
+        <span class="hidden xs:inline">๑.</span><span>ห้องเรียน</span>
+      </button>
+
+      <button onclick="nav.switch('reflex')" id="tab-reflex" class="nav-btn px-2 sm:px-3 py-1.5 rounded-lg font-medium text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5">
+        <i class="fa-solid fa-bolt text-amber-500"></i>
+        <span class="hidden xs:inline">๒.</span><span>สปีด ๓ ประตู</span>
+      </button>
+
+      <button onclick="nav.switch('bubble')" id="tab-bubble" class="nav-btn px-2 sm:px-3 py-1.5 rounded-lg font-medium text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5">
+        <i class="fa-solid fa-soap text-sky-500"></i>
+        <span class="hidden xs:inline">๓.</span><span>ล่าฟองสบู่</span>
+      </button>
+
+      <button onclick="nav.switch('xray')" id="tab-xray" class="nav-btn px-2 sm:px-3 py-1.5 rounded-lg font-medium text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5">
+        <i class="fa-solid fa-microscope text-purple-600"></i>
+        <span class="hidden xs:inline">๔.</span><span>สแกนคำยาก</span>
+      </button>
+    </nav>
+
+    <!-- Personal Mastery Tracker & Global Controls -->
+    <div class="flex items-center space-x-1.5 sm:space-x-2">
+      
+      <!-- Personal Mastery Pill (ฝึกสำเร็จ / ความแม่นยำ) -->
+      <div class="flex items-center space-x-2 bg-emerald-50 border border-emerald-200/80 px-2 sm:px-3 py-1 rounded-xl text-xs" title="บันทึกพัฒนาการส่วนบุคคล">
+        <div class="flex items-center space-x-1 text-emerald-800 font-prompt font-bold">
+          <i class="fa-solid fa-award text-emerald-600"></i>
+          <span>ฝึกแล้ว:</span>
+          <span id="tracker-mastered" class="text-emerald-950 font-black">0</span>
+          <span class="text-emerald-600/70 text-[10px]">/120</span>
+        </div>
+        <div class="hidden sm:flex items-center space-x-1 text-slate-600 font-prompt border-l border-emerald-200 pl-2">
+          <i class="fa-solid fa-bullseye text-indigo-500 text-[11px]"></i>
+          <span id="tracker-accuracy" class="font-bold">100%</span>
+        </div>
+      </div>
+
+      <!-- Word Codex Modal Button -->
+      <button onclick="modalCodex.open()" class="w-8 h-8 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-indigo-600 transition shadow-xs" title="สมุดคลังคำศัพท์ ๑๒๐ คำ">
+        <i class="fa-solid fa-book-bookmark"></i>
+      </button>
+
+      <!-- Mnemonic Cheat Guide Button -->
+      <button onclick="modalCheat.open()" class="w-8 h-8 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-amber-600 transition shadow-xs" title="สูตรท่องจำ">
+        <i class="fa-solid fa-lightbulb"></i>
+      </button>
+
+      <!-- Audio Toggle -->
+      <button onclick="audioFx.toggleMute()" id="btn-audio" class="w-8 h-8 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-600 transition shadow-xs" title="เสียงเอฟเฟกต์">
+        <i id="audio-icon" class="fa-solid fa-volume-high"></i>
+      </button>
+
+      <!-- Fullscreen Toggle -->
+      <button onclick="nav.toggleFullscreen()" id="btn-fullscreen" class="w-8 h-8 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-700 transition shadow-xs" title="ขยายเต็มหน้าจอ">
+        <i id="fs-icon" class="fa-solid fa-expand"></i>
+      </button>
+
+    </div>
+  </header>
+
+  <!-- ================================================================= -->
+  <!-- MAIN VIEW CONTAINER (Zero Scroll, flex-1 min-h-0)                  -->
+  <!-- ================================================================= -->
+  <main class="flex-1 min-h-0 w-full max-w-5xl mx-auto p-2 sm:p-3 flex flex-col justify-between overflow-hidden">
+
+    <!-- =============================================================== -->
+    <!-- VIEW 1: ห้องเรียนไตรยางศ์ (Interactive Lessons 5 Chapters)       -->
+    <!-- =============================================================== -->
+    <section id="view-lesson" class="view-panel h-full w-full flex flex-col justify-between min-h-0">
+      
+      <!-- Lesson Header & Chapter Pills -->
+      <div class="h-11 bg-white border border-slate-200 rounded-2xl px-3 flex items-center justify-between shadow-xs shrink-0">
+        <div class="flex items-center space-x-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+          <span class="text-xs sm:text-sm font-prompt font-bold text-slate-800" id="lesson-chapter-title">บทที่ ๑: ไตรยางศ์คืออะไร?</span>
+        </div>
+        
+        <!-- Chapter Indicators -->
+        <div class="flex items-center space-x-1 sm:space-x-1.5" id="lesson-dots">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Slide Card Body (Dynamic Zero-Scroll Content) -->
+      <div id="lesson-content-card" class="flex-1 min-h-0 my-2 bg-white border-2 border-slate-200 rounded-3xl p-3 sm:p-5 flex flex-col justify-between shadow-xs overflow-hidden">
+        
+        <!-- Slide Top Content Area -->
+        <div class="flex-1 min-h-0 flex flex-col justify-around">
+          
+          <div class="text-center">
+            <span id="lesson-badge" class="px-3 py-1 rounded-full text-xs font-bold font-prompt bg-emerald-100 text-emerald-800">
+              ความรู้พื้นฐาน
+            </span>
+            <h2 id="lesson-heading" class="text-xl sm:text-2xl md:text-3xl font-black font-prompt text-slate-900 mt-1">
+              ทำความรู้จักอักษร ๓ หมู่
+            </h2>
+          </div>
+
+          <!-- Interactive Graphic / Formula Box -->
+          <div id="lesson-visual-box" class="w-full max-w-2xl mx-auto bg-slate-50 border border-slate-200 rounded-2xl p-3 sm:p-4 text-center">
+            <!-- Dynamic visual template injected by JS -->
+          </div>
+
+          <!-- Concise Teaching Bullet -->
+          <div id="lesson-explanation" class="w-full max-w-2xl mx-auto text-xs sm:text-sm text-slate-700 font-sarabun text-center leading-relaxed">
+            <!-- Dynamic explanation text -->
+          </div>
+
+        </div>
+
+        <!-- Slide Interactive Mini-Checkpoint -->
+        <div class="pt-2 border-t border-slate-100 shrink-0">
+          <div id="lesson-quiz-box" class="w-full max-w-xl mx-auto bg-emerald-50/70 border border-emerald-200 rounded-2xl p-2.5 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <!-- Dynamic Checkpoint Question & Fast Answers -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Lesson Footer Navigation Controls -->
+      <div class="h-10 bg-white border border-slate-200 rounded-2xl px-3 flex items-center justify-between shrink-0">
+        <button onclick="lessonEngine.prev()" id="btn-lesson-prev" class="btn-tactile px-3 py-1 rounded-xl border border-slate-200 text-xs font-prompt font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none">
+          <i class="fa-solid fa-chevron-left mr-1"></i> บทก่อนหน้า
+        </button>
+
+        <span class="text-xs text-slate-500 font-prompt">
+          บทที่ <b id="lesson-cur-index" class="text-emerald-700">1</b> จาก 5
+        </span>
+
+        <button onclick="lessonEngine.next()" id="btn-lesson-next" class="btn-tactile px-4 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-prompt font-bold text-white shadow-xs">
+          บทถัดไป <i class="fa-solid fa-chevron-right ml-1"></i>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- =============================================================== -->
+    <!-- VIEW 2: สปีดแยกหมู่ ๓ ประตู (Triple Gate Reflex)                 -->
+    <!-- =============================================================== -->
+    <section id="view-reflex" class="view-panel h-full w-full flex flex-col justify-between min-h-0 hidden">
+      
+      <!-- Top Status Banner -->
+      <div class="h-11 bg-white border border-slate-200 rounded-2xl px-4 flex items-center justify-between shadow-xs shrink-0">
+        <div class="flex items-center space-x-2 text-xs sm:text-sm font-prompt font-bold text-slate-700">
+          <i class="fa-solid fa-bolt-lightning text-amber-500"></i>
+          <span>ฝึกไหวพริบคัดแยกพยัญชนะต้น</span>
+        </div>
+        <div class="flex items-center space-x-3 text-xs sm:text-sm font-prompt">
+          <span class="bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-lg text-amber-900 font-bold flex items-center gap-1">
+            <i class="fa-solid fa-fire text-amber-500"></i>
+            สถิติต่อเนื่อง: <span id="reflex-streak" class="text-sm">0</span>
+          </span>
+          <span class="text-slate-500 hidden sm:inline">ฝึกสะสม: <b id="reflex-count" class="text-slate-800">0</b> คำ</span>
+        </div>
+      </div>
+
+      <!-- Main Display Word Stage -->
+      <div class="flex-1 min-h-0 my-2 sm:my-3 bg-white border-2 border-slate-200/80 rounded-3xl p-3 sm:p-5 flex flex-col items-center justify-center relative shadow-xs overflow-hidden">
+        
+        <!-- Feedback Banner -->
+        <div id="reflex-feedback" class="absolute top-2.5 text-xs sm:text-sm font-prompt font-bold px-4 py-1 rounded-full opacity-0 transition-all duration-200 transform -translate-y-2 pointer-events-none">
+          คำอธิบายพยัญชนะ
+        </div>
+
+        <!-- Clue Tag -->
+        <span id="reflex-type-tag" class="px-3 py-1 rounded-full text-xs font-bold font-prompt bg-slate-100 text-slate-600 border border-slate-200 mb-1">
+          คำพยางค์เดียว
+        </span>
+
+        <!-- Giant Animated Word -->
+        <div id="reflex-word" class="font-prompt font-black text-6xl sm:text-7xl md:text-8xl text-slate-900 tracking-wider my-1 sm:my-2 select-none">
+          ไก่
+        </div>
+
+        <!-- Hint or breakdown -->
+        <div id="reflex-hint" class="text-xs sm:text-sm text-slate-500 font-sarabun mt-1">
+          พยัญชนะต้นคือ <span class="font-bold text-slate-800 font-prompt text-base">[ ก ]</span>
+        </div>
+
+        <p class="text-[11px] sm:text-xs text-slate-400 mt-2 font-prompt hidden sm:flex items-center gap-1">
+          <i class="fa-regular fa-keyboard"></i> แตะที่ประตู หรือกดแป้นพิมพ์ [1], [2], [3]
+        </p>
+      </div>
+
+      <!-- 3 Massive Response Gate Pedals -->
+      <div class="h-28 sm:h-34 grid grid-cols-3 gap-2 sm:gap-4 shrink-0">
+        
+        <!-- GATE 1: อักษรสูง (Orange) -->
+        <button onclick="gameReflex.submit('high')" class="btn-tactile bg-white border-2 border-high-border hover:border-high-bg hover:bg-high-light rounded-2xl p-2 sm:p-3 flex flex-col items-center justify-between shadow-xs group focus:outline-none">
+          <div class="w-full flex items-center justify-between text-[11px] sm:text-xs font-prompt font-bold text-high-text">
+            <span class="bg-orange-100 px-2 py-0.5 rounded-md">๑๑ ตัว</span>
+            <kbd class="hidden sm:inline font-mono bg-slate-100 border border-slate-300 text-slate-700 px-1.5 py-0.5 rounded text-[10px]">คีย์ 1</kbd>
+          </div>
+          <div class="text-center my-auto">
+            <div class="text-lg sm:text-2xl font-black font-prompt text-orange-700 group-hover:scale-105 transition-transform">
+              อักษรสูง
+            </div>
+            <div class="text-[10px] sm:text-xs text-slate-500 font-sarabun line-clamp-1">ผี ฝาก ถุง ข้าว สาร...</div>
+          </div>
+          <span class="w-full py-1 text-center rounded-xl bg-orange-50 text-high-text text-xs font-bold font-prompt group-hover:bg-high-bg group-hover:text-white transition">
+            ประตูอักษรสูง
+          </span>
+        </button>
+
+        <!-- GATE 2: อักษรกลาง (Emerald) -->
+        <button onclick="gameReflex.submit('mid')" class="btn-tactile bg-white border-2 border-mid-border hover:border-mid-bg hover:bg-mid-light rounded-2xl p-2 sm:p-3 flex flex-col items-center justify-between shadow-xs group focus:outline-none">
+          <div class="w-full flex items-center justify-between text-[11px] sm:text-xs font-prompt font-bold text-mid-text">
+            <span class="bg-emerald-100 px-2 py-0.5 rounded-md">๙ ตัว</span>
+            <kbd class="hidden sm:inline font-mono bg-slate-100 border border-slate-300 text-slate-700 px-1.5 py-0.5 rounded text-[10px]">คีย์ 2</kbd>
+          </div>
+          <div class="text-center my-auto">
+            <div class="text-lg sm:text-2xl font-black font-prompt text-emerald-700 group-hover:scale-105 transition-transform">
+              อักษรกลาง
+            </div>
+            <div class="text-[10px] sm:text-xs text-slate-500 font-sarabun line-clamp-1">ไก่ จิก เด็ก ตาย บน ปาก โอ่ง</div>
+          </div>
+          <span class="w-full py-1 text-center rounded-xl bg-emerald-50 text-mid-text text-xs font-bold font-prompt group-hover:bg-mid-bg group-hover:text-white transition">
+            ประตูอักษรกลาง
+          </span>
+        </button>
+
+        <!-- GATE 3: อักษรต่ำ (Sky Blue) -->
+        <button onclick="gameReflex.submit('low')" class="btn-tactile bg-white border-2 border-low-border hover:border-low-bg hover:bg-low-light rounded-2xl p-2 sm:p-3 flex flex-col items-center justify-between shadow-xs group focus:outline-none">
+          <div class="w-full flex items-center justify-between text-[11px] sm:text-xs font-prompt font-bold text-low-text">
+            <span class="bg-sky-100 px-2 py-0.5 rounded-md">๒๔ ตัว</span>
+            <kbd class="hidden sm:inline font-mono bg-slate-100 border border-slate-300 text-slate-700 px-1.5 py-0.5 rounded text-[10px]">คีย์ 3</kbd>
+          </div>
+          <div class="text-center my-auto">
+            <div class="text-lg sm:text-2xl font-black font-prompt text-sky-700 group-hover:scale-105 transition-transform">
+              อักษรต่ำ
+            </div>
+            <div class="text-[10px] sm:text-xs text-slate-500 font-sarabun line-clamp-1">ต่ำเดี่ยว ๑๐ + ต่ำคู่ ๑๔</div>
+          </div>
+          <span class="w-full py-1 text-center rounded-xl bg-sky-50 text-low-text text-xs font-bold font-prompt group-hover:bg-low-bg group-hover:text-white transition">
+            ประตูอักษรต่ำ
+          </span>
+        </button>
+
+      </div>
+    </section>
+
+    <!-- =============================================================== -->
+    <!-- VIEW 3: ฟองสบู่ล่าอักษร (Bubble Hunter Canvas Arena)             -->
+    <!-- =============================================================== -->
+    <section id="view-bubble" class="view-panel h-full w-full flex flex-col justify-between min-h-0 hidden">
+      
+      <!-- Mission Target Bar -->
+      <div class="h-11 bg-white border border-slate-200 rounded-2xl px-3 sm:px-4 flex items-center justify-between shadow-xs shrink-0">
+        <div class="flex items-center space-x-2">
+          <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold font-prompt bg-indigo-100 text-indigo-800">
+            ภารกิจ
+          </span>
+          <div id="bubble-mission-text" class="text-xs sm:text-base font-prompt font-extrabold text-slate-800">
+            แตะเฉพาะ: <span class="text-orange-600 underline decoration-wavy">"อักษรสูง"</span>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <!-- Continuous Streak Indicator -->
+          <div class="flex items-center space-x-1 text-xs font-prompt bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-lg text-amber-800 font-bold">
+            <i class="fa-solid fa-fire text-amber-500"></i>
+            <span id="bubble-streak">0</span>
+          </div>
+          <!-- Goal Progress -->
+          <div class="text-xs sm:text-sm font-prompt font-bold bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-xl text-slate-700">
+            เป้าหมาย: <span id="bubble-progress" class="text-emerald-600 font-extrabold text-sm sm:text-base">0</span>/5
+          </div>
+        </div>
+      </div>
+
+      <!-- Pure Canvas Interactive Arena (Responsive, Zero-Scroll) -->
+      <div id="bubble-container" class="flex-1 min-h-0 my-2 bg-gradient-to-b from-sky-50/50 via-white to-slate-50 border-2 border-slate-200 rounded-3xl relative overflow-hidden shadow-xs cursor-crosshair">
+        
+        <canvas id="bubble-canvas" class="w-full h-full block"></canvas>
+
+        <!-- Pause / Ready Screen Overlay -->
+        <div id="bubble-overlay" class="absolute inset-0 bg-white/95 backdrop-blur-xs flex flex-col items-center justify-center p-4 text-center z-10">
+          <div class="w-14 h-14 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center text-3xl mb-3 shadow-xs">
+            <i class="fa-solid fa-soap"></i>
+          </div>
+          <h3 class="text-xl sm:text-2xl font-black font-prompt text-slate-800" id="bubble-overlay-title">ฟองสบู่ล่าอักษร</h3>
+          <p class="text-xs sm:text-sm text-slate-500 max-w-sm mt-1 mb-4 font-sarabun" id="bubble-overlay-desc">
+            ฟองสบู่คำศัพท์จะลอยขึ้น แตะเฉพาะคำที่มีพยัญชนะต้นตรงตามเป้าหมาย ยิ่งแตะถูกต่อเนื่อง ยิ่งพัฒนาทักษะได้เร็วขึ้น!
+          </p>
+          <button onclick="gameBubble.start()" class="btn-tactile px-6 py-2.5 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-prompt font-bold text-sm sm:text-base shadow-sm flex items-center gap-2">
+            <i class="fa-solid fa-play"></i>
+            <span id="bubble-overlay-btn">เริ่มฝึกทันที</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Instructions Footer -->
+      <div class="h-8 bg-white border border-slate-200 rounded-xl px-3 flex items-center justify-between text-[11px] text-slate-500 shrink-0">
+        <span class="flex items-center gap-1.5 font-prompt">
+          <i class="fa-solid fa-hand-pointer text-sky-500"></i> แตะฟองสบู่เป้าหมายให้ครบ ๕ คำ เพื่อเลื่อนเป้าหมายหมู่อักษรใหม่
+        </span>
+        <span class="hidden sm:inline font-sarabun text-slate-400">รองรับทั้งเมาส์และจอสัมผัส</span>
+      </div>
+    </section>
+
+    <!-- =============================================================== -->
+    <!-- VIEW 4: คลินิกเอกซเรย์คำยาก (Detective X-Ray Lab ป.4-6)          -->
+    <!-- =============================================================== -->
+    <section id="view-xray" class="view-panel h-full w-full flex flex-col justify-between min-h-0 hidden">
+      
+      <!-- Top Lab Header -->
+      <div class="h-11 bg-white border border-slate-200 rounded-2xl px-4 flex items-center justify-between shadow-xs shrink-0">
+        <div class="flex items-center space-x-2 text-xs sm:text-sm font-prompt font-bold text-purple-700">
+          <i class="fa-solid fa-dna"></i>
+          <span>เจาะลึกคำควบกล้ำ & อักษรนำ (ระดับ ป.๔ - ๖)</span>
+        </div>
+        <div class="text-xs sm:text-sm font-prompt bg-purple-50 text-purple-800 border border-purple-200 px-2.5 py-0.5 rounded-lg font-bold">
+          เคสที่ <span id="xray-index" class="text-sm">1</span> / <span id="xray-total">20</span>
+        </div>
+      </div>
+
+      <!-- Center Dissection Chamber -->
+      <div class="flex-1 min-h-0 my-2 bg-white border-2 border-slate-200 rounded-3xl p-3 sm:p-5 flex flex-col justify-between items-center relative shadow-xs overflow-hidden">
+        
+        <!-- Challenge Badge -->
+        <div class="flex items-center gap-2">
+          <span id="xray-rule-badge" class="px-3 py-1 rounded-full text-xs font-bold font-prompt bg-purple-100 border border-purple-200 text-purple-800">
+            ประเภท: คำอักษรนำ
+          </span>
+        </div>
+
+        <!-- Scanner Card Box -->
+        <div id="xray-card-box" class="w-full max-w-md py-4 sm:py-5 px-4 bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl text-center relative overflow-hidden transition-all">
+          
+          <!-- Laser Beam Line -->
+          <div id="xray-beam" class="hidden absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent shadow-[0_0_12px_#A855F7] scanner-beam pointer-events-none"></div>
+
+          <div class="text-xs font-prompt text-slate-400 mb-1">คำศัพท์ที่ต้องการสแกน</div>
+          <div id="xray-word-display" class="font-prompt font-black text-5xl sm:text-6xl text-slate-900 tracking-wider">
+            ขนม
+          </div>
+
+          <!-- Dissected Letter Badges -->
+          <div id="xray-breakdown-row" class="mt-3 pt-3 border-t border-slate-200 flex justify-center items-center gap-1.5 flex-wrap min-h-[34px]">
+            <span class="text-xs text-slate-400 font-prompt italic">กดปุ่ม "เริ่มสแกนโครงสร้างคำ" ด้านล่าง</span>
+          </div>
+        </div>
+
+        <!-- Educational Explanation Card -->
+        <div id="xray-explanation" class="w-full max-w-md bg-purple-50/80 border border-purple-200 rounded-2xl p-2.5 text-xs sm:text-sm text-purple-950 font-sarabun hidden anim-pop">
+          <strong><i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i> หลักการจำ:</strong>
+          <span id="xray-explanation-text">...</span>
+        </div>
+
+        <!-- Dynamic Lab Control Buttons -->
+        <div class="w-full max-w-md shrink-0">
+          
+          <!-- Step 1 Button: Run Scan -->
+          <button id="xray-btn-scan" onclick="gameXray.runScan()" class="btn-tactile w-full py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-prompt font-bold text-sm sm:text-base shadow-xs flex items-center justify-center gap-2">
+            <i class="fa-solid fa-magnifying-glass-chart"></i>
+            <span>เริ่มสแกนโครงสร้างพยัญชนะต้น</span>
+          </button>
+
+          <!-- Step 2 Buttons: Select Group -->
+          <div id="xray-btn-choices" class="grid grid-cols-3 gap-2 hidden">
+            <button onclick="gameXray.submitChoice('high')" class="btn-tactile py-2.5 rounded-xl bg-orange-50 hover:bg-orange-100 border-2 border-orange-200 text-orange-900 font-prompt font-bold text-xs sm:text-sm text-center">
+              อักษรสูง
+            </button>
+            <button onclick="gameXray.submitChoice('mid')" class="btn-tactile py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 text-emerald-900 font-prompt font-bold text-xs sm:text-sm text-center">
+              อักษรกลาง
+            </button>
+            <button onclick="gameXray.submitChoice('low')" class="btn-tactile py-2.5 rounded-xl bg-sky-50 hover:bg-sky-100 border-2 border-sky-200 text-sky-900 font-prompt font-bold text-xs sm:text-sm text-center">
+              อักษรต่ำ
+            </button>
+          </div>
+
+          <!-- Step 3 Button: Next Question -->
+          <button id="xray-btn-next" onclick="gameXray.nextWord()" class="btn-tactile w-full py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-prompt font-bold text-sm hidden flex items-center justify-center gap-2">
+            <span>วิเคราะห์คำถัดไป</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Quick Rule Footer -->
+      <div class="h-8 bg-white border border-slate-200 rounded-xl px-3 flex items-center justify-center text-[11px] text-slate-500 font-sarabun shrink-0">
+        <span><strong class="font-prompt text-purple-700">กฎสำคัญ ป.๔-๖:</strong> คำควบกล้ำและอักษรนำ ให้ยึดพยัญชนะต้นตัวแรกในการจัดหมู่ไตรยางศ์</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================================================================= -->
+  <!-- MODAL 1: สมุดบันทึกคำศัพท์ (Word Codex 120+ Words)                 -->
+  <!-- ================================================================= -->
+  <div id="modal-codex" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-3 hidden anim-pop">
+    <div class="bg-white border border-slate-200 rounded-3xl max-w-3xl w-full p-4 sm:p-5 shadow-2xl flex flex-col max-h-[88vh]">
+      
+      <!-- Codex Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-base">
+            <i class="fa-solid fa-book-bookmark"></i>
+          </div>
+          <div>
+            <h3 class="font-prompt font-bold text-base sm:text-lg text-slate-900">สมุดคลังคำศัพท์ไตรยางศ์ (๑๒๐+ คำ)</h3>
+            <p class="text-[11px] text-slate-400">ค้นหาและทบทวนพยัญชนะต้นของคำศัพท์ระดับชั้น ป.๔ - ๖</p>
+          </div>
+        </div>
+        <button onclick="modalCodex.close()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="my-3 flex flex-col sm:flex-row gap-2 shrink-0">
+        <div class="relative flex-1">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+          <input type="text" id="codex-search" oninput="modalCodex.render()" placeholder="พิมพ์คำศัพท์ เช่น ไก่, ขนม, กล้วย..." class="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs font-sarabun focus:outline-emerald-500">
+        </div>
+        <div class="flex items-center space-x-1 text-xs font-prompt">
+          <button onclick="modalCodex.setFilter('all')" id="codex-f-all" class="px-2.5 py-1 rounded-lg bg-slate-800 text-white font-bold">ทั้งหมด</button>
+          <button onclick="modalCodex.setFilter('mid')" id="codex-f-mid" class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200">กลาง</button>
+          <button onclick="modalCodex.setFilter('high')" id="codex-f-high" class="px-2.5 py-1 rounded-lg bg-orange-50 text-orange-800 border border-orange-200">สูง</button>
+          <button onclick="modalCodex.setFilter('low')" id="codex-f-low" class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 border border-sky-200">ต่ำ</button>
+        </div>
+      </div>
+
+      <!-- Word Cards Grid (Scrollable inside modal) -->
+      <div id="codex-grid" class="flex-1 min-h-0 overflow-y-auto custom-scroll grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pr-1">
+        <!-- Injected via JS -->
+      </div>
+
+      <!-- Codex Footer -->
+      <div class="pt-2.5 mt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 shrink-0 font-prompt">
+        <span>แสดง <b id="codex-count" class="text-slate-800">0</b> คำ</span>
+        <button onclick="modalCodex.close()" class="px-4 py-1.5 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition">
+          ปิดสมุดคำศัพท์
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL 2: สรุปสูตรท่องจำไตรยางศ์ (Mnemonic Cheat Sheet Overlay)       -->
+  <!-- ================================================================= -->
+  <div id="modal-cheat" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-3 hidden anim-pop">
+    <div class="bg-white border border-slate-200 rounded-3xl max-w-2xl w-full p-4 sm:p-5 shadow-2xl flex flex-col max-h-[88vh]">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-base">
+            <i class="fa-solid fa-lightbulb"></i>
+          </div>
+          <h3 class="font-prompt font-bold text-base sm:text-lg text-slate-900">สรุปสูตรท่องจำไตรยางศ์</h3>
+        </div>
+        <button onclick="modalCheat.close()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (3 Cards Grid) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 my-3 overflow-y-auto custom-scroll pr-1">
+        
+        <!-- High Consonants -->
+        <div class="p-3 rounded-2xl bg-orange-50/70 border border-orange-200 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold font-prompt text-orange-800">อักษรสูง</span>
+              <span class="text-[10px] font-bold bg-orange-200 text-orange-900 px-1.5 py-0.2 rounded-md">๑๑ ตัว</span>
+            </div>
+            <div class="font-prompt font-bold text-sm text-orange-950 mt-1 mb-1">"ผี ฝาก ถุง ข้าว สาร ให้ ฉัน"</div>
+            <p class="text-[11px] text-slate-600 leading-tight">
+              + ฐ (ถุง), ฃ (ข้าว), ศ, ษ (สาร)<br>
+              <strong>พยัญชนะ:</strong> ข ฃ ฉ ฐ ถ ผ ฝ ศ ษ ส ห
+            </p>
+          </div>
+        </div>
+
+        <!-- Mid Consonants -->
+        <div class="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold font-prompt text-emerald-800">อักษรกลาง</span>
+              <span class="text-[10px] font-bold bg-emerald-200 text-emerald-900 px-1.5 py-0.2 rounded-md">๙ ตัว</span>
+            </div>
+            <div class="font-prompt font-bold text-sm text-emerald-950 mt-1 mb-1">"ไก่ จิก เด็ก ตาย บน ปาก โอ่ง"</div>
+            <p class="text-[11px] text-slate-600 leading-tight">
+              (ด-ฎ, ต-ฏ)<br>
+              <strong>พยัญชนะ:</strong> ก จ ด ต ฎ ฏ บ ป อ
+            </p>
+          </div>
+        </div>
+
+        <!-- Low Consonants -->
+        <div class="p-3 rounded-2xl bg-sky-50/70 border border-sky-200 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold font-prompt text-sky-800">อักษรต่ำ</span>
+              <span class="text-[10px] font-bold bg-sky-200 text-sky-900 px-1.5 py-0.2 rounded-md">๒๔ ตัว</span>
+            </div>
+            <div class="text-[11px] font-bold text-sky-950 mt-1">
+              • ต่ำเดี่ยว (๑๐ ตัว):<br>
+              <span class="font-normal font-sarabun text-slate-700">"งู ใหญ่ นอน อยู่ ณ ริม วัด โม ฬี โลก"</span>
+            </div>
+            <div class="text-[11px] font-bold text-sky-950 mt-1">
+              • ต่ำคู่ (๑๔ ตัว):<br>
+              <span class="font-normal font-sarabun text-slate-700">"พ่อ ค้า ฟัน ทอง ซื้อ ช้าง ฮ่อ"</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="pt-2 border-t border-slate-100 flex justify-end">
+        <button onclick="modalCheat.close()" class="px-5 py-1.5 rounded-xl bg-slate-900 text-white font-prompt font-bold text-xs hover:bg-slate-800 transition">
+          เข้าใจแล้ว ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightweight Confetti Overlay Canvas -->
+  <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50 w-full h-full"></canvas>
+
+  <!-- ================================================================= -->
+  <!-- JAVASCRIPT: SOUNDS, 120+ DATABASE, LESSONS & GAME ENGINES         -->
+  <!-- ================================================================= -->
+  <script>
+    /* ===============================================================
+       1. SYNTHESIZED WEB AUDIO API SYSTEM (No external MP3s)
+    =============================================================== */
+    class WebAudioFX {
+      constructor() {
+        this.ctx = null;
+        this.isMuted = localStorage.getItem('triyang_mute') === 'true';
+        this.updateIcon();
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      toggleMute() {
+        this.isMuted = !this.isMuted;
+        localStorage.setItem('triyang_mute', this.isMuted);
+        this.updateIcon();
+        if (!this.isMuted) this.playTone(520, 'sine', 0.08);
+      }
+
+      updateIcon() {
+        const icon = document.getElementById('audio-icon');
+        if (!icon) return;
+        icon.className = this.isMuted ? 'fa-solid fa-volume-xmark text-slate-400' : 'fa-solid fa-volume-high text-emerald-600';
+      }
+
+      playTone(freq, type = 'sine', duration = 0.1, gainVal = 0.15) {
+        if (this.isMuted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+      }
+
+      bubblePop() {
+        if (this.isMuted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(340, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(900, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.22, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.08);
+      }
+
+      correct() {
+        if (this.isMuted) return;
+        this.init();
+        if (!this.ctx) return;
+        [523.25, 659.25, 783.99].forEach((freq, idx) => {
+          setTimeout(() => this.playTone(freq, 'triangle', 0.18, 0.15), idx * 70);
+        });
+      }
+
+      wrong() {
+        if (this.isMuted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(190, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(130, this.ctx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.16, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.2);
+      }
+
+      laserScan() {
+        if (this.isMuted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(820, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(320, this.ctx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.14, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.3);
+      }
+
+      fanfare() {
+        if (this.isMuted) return;
+        this.init();
+        if (!this.ctx) return;
+        [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
+          setTimeout(() => this.playTone(freq, 'triangle', 0.22, 0.18), idx * 85);
+        });
+      }
+    }
+
+    const audioFx = new WebAudioFX();
+
+    /* ===============================================================
+       2. MEGA CURRICULUM VOCABULARY ENGINE (125+ WORDS FOR GRADE 4-6)
+    =============================================================== */
+    const TRIYANG_WORDS = [
+      // -------------------------------------------------------------
+      // อักษรกลาง (ก จ ด ต ฎ ฏ บ ป อ) [32 คำ]
+      // -------------------------------------------------------------
+      { w: "ไก่", initial: "ก", group: "mid", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ก' จัดเป็นอักษรกลาง" },
+      { w: "จาน", initial: "จ", group: "mid", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'จ' จัดเป็นอักษรกลาง" },
+      { w: "ดาว", initial: "ด", group: "mid", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ด' จัดเป็นอักษรกลาง" },
+      { w: "เต่า", initial: "ต", group: "mid", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ต' จัดเป็นอักษรกลาง" },
+      { w: "บ้าน", initial: "บ", group: "mid", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'บ' จัดเป็นอักษรกลาง" },
+      { w: "ปาก", initial: "ป", group: "mid", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ป' จัดเป็นอักษรกลาง" },
+      { w: "โอ่ง", initial: "อ", group: "mid", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'อ' จัดเป็นอักษรกลาง" },
+      { w: "กล้วย", initial: "ก", group: "mid", type: "คำควบกล้ำแท้", expl: "'กล' ควบกล้ำ ยึดพยัญชนะต้นตัวแรก 'ก' (อักษรกลาง)" },
+      { w: "กวาง", initial: "ก", group: "mid", type: "คำควบกล้ำแท้", expl: "'กว' ควบกล้ำ ยึดพยัญชนะต้นตัวแรก 'ก' (อักษรกลาง)" },
+      { w: "โกรธ", initial: "ก", group: "mid", type: "คำควบกล้ำแท้", expl: "'กร' ควบกล้ำ ยึดพยัญชนะต้นตัวแรก 'ก' (อักษรกลาง)" },
+      { w: "กลอง", initial: "ก", group: "mid", type: "คำควบกล้ำแท้", expl: "'กล' ควบแท้ ยึดพยัญชนะต้นตัวแรก 'ก' (อักษรกลาง)" },
+      { w: "กราบ", initial: "ก", group: "mid", type: "คำควบกล้ำแท้", expl: "'กร' ควบแท้ พยัญชนะต้นตัวแรกคือ 'ก' (อักษรกลาง)" },
+      { w: "จริง", initial: "จ", group: "mid", type: "คำควบไม่แท้", expl: "'จร' ควบไม่แท้ ออกเสียงเฉพาะตัว จ (อักษรกลาง)" },
+      { w: "ตลาด", initial: "ต", group: "mid", type: "คำอักษรนำ", expl: "อักษรกลาง 'ต' นำ 'ล' ยึดตามพยัญชนะต้น 'ต' (อักษรกลาง)" },
+      { w: "จมูก", initial: "จ", group: "mid", type: "คำอักษรนำ", expl: "อักษรกลาง 'จ' นำ 'ม' ยึดตามตัวนำ 'จ' (อักษรกลาง)" },
+      { w: "จรวด", initial: "จ", group: "mid", type: "คำอักษรนำ", expl: "อักษรกลาง 'จ' นำ 'ร' ยึดตาม 'จ' (อักษรกลาง)" },
+      { w: "อร่อย", initial: "อ", group: "mid", type: "คำอักษรนำ", expl: "อักษรกลาง 'อ' นำ 'ร' ยึดตาม 'อ' (อักษรกลาง)" },
+      { w: "องุ่น", initial: "อ", group: "mid", type: "คำอักษรนำ", expl: "อักษรกลาง 'อ' นำ 'ง' ยึดตาม 'อ' (อักษรกลาง)" },
+      { w: "อย่า", initial: "อ", group: "mid", type: "อ นำ ย", expl: "คำว่า 'อย่า' ยึดตามตัวนำหน้าคือ 'อ' (อักษรกลาง)" },
+      { w: "อยู่", initial: "อ", group: "mid", type: "อ นำ ย", expl: "คำว่า 'อยู่' ยึดตามตัวนำหน้าคือ 'อ' (อักษรกลาง)" },
+      { w: "อย่าง", initial: "อ", group: "mid", type: "อ นำ ย", expl: "คำว่า 'อย่าง' ยึดตามตัวนำหน้าคือ 'อ' (อักษรกลาง)" },
+      { w: "อยาก", initial: "อ", group: "mid", type: "อ นำ ย", expl: "คำว่า 'อยาก' ยึดตามตัวนำหน้าคือ 'อ' (อักษรกลาง)" },
+      { w: "ตลิ่ง", initial: "ต", group: "mid", type: "คำอักษรนำ", expl: "อักษรกลาง 'ต' นำ 'ล' ยึดตามตัวนำ 'ต' (อักษรกลาง)" },
+      { w: "โตนด", initial: "ต", group: "mid", type: "คำอักษรนำ", expl: "อักษรกลาง 'ต' นำ 'น' ยึดตาม 'ต' (อักษรกลาง)" },
+      { w: "แปลง", initial: "ป", group: "mid", type: "คำควบกล้ำแท้", expl: "'ปล' ควบกล้ำ ยึดตัวแรก 'ป' (อักษรกลาง)" },
+      { w: "ปลา", initial: "ป", group: "mid", type: "คำควบกล้ำแท้", expl: "'ปล' ควบแท้ พยัญชนะต้นคือ 'ป' (อักษรกลาง)" },
+      { w: "ปลวก", initial: "ป", group: "mid", type: "คำควบกล้ำแท้", expl: "'ปล' ควบแท้ ยึดตัวแรก 'ป' (อักษรกลาง)" },
+      { w: "กอบ", initial: "ก", group: "mid", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ก' (อักษรกลาง)" },
+      { w: "บัว", initial: "บ", group: "mid", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'บ' (อักษรกลาง)" },
+      { w: "ดวง", initial: "ด", group: "mid", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ด' (อักษรกลาง)" },
+      { w: "ป่า", initial: "ป", group: "mid", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ป' (อักษรกลาง)" },
+      { w: "อ่าง", initial: "อ", group: "mid", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'อ' (อักษรกลาง)" },
+
+      // -------------------------------------------------------------
+      // อักษรสูง (ข ฃ ฉ ฐ ถ ผ ฝ ศ ษ ส ห) [38 คำ]
+      // -------------------------------------------------------------
+      { w: "ข้าว", initial: "ข", group: "high", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ข' จัดเป็นอักษรสูง" },
+      { w: "ผึ้ง", initial: "ผ", group: "high", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ผ' จัดเป็นอักษรสูง" },
+      { w: "ฝน", initial: "ฝ", group: "high", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ฝ' จัดเป็นอักษรสูง" },
+      { w: "ถุง", initial: "ถ", group: "high", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ถ' จัดเป็นอักษรสูง" },
+      { w: "สาร", initial: "ส", group: "high", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ส' จัดเป็นอักษรสูง" },
+      { w: "หอย", initial: "ห", group: "high", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ห' จัดเป็นอักษรสูง" },
+      { w: "ฉัตร", initial: "ฉ", group: "high", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ฉ' จัดเป็นอักษรสูง" },
+      { w: "ขนม", initial: "ข", group: "high", type: "คำอักษรนำ", expl: "อักษรสูง 'ข' นำ 'น' ผันเสียงตาม 'ข' (อักษรสูง)" },
+      { w: "หมอน", initial: "ห", group: "high", type: "ห นำ", expl: "คำที่มี 'ห' นำอักษรต่ำเดี่ยว ผันตาม 'ห' (อักษรสูง)" },
+      { w: "ขวาน", initial: "ข", group: "high", type: "คำควบกล้ำแท้", expl: "'ขว' ควบกล้ำ ยึดพยัญชนะต้นตัวแรก 'ข' (อักษรสูง)" },
+      { w: "ฉลาม", initial: "ฉ", group: "high", type: "คำอักษรนำ", expl: "อักษรสูง 'ฉ' นำ 'ล' เสียงวรรณยุกต์ผันตาม 'ฉ' (อักษรสูง)" },
+      { w: "สร้อย", initial: "ส", group: "high", type: "คำควบไม่แท้", expl: "'สร' ควบไม่แท้ พยัญชนะต้นแท้จริงคือ 'ส' (อักษรสูง)" },
+      { w: "แหวน", initial: "ห", group: "high", type: "ห นำ", expl: "'หว' เป็นอักษรนำ ยึดเสียงตามตัวนำ 'ห' (อักษรสูง)" },
+      { w: "ขลุ่ย", initial: "ข", group: "high", type: "คำควบกล้ำแท้", expl: "'ขล' ควบแท้ ยึดตัวแรก 'ข' (อักษรสูง)" },
+      { w: "ขรุขระ", initial: "ข", group: "high", type: "คำควบกล้ำแท้", expl: "'ขร' ควบแท้ ยึดพยัญชนะต้นตัวแรก 'ข' (อักษรสูง)" },
+      { w: "แผล", initial: "ผ", group: "high", type: "คำควบกล้ำแท้", expl: "'ผล' ควบกล้ำแท้ ยึดพยัญชนะต้นตัวแรก 'ผ' (อักษรสูง)" },
+      { w: "โผล่", initial: "ผ", group: "high", type: "คำควบกล้ำแท้", expl: "'ผล' ควบแท้ ยึดตัวแรก 'ผ' (อักษรสูง)" },
+      { w: "สร้าง", initial: "ส", group: "high", type: "คำควบไม่แท้", expl: "'สร' ควบไม่แท้ พยัญชนะต้นคือ 'ส' (อักษรสูง)" },
+      { w: "สระน้ำ", initial: "ส", group: "high", type: "คำควบไม่แท้", expl: "'สร' ควบไม่แท้ ออกเสียงเฉพาะตัว ส (อักษรสูง)" },
+      { w: "เศร้า", initial: "ศ", group: "high", type: "คำควบไม่แท้", expl: "'ศร' ควบไม่แท้ ออกเสียงเฉพาะตัว ศ (อักษรสูง)" },
+      { w: "ศรัทธา", initial: "ศ", group: "high", type: "คำควบไม่แท้", expl: "'ศร' ควบไม่แท้ ยึดพยัญชนะต้น 'ศ' (อักษรสูง)" },
+      { w: "สมอง", initial: "ส", group: "high", type: "คำอักษรนำ", expl: "อักษรสูง 'ส' นำ 'ม' ผันวรรณยุกต์ตามตัวหน้า 'ส' (อักษรสูง)" },
+      { w: "สลัด", initial: "ส", group: "high", type: "คำอักษรนำ", expl: "อักษรสูง 'ส' นำ 'ล' ยึดตาม 'ส' (อักษรสูง)" },
+      { w: "สยาม", initial: "ส", group: "high", type: "คำอักษรนำ", expl: "อักษรสูง 'ส' นำ 'ย' ยึดตาม 'ส' (อักษรสูง)" },
+      { w: "สงบ", initial: "ส", group: "high", type: "คำอักษรนำ", expl: "อักษรสูง 'ส' นำ 'ง' ยึดตาม 'ส' (อักษรสูง)" },
+      { w: "หนู", initial: "ห", group: "high", type: "ห นำ", expl: "'หน' อักษรนำ ยึดตามตัวนำ 'ห' (อักษรสูง)" },
+      { w: "หมี", initial: "ห", group: "high", type: "ห นำ", expl: "'หม' อักษรนำ ยึดตามตัวนำ 'ห' (อักษรสูง)" },
+      { w: "หมู", initial: "ห", group: "high", type: "ห นำ", expl: "'หม' อักษรนำ ยึดตามตัวนำ 'ห' (อักษรสูง)" },
+      { w: "หลาน", initial: "ห", group: "high", type: "ห นำ", expl: "'หล' อักษรนำ ยึดตามตัวนำ 'ห' (อักษรสูง)" },
+      { w: "หญิง", initial: "ห", group: "high", type: "ห นำ", expl: "'หญ' อักษรนำ ยึดตามตัวนำ 'ห' (อักษรสูง)" },
+      { w: "หงาย", initial: "ห", group: "high", type: "ห นำ", expl: "'หง' อักษรนำ ยึดตามตัวนำ 'ห' (อักษรสูง)" },
+      { w: "หญ้า", initial: "ห", group: "high", type: "ห นำ", expl: "'หญ' อักษรนำ ยึดตามตัวนำ 'ห' (อักษรสูง)" },
+      { w: "ขวด", initial: "ข", group: "high", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ข' (อักษรสูง)" },
+      { w: "เสือ", initial: "ส", group: "high", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ส' (อักษรสูง)" },
+      { w: "ฝา", initial: "ฝ", group: "high", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ฝ' (อักษรสูง)" },
+      { w: "ผ้า", initial: "ผ", group: "high", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ผ' (อักษรสูง)" },
+      { w: "ถ่าน", initial: "ถ", group: "high", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ถ' (อักษรสูง)" },
+      { w: "หัว", initial: "ห", group: "high", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ห' (อักษรสูง)" },
+
+      // -------------------------------------------------------------
+      // อักษรต่ำ (เดี่ยว ๑๐ ตัว + คู่ ๑๔ ตัว) [56 คำ]
+      // -------------------------------------------------------------
+      { w: "ควาย", initial: "ค", group: "low", type: "คำควบกล้ำแท้", expl: "'คว' ควบแท้ ยึดพยัญชนะต้นตัวแรก 'ค' (อักษรต่ำ)" },
+      { w: "ช้าง", initial: "ช", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ช' จัดเป็นอักษรต่ำ" },
+      { w: "ทหาร", initial: "ท", group: "low", type: "คำสองพยางค์", expl: "พยัญชนะต้นคือ 'ท' จัดเป็นอักษรต่ำ" },
+      { w: "พาน", initial: "พ", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'พ' จัดเป็นอักษรต่ำ" },
+      { w: "ม้า", initial: "ม", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ม' (อักษรต่ำเดี่ยว)" },
+      { w: "ลิง", initial: "ล", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ล' (อักษรต่ำเดี่ยว)" },
+      { w: "เรือ", initial: "ร", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ร' (อักษรต่ำเดี่ยว)" },
+      { w: "งู", initial: "ง", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ง' (อักษรต่ำเดี่ยว)" },
+      { w: "นก", initial: "น", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'น' (อักษรต่ำเดี่ยว)" },
+      { w: "ยักษ์", initial: "ย", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ย' (อักษรต่ำเดี่ยว)" },
+      { w: "แหวน", initial: "ว", group: "low", type: "คำพยางค์เดียว", expl: "คำว่า 'วัว' พยัญชนะต้นคือ 'ว' (อักษรต่ำเดี่ยว)" },
+      { w: "วัว", initial: "ว", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ว' (อักษรต่ำเดี่ยว)" },
+      { w: "จุฬา", initial: "ฬ", group: "low", type: "คำสองพยางค์", expl: "พยางค์หลังใช้ 'ฬ' (อักษรต่ำเดี่ยว)" },
+      { w: "เณร", initial: "ณ", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ณ' (อักษรต่ำเดี่ยว)" },
+      { w: "ญาติ", initial: "ญ", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ญ' (อักษรต่ำเดี่ยว)" },
+      { w: "ทราบ", initial: "ท", group: "low", type: "คำควบไม่แท้", expl: "'ทร' ออกเสียง ซ เป็นควบไม่แท้ พยัญชนะต้นคือ 'ท' (อักษรต่ำ)" },
+      { w: "ทราย", initial: "ท", group: "low", type: "คำควบไม่แท้", expl: "'ทร' พยัญชนะต้นตามรูปเขียนคือ 'ท' (อักษรต่ำ)" },
+      { w: "ทรุด", initial: "ท", group: "low", type: "คำควบไม่แท้", expl: "'ทร' ออกเสียง ซ พยัญชนะต้นคือ 'ท' (อักษรต่ำ)" },
+      { w: "โทรม", initial: "ท", group: "low", type: "คำควบไม่แท้", expl: "'ทร' ออกเสียง ซ พยัญชนะต้นคือ 'ท' (อักษรต่ำ)" },
+      { w: "พริก", initial: "พ", group: "low", type: "คำควบกล้ำแท้", expl: "'พร' ควบกล้ำ ยึดพยัญชนะต้นตัวแรก 'พ' (อักษรต่ำ)" },
+      { w: "คลอง", initial: "ค", group: "low", type: "คำควบกล้ำแท้", expl: "'คล' ควบแท้ ยึดพยัญชนะต้นตัวแรก 'ค' (อักษรต่ำ)" },
+      { w: "เพลง", initial: "พ", group: "low", type: "คำควบกล้ำแท้", expl: "'พล' ควบแท้ ยึดพยัญชนะต้นตัวแรก 'พ' (อักษรต่ำ)" },
+      { w: "ครู", initial: "ค", group: "low", type: "คำควบกล้ำแท้", expl: "'คร' ควบแท้ ยึดพยัญชนะต้นตัวแรก 'ค' (อักษรต่ำ)" },
+      { w: "ควัน", initial: "ค", group: "low", type: "คำควบกล้ำแท้", expl: "'คว' ควบแท้ ยึดพยัญชนะต้นตัวแรก 'ค' (อักษรต่ำ)" },
+      { w: "พลอย", initial: "พ", group: "low", type: "คำควบกล้ำแท้", expl: "'พล' ควบแท้ ยึดพยัญชนะต้นตัวแรก 'พ' (อักษรต่ำ)" },
+      { w: "แพร", initial: "พ", group: "low", type: "คำควบกล้ำแท้", expl: "'พร' ควบแท้ ยึดพยัญชนะต้นตัวแรก 'พ' (อักษรต่ำ)" },
+      { w: "พระ", initial: "พ", group: "low", type: "คำควบกล้ำแท้", expl: "'พร' ควบแท้ ยึดพยัญชนะต้นตัวแรก 'พ' (อักษรต่ำ)" },
+      { w: "ฟัน", initial: "ฟ", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ฟ' (อักษรต่ำคู่)" },
+      { w: "ไฟ", initial: "ฟ", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ฟ' (อักษรต่ำคู่)" },
+      { w: "ทอง", initial: "ท", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ท' (อักษรต่ำคู่)" },
+      { w: "ธง", initial: "ธ", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ธ' (อักษรต่ำคู่)" },
+      { w: "โซ่", initial: "ซ", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ซ' (อักษรต่ำคู่)" },
+      { w: "ฮูก", initial: "ฮ", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ฮ' (อักษรต่ำคู่)" },
+      { w: "ฆ้อง", initial: "ฆ", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ฆ' (อักษรต่ำคู่)" },
+      { w: "เฌอ", initial: "ฌ", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ฌ' (อักษรต่ำคู่)" },
+      { w: "เฒ่า", initial: "ฒ", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ฒ' (อักษรต่ำคู่)" },
+      { w: "มณฑา", initial: "ฑ", group: "low", type: "คำสองพยางค์", expl: "คำว่า 'มณฑา' ตัว ฑ เป็นอักษรต่ำคู่" },
+      { w: "ร่ม", initial: "ร", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ร' (อักษรต่ำเดี่ยว)" },
+      { w: "แมว", initial: "ม", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ม' (อักษรต่ำเดี่ยว)" },
+      { w: "น้ำ", initial: "น", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'น' (อักษรต่ำเดี่ยว)" },
+      { w: "ไม้", initial: "ม", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ม' (อักษรต่ำเดี่ยว)" },
+      { w: "ลม", initial: "ล", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ล' (อักษรต่ำเดี่ยว)" },
+      { w: "รัก", initial: "ร", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ร' (อักษรต่ำเดี่ยว)" },
+      { w: "วัด", initial: "ว", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ว' (อักษรต่ำเดี่ยว)" },
+      { w: "ยิ้ม", initial: "ย", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ย' (อักษรต่ำเดี่ยว)" },
+      { w: "เงา", initial: "ง", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ง' (อักษรต่ำเดี่ยว)" },
+      { w: "ช้อน", initial: "ช", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ช' (อักษรต่ำคู่)" },
+      { w: "เชือก", initial: "ช", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ช' (อักษรต่ำคู่)" },
+      { w: "ทรายแก้ว", initial: "ท", group: "low", type: "คำควบไม่แท้", expl: "คำว่า 'ทราย' ยึดพยัญชนะต้น 'ท' (อักษรต่ำ)" },
+      { w: "พุทธ", initial: "พ", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'พ' (อักษรต่ำ)" },
+      { w: "ภาพ", initial: "ภ", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ภ' (อักษรต่ำคู่)" },
+      { w: "ภูเขา", initial: "ภ", group: "low", type: "คำสองพยางค์", expl: "พยัญชนะต้นคือ 'ภ' (อักษรต่ำคู่)" },
+      { w: "พฤกษ์", initial: "พ", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'พ' (อักษรต่ำ)" },
+      { w: "ค้อน", initial: "ค", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ค' (อักษรต่ำคู่)" },
+      { w: "ชา", initial: "ช", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ช' (อักษรต่ำคู่)" },
+      { w: "ลูก", initial: "ล", group: "low", type: "คำพยางค์เดียว", expl: "พยัญชนะต้นคือ 'ล' (อักษรต่ำเดี่ยว)" }
+    ];
+
+    /* ===============================================================
+       3. PERSONAL MASTERY TRACKER (Self-Paced Progress)
+    =============================================================== */
+    class MasteryTracker {
+      constructor() {
+        this.masteredSet = new Set(JSON.parse(localStorage.getItem('triyang_mastered') || '[]'));
+        this.totalAttempts = parseInt(localStorage.getItem('triyang_attempts') || '0', 10);
+        this.correctAttempts = parseInt(localStorage.getItem('triyang_correct') || '0', 10);
+        this.streak = 0;
+      }
+
+      recordAttempt(word, isCorrect) {
+        this.totalAttempts++;
+        if (isCorrect) {
+          this.correctAttempts++;
+          this.streak++;
+          this.masteredSet.add(word);
+        } else {
+          this.streak = 0;
+        }
+
+        // Save
+        localStorage.setItem('triyang_mastered', JSON.stringify([...this.masteredSet]));
+        localStorage.setItem('triyang_attempts', this.totalAttempts);
+        localStorage.setItem('triyang_correct', this.correctAttempts);
+
+        this.updateUI();
+      }
+
+      updateUI() {
+        const masteredEl = document.getElementById('tracker-mastered');
+        const accuracyEl = document.getElementById('tracker-accuracy');
+
+        if (masteredEl) masteredEl.textContent = this.masteredSet.size;
+
+        if (accuracyEl) {
+          const acc = this.totalAttempts > 0 
+            ? Math.round((this.correctAttempts / this.totalAttempts) * 100) 
+            : 100;
+          accuracyEl.textContent = `${acc}%`;
+        }
+      }
+    }
+
+    const tracker = new MasteryTracker();
+
+    /* ===============================================================
+       4. INTERACTIVE LESSONS ENGINE (5 ZERO-SCROLL SLIDES)
+    =============================================================== */
+    const LESSON_CHAPTERS = [
+      {
+        title: "บทที่ ๑: ไตรยางศ์คืออะไร?",
+        badge: "หลักการสำคัญ",
+        badgeClass: "bg-emerald-100 text-emerald-800",
+        heading: "ไตรยางศ์ คือ การแบ่งพยัญชนะไทย ๔๔ ตัว เป็น ๓ หมู่",
+        visual: `
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="p-2.5 rounded-xl bg-orange-50 border border-orange-200">
+              <span class="text-xs font-bold text-orange-700 font-prompt">อักษรสูง</span>
+              <div class="text-xl sm:text-2xl font-black text-orange-800 font-prompt">๑๑ ตัว</div>
+              <span class="text-[10px] text-slate-500">เสียงพื้นจัตวา</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
+              <span class="text-xs font-bold text-emerald-700 font-prompt">อักษรกลาง</span>
+              <div class="text-xl sm:text-2xl font-black text-emerald-800 font-prompt">๙ ตัว</div>
+              <span class="text-[10px] text-slate-500">ผันได้ครบ ๕ เสียง</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-sky-50 border border-sky-200">
+              <span class="text-xs font-bold text-sky-700 font-prompt">อักษรต่ำ</span>
+              <div class="text-xl sm:text-2xl font-black text-sky-800 font-prompt">๒๔ ตัว</div>
+              <span class="text-[10px] text-slate-500">เดี่ยว ๑๐ + คู่ ๑๔</span>
+            </div>
+          </div>
+        `,
+        explanation: "คำว่า <strong>'ไตรยางศ์'</strong> มาจาก ไตร (สาม) + องค์ (ส่วน) จัดหมวดหมู่ตามระดับเสียงของพยัญชนะต้น เพื่อประโยชน์ในการ<strong>ผันเสียงวรรณยุกต์</strong>ให้ถูกต้องตามหลักภาษาไทย",
+        quiz: {
+          q: "พยัญชนะไทย ๔๔ ตัว แบ่งออกเป็นกี่หมู่?",
+          options: [
+            { text: "๒ หมู่", correct: false },
+            { text: "๓ หมู่", correct: true },
+            { text: "๔ หมู่", correct: false }
+          ],
+          hint: "ไตร แปลว่า สาม นะครับ!"
+        }
+      },
+      {
+        title: "บทที่ ๒: อักษรกลาง ๙ ตัว",
+        badge: "ผันได้ครบ ๕ เสียง",
+        badgeClass: "bg-emerald-100 text-emerald-800",
+        heading: "อักษรกลางมี ๙ ตัว (พื้นเสียงเป็นเสียงสามัญ)",
+        visual: `
+          <div class="text-center">
+            <div class="font-prompt font-black text-base sm:text-lg text-emerald-800 mb-1">
+              "ไก่ จิก เด็ก ตาย บน ปาก โอ่ง"
+            </div>
+            <div class="flex justify-center items-center gap-1.5 flex-wrap">
+              <span class="px-2 py-0.5 rounded-lg bg-emerald-100 font-bold text-emerald-900 font-prompt">ก</span>
+              <span class="px-2 py-0.5 rounded-lg bg-emerald-100 font-bold text-emerald-900 font-prompt">จ</span>
+              <span class="px-2 py-0.5 rounded-lg bg-emerald-100 font-bold text-emerald-900 font-prompt">ด (ฎ)</span>
+              <span class="px-2 py-0.5 rounded-lg bg-emerald-100 font-bold text-emerald-900 font-prompt">ต (ฏ)</span>
+              <span class="px-2 py-0.5 rounded-lg bg-emerald-100 font-bold text-emerald-900 font-prompt">บ</span>
+              <span class="px-2 py-0.5 rounded-lg bg-emerald-100 font-bold text-emerald-900 font-prompt">ป</span>
+              <span class="px-2 py-0.5 rounded-lg bg-emerald-100 font-bold text-emerald-900 font-prompt">อ</span>
+            </div>
+          </div>
+        `,
+        explanation: "อักษรกลางคำเป็น สามารถผันวรรณยุกต์ได้ครบทั้ง <strong>๕ เสียง</strong> (สามัญ เอก โท ตรี จัตวา) และรูปวรรณยุกต์จะตรงกับเสียงเสมอ เช่น กา ก่า ก้า ก๊า ก๋า",
+        quiz: {
+          q: "คำว่า 'บ้าน' มีพยัญชนะต้น บ จัดเป็นหมู่อักษรใด?",
+          options: [
+            { text: "อักษรกลาง", correct: true },
+            { text: "อักษรสูง", correct: false },
+            { text: "อักษรต่ำ", correct: false }
+          ],
+          hint: "บ บน ปาก โอ่ง คืออักษรกลาง!"
+        }
+      },
+      {
+        title: "บทที่ ๓: อักษรสูง ๑๑ ตัว",
+        badge: "พื้นเสียงจัตวา",
+        badgeClass: "bg-orange-100 text-orange-800",
+        heading: "อักษรสูงมี ๑๑ ตัว (ผันได้ ๓ เสียง: เอก โท จัตวา)",
+        visual: `
+          <div class="text-center">
+            <div class="font-prompt font-black text-base sm:text-lg text-orange-800 mb-1">
+              "ผี ฝาก ถุง ข้าว สาร ให้ ฉัน"
+            </div>
+            <div class="text-[11px] text-slate-600 mb-1 font-prompt">(ถุง = ถ, ฐ | ข้าว = ข, ฃ | สาร = ส, ศ, ษ)</div>
+            <div class="flex justify-center items-center gap-1 flex-wrap text-xs">
+              <span class="px-1.5 py-0.5 rounded bg-orange-100 text-orange-900 font-bold font-prompt">ข</span>
+              <span class="px-1.5 py-0.5 rounded bg-orange-100 text-orange-900 font-bold font-prompt">ฃ</span>
+              <span class="px-1.5 py-0.5 rounded bg-orange-100 text-orange-900 font-bold font-prompt">ฉ</span>
+              <span class="px-1.5 py-0.5 rounded bg-orange-100 text-orange-900 font-bold font-prompt">ฐ</span>
+              <span class="px-1.5 py-0.5 rounded bg-orange-100 text-orange-900 font-bold font-prompt">ถ</span>
+              <span class="px-1.5 py-0.5 rounded bg-orange-100 text-orange-900 font-bold font-prompt">ผ</span>
+              <span class="px-1.5 py-0.5 rounded bg-orange-100 text-orange-900 font-bold font-prompt">ฝ</span>
+              <span class="px-1.5 py-0.5 rounded bg-orange-100 text-orange-900 font-bold font-prompt">ศ</span>
+              <span class="px-1.5 py-0.5 rounded bg-orange-100 text-orange-900 font-bold font-prompt">ษ</span>
+              <span class="px-1.5 py-0.5 rounded bg-orange-100 text-orange-900 font-bold font-prompt">ส</span>
+              <span class="px-1.5 py-0.5 rounded bg-orange-100 text-orange-900 font-bold font-prompt">ห</span>
+            </div>
+          </div>
+        `,
+        explanation: "พยัญชนะอักษรสูงเมื่อไม่มีรูปวรรณยุกต์ เสียงพื้นฐานคือ <strong>เสียงจัตวา</strong> เช่น ขา, เสือ, ถุง โดยสามารถผันได้ ๓ เสียง คือ เอก (ข่า), โท (ข้า), และจัตวา (ขา)",
+        quiz: {
+          q: "คำว่า 'ผึ้ง' พยัญชนะต้น ผ จัดเป็นหมู่อักษรใด?",
+          options: [
+            { text: "อักษรกลาง", correct: false },
+            { text: "อักษรสูง", correct: true },
+            { text: "อักษรต่ำ", correct: false }
+          ],
+          hint: "ผี ฝาก ถุง... ผี คือ ผ (อักษรสูง)!"
+        }
+      },
+      {
+        title: "บทที่ ๔: อักษรต่ำ ๒๔ ตัว",
+        badge: "ต่ำเดี่ยว & ต่ำคู่",
+        badgeClass: "bg-sky-100 text-sky-800",
+        heading: "อักษรต่ำแบ่งเป็น ๒ กลุ่ม: ต่ำเดี่ยว ๑๐ ตัว และ ต่ำคู่ ๑๔ ตัว",
+        visual: `
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
+            <div class="p-2 rounded-xl bg-sky-50 border border-sky-200">
+              <span class="text-xs font-bold text-sky-800 font-prompt">• ต่ำเดี่ยว (๑๐ ตัว - ไม่มีเสียงคู่):</span>
+              <div class="text-xs font-bold text-sky-950 font-prompt mt-0.5">"งู ใหญ่ นอน อยู่ ณ ริม วัด โม ฬี โลก"</div>
+              <span class="text-[10px] text-slate-500 font-sarabun">(ง ญ น ย ณ ร ว ม ฬ ล)</span>
+            </div>
+            <div class="p-2 rounded-xl bg-sky-50 border border-sky-200">
+              <span class="text-xs font-bold text-sky-800 font-prompt">• ต่ำคู่ (๑๔ ตัว - เสียงคู่กับอักษรสูง):</span>
+              <div class="text-xs font-bold text-sky-950 font-prompt mt-0.5">"พ่อ ค้า ฟัน ทอง ซื้อ ช้าง ฮ่อ"</div>
+              <span class="text-[10px] text-slate-500 font-sarabun">(พ ภ ฟ ฑ ฒ ท ธ ค ฅ ฆ ช ซ ฌ ฮ)</span>
+            </div>
+          </div>
+        `,
+        explanation: "อักษรต่ำคำเป็น ผันได้ ๓ เสียง (สามัญ โท ตรี) จุดสังเกตของ ป.4-6: <strong>รูปเอกเป็นเสียงโท รูปโทเป็นเสียงตรี</strong> เช่น คำว่า 'พี่' รูปเอกแต่เสียงโท",
+        quiz: {
+          q: "คำว่า 'ม้า' พยัญชนะต้น ม จัดอยู่ในกลุ่มใด?",
+          options: [
+            { text: "อักษรต่ำเดี่ยว", correct: true },
+            { text: "อักษรสูง", correct: false },
+            { text: "อักษรกลาง", correct: false }
+          ],
+          hint: "ริม วัด โม... 'โม' คือ ม้า (ต่ำเดี่ยว)!"
+        }
+      },
+      {
+        title: "บทที่ ๕: กฎคำซ่อนรูป ป.๔ - ๖",
+        badge: "กฎขั้นสูง ป.๔-๖",
+        badgeClass: "bg-purple-100 text-purple-800",
+        heading: "คำควบกล้ำ & คำอักษรนำ พิจารณาหมู่อักษรอย่างไร?",
+        visual: `
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left text-xs">
+            <div class="p-2 rounded-xl bg-purple-50 border border-purple-200">
+              <span class="font-bold text-purple-900 font-prompt">๑. คำควบกล้ำ (แท้/ไม่แท้)</span>
+              <p class="text-slate-600 font-sarabun mt-0.5">
+                ยึด <strong>พยัญชนะต้นตัวแรก</strong> เสมอ!<br>
+                เช่น <b class="text-emerald-700">กล้วย</b> (กล = กลาง), <b class="text-sky-700">ทราบ</b> (ทร = ต่ำ)
+              </p>
+            </div>
+            <div class="p-2 rounded-xl bg-purple-50 border border-purple-200">
+              <span class="font-bold text-purple-900 font-prompt">๒. คำอักษรนำ (ห นำ, สูง/กลางนำต่ำ)</span>
+              <p class="text-slate-600 font-sarabun mt-0.5">
+                ยึดตาม <strong>พยัญชนะต้นตัวนำ</strong>!<br>
+                เช่น <b class="text-orange-700">ขนม</b> (ข นำ = สูง), <b class="text-emerald-700">ตลาด</b> (ต นำ = กลาง)
+              </p>
+            </div>
+          </div>
+        `,
+        explanation: "ข้อสอบ ป.4-6 มักนำคำอย่าง <em>'ขนม, กล้วย, สร้อย, ทราบ, ตลาด'</em> มาทดสอบ ให้จำกฎเหล็กว่า <strong>'ควบกล้ำดูตัวแรก อักษรนำดูตัวนำ'</strong>",
+        quiz: {
+          q: "คำว่า 'กล้วย' (ควบกล้ำ กล) จัดเป็นหมู่อักษรใด?",
+          options: [
+            { text: "อักษรต่ำ", correct: false },
+            { text: "อักษรกลาง", correct: true },
+            { text: "อักษรสูง", correct: false }
+          ],
+          hint: "ยึดตัวแรก 'ก' ซึ่งเป็นอักษรกลาง!"
+        }
+      }
+    ];
+
+    class LessonSlideEngine {
+      constructor() {
+        this.currentIdx = 0;
+      }
+
+      init() {
+        this.renderDots();
+        this.render();
+      }
+
+      renderDots() {
+        const container = document.getElementById('lesson-dots');
+        container.innerHTML = '';
+        LESSON_CHAPTERS.forEach((_, idx) => {
+          const dot = document.createElement('button');
+          dot.className = `w-2 h-2 rounded-full transition ${idx === this.currentIdx ? 'bg-emerald-600 w-5' : 'bg-slate-300'}`;
+          dot.onclick = () => this.goTo(idx);
+          container.appendChild(dot);
+        });
+      }
+
+      goTo(idx) {
+        audioFx.playTone(480, 'sine', 0.05);
+        this.currentIdx = idx;
+        this.render();
+        this.renderDots();
+      }
+
+      prev() {
+        if (this.currentIdx > 0) {
+          this.goTo(this.currentIdx - 1);
+        }
+      }
+
+      next() {
+        if (this.currentIdx < LESSON_CHAPTERS.length - 1) {
+          this.goTo(this.currentIdx + 1);
+        } else {
+          // Finished lessons, jump to reflex practice
+          audioFx.fanfare();
+          launchConfetti();
+          nav.switch('reflex');
+        }
+      }
+
+      render() {
+        const c = LESSON_CHAPTERS[this.currentIdx];
+        document.getElementById('lesson-chapter-title').textContent = c.title;
+        document.getElementById('lesson-badge').textContent = c.badge;
+        document.getElementById('lesson-badge').className = `px-3 py-1 rounded-full text-xs font-bold font-prompt ${c.badgeClass}`;
+        document.getElementById('lesson-heading').textContent = c.heading;
+        document.getElementById('lesson-visual-box').innerHTML = c.visual;
+        document.getElementById('lesson-explanation').innerHTML = c.explanation;
+        document.getElementById('lesson-cur-index').textContent = this.currentIdx + 1;
+
+        // Render Checkpoint Quiz
+        const quizBox = document.getElementById('lesson-quiz-box');
+        quizBox.innerHTML = `
+          <div class="flex items-center space-x-1.5 text-xs font-prompt text-emerald-950 font-bold">
+            <i class="fa-solid fa-circle-question text-emerald-600"></i>
+            <span>มินิทดสอบ: ${c.quiz.q}</span>
+          </div>
+          <div class="flex items-center space-x-1.5">
+            ${c.quiz.options.map(opt => `
+              <button onclick="lessonEngine.answerQuiz(${opt.correct}, '${c.quiz.hint}')" class="btn-tactile px-2.5 py-1 rounded-lg text-xs font-bold font-prompt bg-white hover:bg-emerald-100 text-slate-800 border border-emerald-300">
+                ${opt.text}
+              </button>
+            `).join('')}
+          </div>
+        `;
+
+        // Update Prev/Next buttons
+        document.getElementById('btn-lesson-prev').disabled = (this.currentIdx === 0);
+        const nextBtn = document.getElementById('btn-lesson-next');
+        if (this.currentIdx === LESSON_CHAPTERS.length - 1) {
+          nextBtn.innerHTML = `ไปฝึกเกมสปีดทันที <i class="fa-solid fa-gamepad ml-1"></i>`;
+        } else {
+          nextBtn.innerHTML = `บทถัดไป <i class="fa-solid fa-chevron-right ml-1"></i>`;
+        }
+      }
+
+      answerQuiz(isCorrect, hint) {
+        if (isCorrect) {
+          audioFx.correct();
+          tracker.recordAttempt("มินิบทเรียน", true);
+          launchConfetti();
+          const quizBox = document.getElementById('lesson-quiz-box');
+          quizBox.innerHTML = `
+            <div class="w-full text-center text-xs font-prompt font-bold text-emerald-800 py-1 anim-pop">
+              <i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> เยี่ยมมาก! ตอบถูกต้อง พร้อมไปบทถัดไปแล้ว
+            </div>
+          `;
+        } else {
+          audioFx.wrong();
+          tracker.recordAttempt("มินิบทเรียน", false);
+          alertFeedback(hint);
+        }
+      }
+    }
+
+    const lessonEngine = new LessonSlideEngine();
+
+    /* ===============================================================
+       5. NAVIGATION & APP CONTROLLER
+    =============================================================== */
+    class NavigationManager {
+      constructor() {
+        this.activeTab = 'lesson';
+      }
+
+      init() {
+        this.setupKeyboard();
+        tracker.updateUI();
+      }
+
+      switch(tabId) {
+        audioFx.playTone(450, 'sine', 0.05);
+        this.activeTab = tabId;
+
+        // Nav tabs styles
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+          btn.className = "nav-btn px-2 sm:px-3 py-1.5 rounded-lg font-medium text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5";
+        });
+        const activeBtn = document.getElementById(`tab-${tabId}`);
+        if (activeBtn) {
+          activeBtn.className = "nav-btn px-2 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center space-x-1.5 bg-white text-emerald-700 shadow-xs";
+        }
+
+        // View panels
+        document.querySelectorAll('.view-panel').forEach(p => p.classList.add('hidden'));
+        const activePanel = document.getElementById(`view-${tabId}`);
+        if (activePanel) activePanel.classList.remove('hidden');
+
+        // Sub-Engines activation
+        if (tabId === 'bubble') {
+          gameBubble.setupCanvas();
+        } else if (tabId === 'xray') {
+          gameXray.loadCase();
+        } else if (tabId === 'reflex') {
+          gameReflex.render();
+        }
+      }
+
+      toggleFullscreen() {
+        audioFx.playTone(600, 'sine', 0.05);
+        const icon = document.getElementById('fs-icon');
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+          if (icon) icon.className = "fa-solid fa-compress";
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen();
+          if (icon) icon.className = "fa-solid fa-expand";
+        }
+      }
+
+      setupKeyboard() {
+        window.addEventListener('keydown', (e) => {
+          if (this.activeTab === 'reflex') {
+            if (e.key === '1') gameReflex.submit('high');
+            if (e.key === '2') gameReflex.submit('mid');
+            if (e.key === '3') gameReflex.submit('low');
+          }
+        });
+      }
+    }
+
+    const nav = new NavigationManager();
+
+    /* ===============================================================
+       6. MINI-GAME 1: TRIPLE GATE REFLEX ENGINE
+    =============================================================== */
+    class TripleGateReflexGame {
+      constructor() {
+        this.index = 0;
+        this.streak = 0;
+        this.count = 0;
+        this.words = this.shuffle([...TRIYANG_WORDS]);
+      }
+
+      shuffle(arr) {
+        return arr.sort(() => Math.random() - 0.5);
+      }
+
+      render() {
+        const item = this.words[this.index];
+        if (!item) return;
+        document.getElementById('reflex-word').textContent = item.w;
+        document.getElementById('reflex-type-tag').textContent = item.type;
+        document.getElementById('reflex-hint').innerHTML = `พยัญชนะต้นคือ <span class="font-bold text-slate-800 font-prompt text-base">[ ${item.initial} ]</span>`;
+      }
+
+      submit(selectedGroup) {
+        const item = this.words[this.index];
+        const isCorrect = (selectedGroup === item.group);
+        const wordEl = document.getElementById('reflex-word');
+        const feedbackEl = document.getElementById('reflex-feedback');
+
+        tracker.recordAttempt(item.w, isCorrect);
+
+        if (isCorrect) {
+          audioFx.correct();
+          this.streak++;
+          this.count++;
+
+          feedbackEl.className = "absolute top-2.5 text-xs sm:text-sm font-prompt font-bold px-4 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 opacity-100 transform translate-y-0 transition-all";
+          feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check mr-1 text-emerald-600"></i> ถูกต้อง! ${item.expl}`;
+
+          wordEl.classList.add('anim-pop');
+          setTimeout(() => wordEl.classList.remove('anim-pop'), 200);
+
+          document.getElementById('reflex-streak').textContent = this.streak;
+          document.getElementById('reflex-count').textContent = this.count;
+
+          this.index = (this.index + 1) % this.words.length;
+          this.render();
+
+        } else {
+          audioFx.wrong();
+          this.streak = 0;
+          document.getElementById('reflex-streak').textContent = '0';
+
+          feedbackEl.className = "absolute top-2.5 text-xs sm:text-sm font-prompt font-bold px-4 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-300 opacity-100 transform translate-y-0 transition-all";
+          feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark mr-1 text-rose-600"></i> ไม่ถูกนะ: ${item.expl}`;
+
+          wordEl.classList.add('anim-shake');
+          setTimeout(() => wordEl.classList.remove('anim-shake'), 350);
+        }
+      }
+    }
+
+    const gameReflex = new TripleGateReflexGame();
+
+    /* ===============================================================
+       7. MINI-GAME 2: BUBBLE CANVAS ARENA (100% Contained, Zero-Scroll)
+    =============================================================== */
+    class BubbleCanvasEngine {
+      constructor() {
+        this.canvas = null;
+        this.ctx = null;
+        this.bubbles = [];
+        this.particles = [];
+        this.isRunning = false;
+        this.animId = null;
+        this.streak = 0;
+        this.targetCount = 0;
+        this.currentTarget = 'high';
+        this.groupLabels = {
+          high: { label: 'อักษรสูง', color: '#EA580C' },
+          mid: { label: 'อักษรกลาง', color: '#059669' },
+          low: { label: 'อักษรต่ำ', color: '#0284C7' }
+        };
+      }
+
+      setupCanvas() {
+        this.canvas = document.getElementById('bubble-canvas');
+        if (!this.canvas) return;
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+
+        this.canvas.onpointerdown = (e) => this.handlePointer(e);
+        window.addEventListener('resize', () => this.resize());
+      }
+
+      resize() {
+        if (!this.canvas || !this.canvas.parentElement) return;
+        const rect = this.canvas.parentElement.getBoundingClientRect();
+        this.canvas.width = rect.width;
+        this.canvas.height = rect.height;
+      }
+
+      start() {
+        this.setupCanvas();
+        audioFx.playTone(500, 'sine', 0.08);
+        document.getElementById('bubble-overlay').classList.add('hidden');
+        this.streak = 0;
+        this.targetCount = 0;
+        this.bubbles = [];
+        this.particles = [];
+        this.isRunning = true;
+        this.pickNewTarget();
+        this.updateHUD();
+
+        for (let i = 0; i < 6; i++) {
+          this.spawnBubble();
+        }
+
+        if (this.animId) cancelAnimationFrame(this.animId);
+        this.loop();
+      }
+
+      pickNewTarget() {
+        const groups = ['high', 'mid', 'low'];
+        const pool = groups.filter(g => g !== this.currentTarget);
+        this.currentTarget = pool[Math.floor(Math.random() * pool.length)];
+        this.targetCount = 0;
+        this.updateHUD();
+      }
+
+      updateHUD() {
+        const targetInfo = this.groupLabels[this.currentTarget];
+        const missionEl = document.getElementById('bubble-mission-text');
+        if (missionEl) {
+          missionEl.innerHTML = `แตะเฉพาะ: <span style="color: ${targetInfo.color}" class="underline decoration-wavy">"${targetInfo.label}"</span>`;
+        }
+        document.getElementById('bubble-progress').textContent = this.targetCount;
+        document.getElementById('bubble-streak').textContent = this.streak;
+      }
+
+      spawnBubble() {
+        if (!this.canvas) return;
+        const isTarget = Math.random() < 0.45;
+        let pool = TRIYANG_WORDS.filter(w => isTarget ? (w.group === this.currentTarget) : (w.group !== this.currentTarget));
+        if (!pool.length) pool = TRIYANG_WORDS;
+        const wordObj = pool[Math.floor(Math.random() * pool.length)];
+
+        const radius = Math.min(this.canvas.width, this.canvas.height) * 0.11 + 10;
+        const b = {
+          x: Math.random() * (this.canvas.width - radius * 2) + radius,
+          y: this.canvas.height + radius + (Math.random() * 80),
+          radius: radius,
+          vx: (Math.random() - 0.5) * 1.5,
+          vy: -(Math.random() * 0.9 + 0.8),
+          word: wordObj.w,
+          initial: wordObj.initial,
+          group: wordObj.group
+        };
+        this.bubbles.push(b);
+      }
+
+      handlePointer(e) {
+        if (!this.isRunning) return;
+        const rect = this.canvas.getBoundingClientRect();
+        const touchX = e.clientX - rect.left;
+        const touchY = e.clientY - rect.top;
+
+        for (let i = this.bubbles.length - 1; i >= 0; i--) {
+          const b = this.bubbles[i];
+          const dist = Math.hypot(touchX - b.x, touchY - b.y);
+
+          if (dist <= b.radius) {
+            const isCorrect = (b.group === this.currentTarget);
+            tracker.recordAttempt(b.word, isCorrect);
+
+            if (isCorrect) {
+              audioFx.bubblePop();
+              this.streak++;
+              this.targetCount++;
+              this.createPopParticles(b.x, b.y, '#059669');
+              this.bubbles.splice(i, 1);
+              this.updateHUD();
+
+              if (this.targetCount >= 5) {
+                audioFx.fanfare();
+                launchConfetti();
+                this.pickNewTarget();
+              }
+            } else {
+              audioFx.wrong();
+              this.streak = 0;
+              this.createPopParticles(b.x, b.y, '#E11D48');
+              this.bubbles.splice(i, 1);
+              this.updateHUD();
+            }
+            break;
+          }
+        }
+      }
+
+      createPopParticles(x, y, color) {
+        for (let i = 0; i < 14; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 4 + 2;
+          this.particles.push({
+            x: x, y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            radius: Math.random() * 4 + 2,
+            color: color,
+            alpha: 1
+          });
+        }
+      }
+
+      loop() {
+        if (!this.isRunning) return;
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        if (this.bubbles.length < 6) {
+          this.spawnBubble();
+        }
+
+        for (let i = this.bubbles.length - 1; i >= 0; i--) {
+          const b = this.bubbles[i];
+          b.x += b.vx;
+          b.y += b.vy;
+
+          if (b.x - b.radius < 0) { b.x = b.radius; b.vx *= -1; }
+          if (b.x + b.radius > this.canvas.width) { b.x = this.canvas.width - b.radius; b.vx *= -1; }
+
+          if (b.y + b.radius < -20) {
+            this.bubbles.splice(i, 1);
+            continue;
+          }
+
+          // Render Soap Bubble
+          this.ctx.save();
+          this.ctx.beginPath();
+          this.ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+
+          const grad = this.ctx.createRadialGradient(b.x - b.radius * 0.3, b.y - b.radius * 0.3, b.radius * 0.1, b.x, b.y, b.radius);
+          grad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+          grad.addColorStop(0.65, 'rgba(240, 249, 255, 0.85)');
+          grad.addColorStop(1, 'rgba(186, 230, 253, 0.75)');
+          this.ctx.fillStyle = grad;
+          this.ctx.fill();
+
+          this.ctx.lineWidth = 2.5;
+          this.ctx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
+          this.ctx.stroke();
+
+          // Bubble Gloss Highlight
+          this.ctx.beginPath();
+          this.ctx.ellipse(b.x - b.radius * 0.38, b.y - b.radius * 0.38, b.radius * 0.28, b.radius * 0.14, -Math.PI / 4, 0, Math.PI * 2);
+          this.ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+          this.ctx.fill();
+
+          // Word Text
+          this.ctx.fillStyle = '#0F172A';
+          this.ctx.font = `bold ${Math.round(b.radius * 0.52)}px 'Prompt', sans-serif`;
+          this.ctx.textAlign = 'center';
+          this.ctx.textBaseline = 'middle';
+          this.ctx.fillText(b.word, b.x, b.y - 2);
+
+          // Subtext initial
+          this.ctx.fillStyle = '#64748B';
+          this.ctx.font = `500 ${Math.round(b.radius * 0.26)}px 'Sarabun', sans-serif`;
+          this.ctx.fillText(`[ ${b.initial} ]`, b.x, b.y + b.radius * 0.42);
+
+          this.ctx.restore();
+        }
+
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.alpha -= 0.035;
+
+          if (p.alpha <= 0) {
+            this.particles.splice(i, 1);
+            continue;
+          }
+
+          this.ctx.save();
+          this.ctx.globalAlpha = p.alpha;
+          this.ctx.fillStyle = p.color;
+          this.ctx.beginPath();
+          this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.restore();
+        }
+
+        this.animId = requestAnimationFrame(() => this.loop());
+      }
+    }
+
+    const gameBubble = new BubbleCanvasEngine();
+
+    /* ===============================================================
+       8. MINI-GAME 3: DETECTIVE X-RAY LAB (ป.4-6 Advanced Rules)
+    =============================================================== */
+    const XRAY_CASES = [
+      {
+        word: "ขนม",
+        initial: "ข",
+        group: "high",
+        type: "คำอักษรนำ (ข นำ น)",
+        letters: [
+          { l: "ข", role: "พยัญชนะต้นตัวหน้า (อักษรสูง)", isKey: true, groupClass: "bg-orange-100 text-orange-800 border-orange-300" },
+          { l: "น", role: "อักษรต่ำเดี่ยวที่ถูกนำ", isKey: false, groupClass: "bg-slate-100 text-slate-700 border-slate-300" },
+          { l: "ม", role: "ตัวสะกดแม่กม", isKey: false, groupClass: "bg-slate-100 text-slate-500 border-slate-200" }
+        ],
+        rule: "อักษรสูง 'ข' นำอักษรต่ำเดี่ยว 'น' ผันเสียงวรรณยุกต์ตามตัวหน้า จึงจัดเป็น <strong>'อักษรสูง'</strong>"
+      },
+      {
+        word: "กล้วย",
+        initial: "ก",
+        group: "mid",
+        type: "คำควบกล้ำแท้ (กล)",
+        letters: [
+          { l: "ก", role: "พยัญชนะต้นตัวแรก (อักษรกลาง)", isKey: true, groupClass: "bg-emerald-100 text-emerald-800 border-emerald-300" },
+          { l: "ล", role: "พยัญชนะควบกล้ำ", isKey: false, groupClass: "bg-slate-100 text-slate-700 border-slate-300" },
+          { l: "วย", role: "สระอัว + ตัวสะกด", isKey: false, groupClass: "bg-slate-100 text-slate-500 border-slate-200" }
+        ],
+        rule: "คำควบกล้ำแท้ 'กล' ให้อิงพยัญชนะต้นตัวแรกคือ 'ก' ซึ่งจัดเป็น <strong>'อักษรกลาง'</strong>"
+      },
+      {
+        word: "ทราบ",
+        initial: "ท",
+        group: "low",
+        type: "คำควบไม่แท้ (ทร -> ซ)",
+        letters: [
+          { l: "ท", role: "พยัญชนะต้นรูปเขียน (อักษรต่ำ)", isKey: true, groupClass: "bg-sky-100 text-sky-800 border-sky-300" },
+          { l: "ร", role: "ควบไม่แท้ (ออกเสียง ซ)", isKey: false, groupClass: "bg-slate-100 text-slate-700 border-slate-300" },
+          { l: "าบ", role: "สระอา + ตัวสะกดแม่กบ", isKey: false, groupClass: "bg-slate-100 text-slate-500 border-slate-200" }
+        ],
+        rule: "แม้รูป 'ทร' จะออกเสียงเป็น ซ แต่ตามหลักภาษาจัดหมู่ตามพยัญชนะต้นตัวแรก 'ท' จึงเป็น <strong>'อักษรต่ำ'</strong>"
+      },
+      {
+        word: "ตลาด",
+        initial: "ต",
+        group: "mid",
+        type: "คำอักษรนำ (ต นำ ล)",
+        letters: [
+          { l: "ต", role: "พยัญชนะต้นตัวหน้า (อักษรกลาง)", isKey: true, groupClass: "bg-emerald-100 text-emerald-800 border-emerald-300" },
+          { l: "ล", role: "อักษรต่ำเดี่ยวที่ถูกนำ", isKey: false, groupClass: "bg-slate-100 text-slate-700 border-slate-300" },
+          { l: "าด", role: "สระอา + ตัวสะกด", isKey: false, groupClass: "bg-slate-100 text-slate-500 border-slate-200" }
+        ],
+        rule: "อักษรกลาง 'ต' นำอักษรต่ำเดี่ยว 'ล' ออกเสียงสองพยางค์ ผันตาม 'ต' จัดเป็น <strong>'อักษรกลาง'</strong>"
+      },
+      {
+        word: "หมอน",
+        initial: "ห",
+        group: "high",
+        type: "คำอักษรนำ (ห นำ ม)",
+        letters: [
+          { l: "ห", role: "อักษรนำ (อักษรสูง)", isKey: true, groupClass: "bg-orange-100 text-orange-800 border-orange-300" },
+          { l: "ม", role: "อักษรต่ำเดี่ยวที่ถูกนำ", isKey: false, groupClass: "bg-slate-100 text-slate-700 border-slate-300" },
+          { l: "อน", role: "สระออ + แม่กน", isKey: false, groupClass: "bg-slate-100 text-slate-500 border-slate-200" }
+        ],
+        rule: "คำที่มี 'ห' นำอักษรต่ำเดี่ยว เสียงผันตาม 'ห' จัดอยู่ในหมู่ <strong>'อักษรสูง'</strong>"
+      },
+      {
+        word: "ขวาน",
+        initial: "ข",
+        group: "high",
+        type: "คำควบกล้ำแท้ (ขว)",
+        letters: [
+          { l: "ข", role: "พยัญชนะต้นตัวแรก (อักษรสูง)", isKey: true, groupClass: "bg-orange-100 text-orange-800 border-orange-300" },
+          { l: "ว", role: "พยัญชนะควบ", isKey: false, groupClass: "bg-slate-100 text-slate-700 border-slate-300" },
+          { l: "าน", role: "สระอา + แม่กน", isKey: false, groupClass: "bg-slate-100 text-slate-500 border-slate-200" }
+        ],
+        rule: "คำควบกล้ำ 'ขว' ยึดพยัญชนะต้นตัวแรก 'ข' ซึ่งเป็น <strong>'อักษรสูง'</strong>"
+      },
+      {
+        word: "สร้อย",
+        initial: "ส",
+        group: "high",
+        type: "คำควบไม่แท้ (ออกเสียง ส)",
+        letters: [
+          { l: "ส", role: "พยัญชนะต้นแท้จริง (อักษรสูง)", isKey: true, groupClass: "bg-orange-100 text-orange-800 border-orange-300" },
+          { l: "ร", role: "ไม่ออกเสียง ร ควบ", isKey: false, groupClass: "bg-slate-100 text-slate-700 border-slate-300" },
+          { l: "้อย", role: "สระออ + วรรณยุกต์โท", isKey: false, groupClass: "bg-slate-100 text-slate-500 border-slate-200" }
+        ],
+        rule: "'สร' ควบไม่แท้ ไม่ออกเสียง ร พยัญชนะต้นหลักคือ 'ส' จึงเป็น <strong>'อักษรสูง'</strong>"
+      },
+      {
+        word: "พริก",
+        initial: "พ",
+        group: "low",
+        type: "คำควบกล้ำแท้ (พร)",
+        letters: [
+          { l: "พ", role: "พยัญชนะต้นตัวแรก (อักษรต่ำ)", isKey: true, groupClass: "bg-sky-100 text-sky-800 border-sky-300" },
+          { l: "ร", role: "พยัญชนะควบกล้ำ", isKey: false, groupClass: "bg-slate-100 text-slate-700 border-slate-300" },
+          { l: "ิก", role: "สระอิ + แม่กก", isKey: false, groupClass: "bg-slate-100 text-slate-500 border-slate-200" }
+        ],
+        rule: "คำควบกล้ำ 'พร' ยึดพยัญชนะต้นตัวแรกคือ 'พ' จึงจัดเป็น <strong>'อักษรต่ำ'</strong>"
+      },
+      {
+        word: "อร่อย",
+        initial: "อ",
+        group: "mid",
+        type: "คำอักษรนำ (อ นำ ร)",
+        letters: [
+          { l: "อ", role: "พยัญชนะต้นตัวนำ (อักษรกลาง)", isKey: true, groupClass: "bg-emerald-100 text-emerald-800 border-emerald-300" },
+          { l: "ร", role: "อักษรต่ำเดี่ยวที่ถูกนำ", isKey: false, groupClass: "bg-slate-100 text-slate-700 border-slate-300" },
+          { l: "่อย", role: "สระออ + แม่เกย + ไม้เอก", isKey: false, groupClass: "bg-slate-100 text-slate-500 border-slate-200" }
+        ],
+        rule: "อักษรกลาง 'อ' นำ 'ร' ผันเสียงวรรณยุกต์ตามตัวหน้า จึงจัดเป็น <strong>'อักษรกลาง'</strong>"
+      },
+      {
+        word: "แหวน",
+        initial: "ห",
+        group: "high",
+        type: "คำอักษรนำ (ห นำ ว)",
+        letters: [
+          { l: "ห", role: "พยัญชนะตัวนำ (อักษรสูง)", isKey: true, groupClass: "bg-orange-100 text-orange-800 border-orange-300" },
+          { l: "ว", role: "อักษรต่ำเดี่ยวที่ถูกนำ", isKey: false, groupClass: "bg-slate-100 text-slate-700 border-slate-300" },
+          { l: "แ-น", role: "สระแอ + แม่กน", isKey: false, groupClass: "bg-slate-100 text-slate-500 border-slate-200" }
+        ],
+        rule: "'หว' อักษรนำ ยึดเสียงวรรณยุกต์ตามตัวนำหน้า 'ห' จึงจัดเป็น <strong>'อักษรสูง'</strong>"
+      }
+    ];
+
+    class DetectiveXRayEngine {
+      constructor() {
+        this.index = 0;
+      }
+
+      loadCase() {
+        const c = XRAY_CASES[this.index];
+        document.getElementById('xray-index').textContent = this.index + 1;
+        document.getElementById('xray-total').textContent = XRAY_CASES.length;
+        document.getElementById('xray-rule-badge').textContent = `ประเภท: ${c.type}`;
+        document.getElementById('xray-word-display').textContent = c.word;
+
+        const box = document.getElementById('xray-card-box');
+        box.className = "w-full max-w-md py-4 sm:py-5 px-4 bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl text-center relative overflow-hidden transition-all";
+
+        document.getElementById('xray-breakdown-row').innerHTML = '<span class="text-xs text-slate-400 font-prompt italic">กดปุ่ม "เริ่มสแกนโครงสร้างคำ" ด้านล่าง</span>';
+        document.getElementById('xray-explanation').classList.add('hidden');
+
+        document.getElementById('xray-btn-scan').classList.remove('hidden');
+        document.getElementById('xray-btn-choices').classList.add('hidden');
+        document.getElementById('xray-btn-next').classList.add('hidden');
+      }
+
+      runScan() {
+        audioFx.laserScan();
+        const beam = document.getElementById('xray-beam');
+        beam.classList.remove('hidden');
+
+        setTimeout(() => {
+          beam.classList.add('hidden');
+          this.renderDissection();
+        }, 550);
+      }
+
+      renderDissection() {
+        const c = XRAY_CASES[this.index];
+        const row = document.getElementById('xray-breakdown-row');
+        row.innerHTML = '';
+
+        c.letters.forEach(item => {
+          const badge = document.createElement('div');
+          badge.className = `px-3 py-1 rounded-xl text-xs sm:text-sm font-bold font-prompt border ${item.groupClass} flex items-center gap-1 shadow-xs anim-pop`;
+          badge.innerHTML = `<span>${item.l}</span> ${item.isKey ? '<i class="fa-solid fa-key text-[10px] text-amber-500"></i>' : ''}`;
+          row.appendChild(badge);
+        });
+
+        document.getElementById('xray-btn-scan').classList.add('hidden');
+        document.getElementById('xray-btn-choices').classList.remove('hidden');
+      }
+
+      submitChoice(group) {
+        const c = XRAY_CASES[this.index];
+        const isCorrect = (group === c.group);
+        const box = document.getElementById('xray-card-box');
+        const explText = document.getElementById('xray-explanation-text');
+
+        tracker.recordAttempt(c.word, isCorrect);
+
+        if (isCorrect) {
+          audioFx.correct();
+          box.className = "w-full max-w-md py-4 sm:py-5 px-4 bg-emerald-50/70 border-2 border-emerald-400 rounded-2xl text-center relative overflow-hidden transition-all";
+        } else {
+          audioFx.wrong();
+          box.className = "w-full max-w-md py-4 sm:py-5 px-4 bg-rose-50/70 border-2 border-rose-300 rounded-2xl text-center relative overflow-hidden transition-all";
+        }
+
+        explText.innerHTML = c.rule;
+        document.getElementById('xray-explanation').classList.remove('hidden');
+        document.getElementById('xray-btn-choices').classList.add('hidden');
+        document.getElementById('xray-btn-next').classList.remove('hidden');
+      }
+
+      nextWord() {
+        audioFx.playTone(480, 'sine', 0.05);
+        this.index = (this.index + 1) % XRAY_CASES.length;
+        if (this.index === 0) {
+          audioFx.fanfare();
+          launchConfetti();
+        }
+        this.loadCase();
+      }
+    }
+
+    const gameXray = new DetectiveXRayEngine();
+
+    /* ===============================================================
+       9. WORD CODEX MODAL (120+ Words Showcase)
+    =============================================================== */
+    const modalCodex = {
+      filter: 'all',
+
+      open() {
+        audioFx.playTone(520, 'sine', 0.06);
+        document.getElementById('modal-codex').classList.remove('hidden');
+        this.render();
+      },
+
+      close() {
+        audioFx.playTone(380, 'sine', 0.06);
+        document.getElementById('modal-codex').classList.add('hidden');
+      },
+
+      setFilter(f) {
+        this.filter = f;
+        ['all', 'mid', 'high', 'low'].forEach(type => {
+          const btn = document.getElementById(`codex-f-${type}`);
+          if (type === f) {
+            btn.className = "px-2.5 py-1 rounded-lg bg-slate-800 text-white font-bold";
+          } else {
+            btn.className = "px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200";
+          }
+        });
+        this.render();
+      },
+
+      render() {
+        const query = (document.getElementById('codex-search').value || '').trim();
+        const grid = document.getElementById('codex-grid');
+        grid.innerHTML = '';
+
+        let list = TRIYANG_WORDS.filter(item => {
+          const matchFilter = (this.filter === 'all' || item.group === this.filter);
+          const matchQuery = !query || item.w.includes(query) || item.initial.includes(query);
+          return matchFilter && matchQuery;
+        });
+
+        document.getElementById('codex-count').textContent = list.length;
+
+        list.forEach(item => {
+          const card = document.createElement('div');
+          let colorBorder = "border-slate-200 bg-white";
+          let badgeColor = "bg-slate-100 text-slate-700";
+          let label = "อักษรกลาง";
+
+          if (item.group === 'high') {
+            colorBorder = "border-orange-200 bg-orange-50/30";
+            badgeColor = "bg-orange-100 text-orange-800";
+            label = "สูง";
+          } else if (item.group === 'mid') {
+            colorBorder = "border-emerald-200 bg-emerald-50/30";
+            badgeColor = "bg-emerald-100 text-emerald-800";
+            label = "กลาง";
+          } else if (item.group === 'low') {
+            colorBorder = "border-sky-200 bg-sky-50/30";
+            badgeColor = "bg-sky-100 text-sky-800";
+            label = "ต่ำ";
+          }
+
+          card.className = `p-2 rounded-xl border ${colorBorder} flex flex-col justify-between shadow-xs`;
+          card.innerHTML = `
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold font-prompt px-1.5 py-0.5 rounded ${badgeColor}">${label}</span>
+              <span class="text-[10px] text-slate-400 font-prompt">[ ${item.initial} ]</span>
+            </div>
+            <div class="font-prompt font-extrabold text-lg text-slate-900 my-1 text-center">${item.w}</div>
+            <div class="text-[10px] text-slate-500 font-sarabun line-clamp-1 text-center">${item.type}</div>
+          `;
+          grid.appendChild(card);
+        });
+      }
+    };
+
+    /* ===============================================================
+       10. MNEMONIC CHEAT MODAL CONTROLLER
+    =============================================================== */
+    const modalCheat = {
+      open() {
+        audioFx.playTone(550, 'sine', 0.06);
+        document.getElementById('modal-cheat').classList.remove('hidden');
+      },
+      close() {
+        audioFx.playTone(380, 'sine', 0.06);
+        document.getElementById('modal-cheat').classList.add('hidden');
+      }
+    };
+
+    function alertFeedback(hint) {
+      const banner = document.createElement('div');
+      banner.className = "fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs font-prompt px-4 py-2 rounded-xl shadow-lg z-50 anim-pop";
+      banner.innerHTML = `<i class="fa-solid fa-lightbulb text-amber-400 mr-1.5"></i> คำใบ้: ${hint}`;
+      document.body.appendChild(banner);
+      setTimeout(() => banner.remove(), 2500);
+    }
+
+    /* ===============================================================
+       11. CELEBRATION CONFETTI
+    =============================================================== */
+    function launchConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      if (!canvas) return;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const ctx = canvas.getContext('2d');
+      const particles = [];
+      const colors = ['#10B981', '#EA580C', '#0284C7', '#F59E0B', '#8B5CF6'];
+
+      for (let i = 0; i < 65; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height * 0.45,
+          vx: (Math.random() - 0.5) * 11,
+          vy: (Math.random() - 0.7) * 12,
+          size: Math.random() * 7 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          alpha: 1
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = false;
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.32;
+          p.alpha -= 0.016;
+          if (p.alpha > 0) {
+            active = true;
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x, p.y, p.size, p.size);
+            ctx.restore();
+          }
+        });
+        if (active) requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    // App Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      nav.init();
+      lessonEngine.init();
+      gameReflex.render();
+    });
+  </script>
+</body>
+</html>
