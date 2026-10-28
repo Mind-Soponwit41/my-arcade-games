@@ -1,0 +1,2196 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ห้องเรียนศิลปะดิจิทัลคิดส์ (Kids Art Studio)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome 6 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Mali & Kanit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;800&family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    html, body {
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      font-family: 'Mali', 'Kanit', sans-serif;
+      touch-action: manipulation;
+      background-color: #f8fafc;
+    }
+    /* Custom Scrollbar for sidebars & modals */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Active Tool and Swatch animations */
+    .tool-active {
+      background: linear-gradient(135deg, #fef3c7, #fde68a) !important;
+      border-color: #f59e0b !important;
+      color: #b45309 !important;
+      transform: scale(1.08);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+    .swatch-active {
+      transform: scale(1.22);
+      box-shadow: 0 0 0 3.5px #ffffff, 0 0 0 6px #6366f1;
+      z-index: 5;
+    }
+    .mode-tab-active {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+      font-weight: 700;
+    }
+
+    /* Canvas Drawing Area */
+    #canvasContainer {
+      position: relative;
+      touch-action: none;
+      background-image: 
+        radial-gradient(#e2e8f0 1.2px, transparent 1.2px),
+        radial-gradient(#f1f5f9 1.2px, #ffffff 1.2px);
+      background-size: 24px 24px;
+      background-position: 0 0, 12px 12px;
+    }
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1000;
+    }
+    .glass-ui {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    /* Animated dashed border for new step in Step-by-Step mode */
+    @keyframes dashCycle {
+      to { stroke-dashoffset: -24; }
+    }
+    .animate-step-guide path, .animate-step-guide circle, .animate-step-guide rect, .animate-step-guide polygon {
+      animation: dashCycle 1.2s linear infinite;
+    }
+  </style>
+</head>
+<body class="flex flex-col h-screen w-screen overflow-hidden text-slate-800">
+
+  <!-- Confetti Celebration Canvas -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- ================= TOP HEADER (NAV & MODES & GLOBAL ACTIONS) ================= -->
+  <header class="h-14 sm:h-16 bg-white border-b-2 border-amber-200 px-2 sm:px-4 flex items-center justify-between shadow-xs shrink-0 z-30">
+    
+    <!-- Left: App Mascot & Brand -->
+    <div class="flex items-center gap-2 shrink-0">
+      <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 via-rose-400 to-indigo-500 flex items-center justify-center text-white text-xl shadow-md transform hover:rotate-6 transition">
+        <i class="fa-solid fa-palette"></i>
+      </div>
+      <div class="hidden md:block">
+        <h1 class="text-sm lg:text-base font-extrabold bg-gradient-to-r from-rose-500 via-amber-500 to-indigo-600 bg-clip-text text-transparent leading-tight">
+          คิดส์ อาร์ต สตูดิโอ
+        </h1>
+        <p class="text-[10px] text-slate-400 font-semibold leading-none">ห้องเรียนศิลปะดิจิทัล ป.1 - ป.6</p>
+      </div>
+    </div>
+
+    <!-- Center: 3 Learning Modes Switcher -->
+    <div class="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200">
+      <button onclick="switchMode('free')" id="modeBtn-free" class="mode-tab-active flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition active:scale-95">
+        <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+        <span>วาดอิสระ</span>
+      </button>
+      <button onclick="switchMode('trace')" id="modeBtn-trace" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:text-indigo-600 transition active:scale-95">
+        <i class="fa-solid fa-clone text-indigo-400"></i>
+        <span>วาดตามแบบ</span>
+      </button>
+      <button onclick="switchMode('step')" id="modeBtn-step" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:text-emerald-600 transition active:scale-95">
+        <i class="fa-solid fa-stairs text-emerald-500"></i>
+        <span>วาดตามสเต็ป</span>
+      </button>
+    </div>
+
+    <!-- Right: Quick Actions (Undo, Redo, Clear, Save, Search, Voice, Fullscreen) -->
+    <div class="flex items-center gap-1 sm:gap-2">
+      <!-- Undo -->
+      <button onclick="undo()" id="undoBtn" title="ย้อนกลับ (Undo)" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition disabled:opacity-40 disabled:cursor-not-allowed">
+        <i class="fa-solid fa-rotate-left"></i>
+      </button>
+      <!-- Redo -->
+      <button onclick="redo()" id="redoBtn" title="ทำซ้ำ (Redo)" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition disabled:opacity-40 disabled:cursor-not-allowed">
+        <i class="fa-solid fa-rotate-right"></i>
+      </button>
+
+      <!-- Clear Canvas -->
+      <button onclick="promptClearCanvas()" title="ล้างกระดาษวาดรูป" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 flex items-center justify-center font-bold text-sm transition">
+        <i class="fa-solid fa-trash-can"></i>
+      </button>
+
+      <div class="h-6 w-px bg-slate-200 mx-0.5"></div>
+
+      <!-- Online Trace Finder -->
+      <button onclick="openOnlineSearchModal()" title="ค้นหาแบบร่างออนไลน์" class="flex items-center gap-1 px-2.5 py-1.5 bg-sky-500 hover:bg-sky-600 text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition active:scale-95">
+        <i class="fa-solid fa-globe"></i>
+        <span class="hidden lg:inline">ค้นหาภาพ</span>
+      </button>
+
+      <!-- Save Button -->
+      <button onclick="saveArtwork()" title="บันทึกผลงานลงเครื่องและหอศิลป์" class="flex items-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition active:scale-95">
+        <i class="fa-solid fa-floppy-disk"></i>
+        <span class="hidden sm:inline">บันทึก</span>
+      </button>
+
+      <!-- My Art Gallery -->
+      <button onclick="openGalleryModal()" title="หอศิลป์ของฉัน" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 flex items-center justify-center font-bold text-sm transition">
+        <i class="fa-solid fa-images"></i>
+      </button>
+
+      <!-- Voice Assistant Toggle -->
+      <button onclick="toggleSpeech()" id="speechBtn" title="เปิด/ปิด เสียงคุณครู AI" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 flex items-center justify-center text-sm transition">
+        <i id="speechIcon" class="fa-solid fa-comment-dots"></i>
+      </button>
+
+      <!-- Audio SFX Toggle -->
+      <button onclick="toggleAudio()" id="audioBtn" title="เปิด/ปิด เสียงเอฟเฟกต์" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-sm transition">
+        <i id="audioIcon" class="fa-solid fa-volume-high"></i>
+      </button>
+
+      <!-- Fullscreen Toggle -->
+      <button onclick="toggleFullscreen()" title="ขยายเต็มหน้าจอ (Fullscreen)" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-sm transition">
+        <i class="fa-solid fa-expand"></i>
+      </button>
+
+      <!-- Toggle Right Library Drawer -->
+      <button onclick="toggleLibraryDrawer()" id="toggleDrawerBtn" title="เปิด/ปิด คลังภาพแบบร่าง" class="flex items-center gap-1 px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-xl text-xs sm:text-sm font-bold transition">
+        <i class="fa-solid fa-shapes"></i>
+        <span class="hidden md:inline">คลังแบบร่าง</span>
+      </button>
+    </div>
+
+  </header>
+
+  <!-- ================= MAIN WORKSPACE BODY ================= -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- ===== LEFT TOOLBAR (TOOLS & COLOR PALETTE) ===== -->
+    <aside class="w-20 sm:w-24 bg-white border-r-2 border-slate-200 flex flex-col justify-between py-2 px-1.5 shrink-0 z-20 shadow-sm overflow-y-auto">
+      
+      <!-- Upper Section: Tools -->
+      <div class="flex flex-col items-center gap-1.5 w-full">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">เครื่องมือ</span>
+        
+        <!-- Brush (Default) -->
+        <button onclick="setTool('brush')" id="tool-brush" class="tool-active w-full py-1.5 px-1 rounded-2xl flex flex-col items-center justify-center border-2 border-transparent transition active:scale-95" title="พู่กันนุ่มนวล">
+          <i class="fa-solid fa-paintbrush text-base"></i>
+          <span class="text-[9px] font-bold mt-0.5">พู่กัน</span>
+        </button>
+
+        <!-- Pencil -->
+        <button onclick="setTool('pencil')" id="tool-pencil" class="w-full py-1.5 px-1 rounded-2xl flex flex-col items-center justify-center text-slate-600 hover:bg-slate-100 border-2 border-transparent transition active:scale-95" title="ดินสอเส้นคม">
+          <i class="fa-solid fa-pencil text-base"></i>
+          <span class="text-[9px] font-bold mt-0.5">ดินสอ</span>
+        </button>
+
+        <!-- Rainbow Pen -->
+        <button onclick="setTool('rainbow')" id="tool-rainbow" class="w-full py-1.5 px-1 rounded-2xl flex flex-col items-center justify-center text-slate-600 hover:bg-slate-100 border-2 border-transparent transition active:scale-95" title="พู่กันสีรุ้งวิเศษ">
+          <i class="fa-solid fa-wand-magic text-base text-pink-500"></i>
+          <span class="text-[9px] font-bold mt-0.5">สีรุ้ง</span>
+        </button>
+
+        <!-- Highlighter -->
+        <button onclick="setTool('highlighter')" id="tool-highlighter" class="w-full py-1.5 px-1 rounded-2xl flex flex-col items-center justify-center text-slate-600 hover:bg-slate-100 border-2 border-transparent transition active:scale-95" title="ปากกาไฮไลท์โปร่งแสง">
+          <i class="fa-solid fa-highlighter text-base text-amber-500"></i>
+          <span class="text-[9px] font-bold mt-0.5">ไฮไลท์</span>
+        </button>
+
+        <!-- Paint Bucket (Fill) -->
+        <button onclick="setTool('bucket')" id="tool-bucket" class="w-full py-1.5 px-1 rounded-2xl flex flex-col items-center justify-center text-slate-600 hover:bg-slate-100 border-2 border-transparent transition active:scale-95" title="ถังเทสีลงในช่อง">
+          <i class="fa-solid fa-fill-drip text-base text-sky-500"></i>
+          <span class="text-[9px] font-bold mt-0.5">ถังเทสี</span>
+        </button>
+
+        <!-- Eraser -->
+        <button onclick="setTool('eraser')" id="tool-eraser" class="w-full py-1.5 px-1 rounded-2xl flex flex-col items-center justify-center text-slate-600 hover:bg-slate-100 border-2 border-transparent transition active:scale-95" title="ยางลบ">
+          <i class="fa-solid fa-eraser text-base text-rose-500"></i>
+          <span class="text-[9px] font-bold mt-0.5">ยางลบ</span>
+        </button>
+
+        <!-- Brush Sizes -->
+        <div class="w-full pt-1 border-t border-slate-100 flex flex-col items-center">
+          <div class="flex items-center justify-between w-full px-1">
+            <span class="text-[9px] font-bold text-slate-400">ขนาด</span>
+            <div id="sizePreviewDot" class="w-3 h-3 rounded-full bg-slate-800 transition-all"></div>
+          </div>
+          <div class="grid grid-cols-4 gap-1 w-full mt-1">
+            <button onclick="setSize(4)" id="sz-4" class="h-6 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-[10px] font-bold">4</button>
+            <button onclick="setSize(10)" id="sz-10" class="h-6 rounded-lg bg-amber-200 text-amber-900 flex items-center justify-center text-[10px] font-bold shadow-xs">10</button>
+            <button onclick="setSize(20)" id="sz-20" class="h-6 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-[10px] font-bold">20</button>
+            <button onclick="setSize(36)" id="sz-36" class="h-6 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-[10px] font-bold">36</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lower Section: 16 Vibrant Color Swatches & Native Picker -->
+      <div class="flex flex-col items-center gap-1 w-full pt-2 border-t border-slate-100">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">จานสี (16 สี)</span>
+        
+        <!-- Native Color Picker with Rainbow Ring -->
+        <div class="relative group my-0.5" title="แตะเพื่อเลือกสีอิสระตามใจชอบ">
+          <input type="color" id="nativeColorInput" value="#ef4444" onchange="onCustomColorPicked(this.value)" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10">
+          <div class="w-8 h-8 rounded-full p-0.5 bg-gradient-to-tr from-pink-500 via-amber-400 to-indigo-500 shadow-xs flex items-center justify-center cursor-pointer transition transform active:scale-90">
+            <div id="currentColorDot" class="w-6 h-6 rounded-full bg-rose-500 border-2 border-white shadow-inner"></div>
+          </div>
+        </div>
+
+        <!-- 16 Bright / Pastel Palette Swatches Grid -->
+        <div class="grid grid-cols-2 gap-1.5 w-full px-0.5" id="colorPaletteGrid">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ===== CENTER DRAWING CANVAS VIEWPORT ===== -->
+    <div id="canvasContainer" class="flex-1 h-full w-full relative overflow-hidden cursor-crosshair">
+      
+      <!-- Canvas Layer 1: Trace Guide (Watermark Overlay) -->
+      <canvas id="traceCanvas" class="absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-150"></canvas>
+      
+      <!-- Canvas Layer 2: Main User Drawing Canvas -->
+      <canvas id="drawCanvas" class="absolute inset-0 w-full h-full"></canvas>
+
+      <!-- Floating Guide Toolbar (แสดงเมื่ออยู่ในโหมดวาดตามแบบ) -->
+      <div id="traceFloatingBar" class="absolute top-2 left-1/2 -translate-x-1/2 glass-ui border border-amber-300 rounded-2xl px-3 py-1.5 shadow-md flex items-center gap-2.5 z-20 hidden">
+        <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+          <i class="fa-solid fa-lightbulb text-amber-500"></i>
+          <span id="traceTitleBadge" class="truncate max-w-[130px] sm:max-w-[200px]">แบบร่าง</span>
+        </span>
+
+        <!-- Opacity Slider -->
+        <div class="flex items-center gap-1.5 text-xs text-slate-600 font-semibold border-l border-amber-200 pl-2">
+          <span>ความจาง:</span>
+          <input type="range" id="traceOpacitySlider" min="10" max="95" value="40" oninput="setTraceOpacity(this.value)" class="w-20 accent-amber-500 h-1.5 bg-slate-200 rounded cursor-pointer">
+          <span id="traceOpacityNum" class="w-8 text-[11px] text-slate-500">40%</span>
+        </div>
+
+        <!-- Toggle Visibility -->
+        <button onclick="toggleTraceVisible()" id="traceVisBtn" class="text-xs px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl font-bold transition">
+          <i class="fa-solid fa-eye-slash"></i> ซ่อน
+        </button>
+
+        <!-- Remove Guide -->
+        <button onclick="clearTraceGuide()" title="ปิดแบบร่างนี้" class="w-6 h-6 rounded-full bg-rose-100 hover:bg-rose-200 text-rose-600 font-bold flex items-center justify-center text-xs transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- Step-by-Step Interactive Controller (แสดงเมื่ออยู่ในโหมดวาดตามสเต็ป) -->
+      <div id="stepFloatingBar" class="absolute bottom-4 left-1/2 -translate-x-1/2 glass-ui border-2 border-emerald-400 rounded-3xl p-2 sm:px-4 sm:py-2.5 shadow-xl flex items-center gap-2 sm:gap-3 z-20 hidden animate-bounce-in">
+        
+        <div class="flex items-center gap-1.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-extrabold text-sm shadow-xs">
+            <span id="currentStepNumber">1</span>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-emerald-950 leading-tight" id="stepInstructionTitle">ขั้นตอนที่ 1</h4>
+            <p class="text-[10px] text-emerald-700 leading-none" id="stepInstructionDesc">วาดโครงร่างพื้นฐาน</p>
+          </div>
+        </div>
+
+        <div class="h-7 w-px bg-emerald-200 mx-1"></div>
+
+        <!-- Step Prev / Next Buttons -->
+        <button onclick="prevDrawingStep()" id="stepPrevBtn" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition disabled:opacity-40">
+          <i class="fa-solid fa-arrow-left"></i> ย้อนขั้น
+        </button>
+        <button onclick="nextDrawingStep()" id="stepNextBtn" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition shadow-xs flex items-center gap-1">
+          <span>ขั้นถัดไป</span> <i class="fa-solid fa-arrow-right"></i>
+        </button>
+
+        <!-- Complete / Celebrate Checkmark -->
+        <button onclick="finishStepDrawing()" title="วาดเสร็จสมบูรณ์แล้ว!" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold transition shadow-xs flex items-center gap-1 active:scale-95">
+          <i class="fa-solid fa-trophy"></i>
+          <span class="hidden sm:inline">เสร็จแล้ว!</span>
+        </button>
+      </div>
+
+      <!-- Canvas Bottom Info Tooltip -->
+      <div class="absolute bottom-3 left-3 pointer-events-none z-10 hidden sm:flex items-center gap-2">
+        <span id="canvasStatusText" class="glass-ui text-[11px] px-3 py-1 rounded-xl text-slate-600 font-semibold border border-slate-200 shadow-xs">
+          🖌️ ลากเส้นวาดภาพได้เลยจ้า!
+        </span>
+      </div>
+
+    </div>
+
+    <!-- ===== RIGHT DRAWER: 35+ PRESET LIBRARY & SEARCH ===== -->
+    <aside id="libraryDrawer" class="w-72 sm:w-80 bg-white border-l-2 border-slate-200 flex flex-col h-full shrink-0 z-20 shadow-lg transition-all duration-300">
+      
+      <!-- Drawer Header -->
+      <div class="p-3 bg-gradient-to-r from-amber-100 to-orange-100 border-b border-amber-200 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">📚</span>
+          <div>
+            <h3 class="text-xs sm:text-sm font-bold text-amber-950">คลังแบบร่างการ์ตูน</h3>
+            <p class="text-[10px] text-amber-700">มีให้เลือกกว่า 35+ แบบน่ารัก</p>
+          </div>
+        </div>
+        <button onclick="toggleLibraryDrawer()" class="w-7 h-7 rounded-xl bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 flex items-center justify-center font-bold text-xs shadow-xs transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- Category Tabs Filter -->
+      <div class="p-2 border-b border-slate-200 bg-slate-50 flex gap-1 overflow-x-auto text-xs shrink-0">
+        <button onclick="filterPresets('all')" id="catBtn-all" class="px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-bold whitespace-nowrap transition">ทั้งหมด</button>
+        <button onclick="filterPresets('animal')" id="catBtn-animal" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold whitespace-nowrap hover:bg-slate-100 transition">สัตว์</button>
+        <button onclick="filterPresets('vehicle')" id="catBtn-vehicle" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold whitespace-nowrap hover:bg-slate-100 transition">ยานพาหนะ</button>
+        <button onclick="filterPresets('nature')" id="catBtn-nature" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold whitespace-nowrap hover:bg-slate-100 transition">ธรรมชาติ</button>
+        <button onclick="filterPresets('food')" id="catBtn-food" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold whitespace-nowrap hover:bg-slate-100 transition">ขนม/อาหาร</button>
+        <button onclick="filterPresets('fantasy')" id="catBtn-fantasy" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold whitespace-nowrap hover:bg-slate-100 transition">แฟนตาซี</button>
+      </div>
+
+      <!-- Filter / Search input inside catalog -->
+      <div class="px-3 pt-2 pb-1 shrink-0">
+        <div class="relative">
+          <input type="text" id="catalogSearchInput" placeholder="พิมพ์ชื่อภาพ เช่น แมว, จรวด, เค้ก..." oninput="onCatalogSearch(this.value)" class="w-full text-xs pl-7 pr-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400">
+          <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-2.5 top-2.5"></i>
+        </div>
+      </div>
+
+      <!-- Presets Scrollable Grid (35+ Items) -->
+      <div class="flex-1 p-2 sm:p-3 overflow-y-auto">
+        <div id="presetsGrid" class="grid grid-cols-2 gap-2">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- ================= ONLINE DRAFT SEARCH MODAL ================= -->
+  <div id="onlineSearchModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 z-50 hidden">
+    <div class="bg-white rounded-3xl max-w-2xl w-full h-[88vh] flex flex-col shadow-2xl border-2 border-sky-300 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      
+      <!-- Modal Header -->
+      <div class="p-3 sm:p-4 bg-gradient-to-r from-sky-100 to-indigo-100 border-b border-sky-200 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-2xl bg-sky-500 text-white flex items-center justify-center text-lg shadow-xs">
+            <i class="fa-solid fa-cloud-arrow-down"></i>
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-sky-950">สืบค้นภาพแบบร่างออนไลน์ (Online Draft Search)</h3>
+            <p class="text-[11px] text-sky-700">ค้นหาภาพระบายสีจากคลังภาพระดับโลก หรือนำเข้าจากเครื่องของคุณ</p>
+          </div>
+        </div>
+        <button onclick="closeOnlineSearchModal()" class="w-8 h-8 rounded-full bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 flex items-center justify-center font-bold text-base shadow-xs transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- Online Search Bar & Upload Section -->
+      <div class="p-3 bg-slate-50 border-b border-slate-200 space-y-2 shrink-0">
+        <div class="flex gap-2">
+          <input type="text" id="apiSearchQuery" placeholder="พิมพ์คำค้นหา (เช่น dinosaur, cartoon car, butterfly, fruit coloring)..." class="flex-1 text-xs sm:text-sm p-2 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-400" onkeydown="if(event.key==='Enter') searchWikimediaCommons()">
+          <button onclick="searchWikimediaCommons()" class="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition active:scale-95 flex items-center gap-1.5">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>ค้นหา</span>
+          </button>
+        </div>
+
+        <!-- Quick Suggestions Badges -->
+        <div class="flex items-center gap-1 text-[11px] overflow-x-auto py-0.5">
+          <span class="text-slate-400 font-bold shrink-0">คำค้นยอดนิยม:</span>
+          <button onclick="quickSearchTopic('cartoon animal coloring')" class="px-2 py-0.5 bg-slate-200 hover:bg-sky-100 text-slate-700 rounded-md whitespace-nowrap">สัตว์น่ารัก</button>
+          <button onclick="quickSearchTopic('coloring page cartoon car')" class="px-2 py-0.5 bg-slate-200 hover:bg-sky-100 text-slate-700 rounded-md whitespace-nowrap">รถยนต์</button>
+          <button onclick="quickSearchTopic('coloring page rocket')" class="px-2 py-0.5 bg-slate-200 hover:bg-sky-100 text-slate-700 rounded-md whitespace-nowrap">จรวด</button>
+          <button onclick="quickSearchTopic('flower cartoon lineart')" class="px-2 py-0.5 bg-slate-200 hover:bg-sky-100 text-slate-700 rounded-md whitespace-nowrap">ดอกไม้</button>
+        </div>
+
+        <!-- Image URL & Local File Upload -->
+        <div class="flex flex-col sm:flex-row gap-2 pt-1 border-t border-slate-200 text-xs">
+          <div class="flex-1 flex gap-1">
+            <input type="text" id="directUrlInput" placeholder="หรือวางลิงก์รูปภาพโดยตรง (https://...png/.jpg)" class="flex-1 text-[11px] p-1.5 bg-white border border-slate-300 rounded-xl">
+            <button onclick="loadFromDirectUrl()" class="px-3 py-1 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl text-[11px] font-bold transition">โหลด URL</button>
+          </div>
+          <label class="flex items-center justify-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 rounded-xl font-bold cursor-pointer transition text-[11px]">
+            <input type="file" id="localUploadInput" accept="image/*" onchange="loadFromLocalDevice(this)" class="hidden">
+            <i class="fa-solid fa-folder-open"></i>
+            <span>เลือกรูปจากในเครื่อง</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Online Search Results Grid -->
+      <div class="flex-1 p-3 sm:p-4 overflow-y-auto">
+        <div class="flex items-center justify-between mb-2">
+          <span id="onlineResultsHeader" class="text-xs font-bold text-slate-500">ผลการสืบค้นภาพร่างออนไลน์</span>
+          <span class="text-[10px] text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full font-bold">แตะภาพที่ต้องการเพื่อใช้เป็นแบบร่างทันที</span>
+        </div>
+        
+        <div id="onlineResultsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          <!-- Injected via JS -->
+        </div>
+
+        <!-- Loading Spinner Indicator -->
+        <div id="searchSpinner" class="hidden py-12 flex flex-col items-center justify-center text-sky-500">
+          <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-2"></i>
+          <span class="text-xs font-bold text-slate-500">กำลังสืบค้นภาพระบายสีออนไลน์...</span>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-2.5 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <button onclick="closeOnlineSearchModal()" class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition">
+          ปิดหน้าต่าง
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MY ART GALLERY MODAL ================= -->
+  <div id="galleryModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 z-50 hidden">
+    <div class="bg-white rounded-3xl max-w-3xl w-full h-[86vh] flex flex-col shadow-2xl border-2 border-purple-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      
+      <!-- Header -->
+      <div class="p-3 sm:p-4 bg-purple-50 border-b border-purple-100 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-2xl bg-purple-500 text-white flex items-center justify-center text-lg shadow-xs">
+            <i class="fa-solid fa-award"></i>
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-purple-950">หอศิลป์ผลงานของฉัน (My Art Gallery)</h3>
+            <p class="text-[11px] text-purple-600">บันทึกผลงานไว้ในเครื่อง สามารถเปิดดูและโหลดกลับมาวาดต่อได้</p>
+          </div>
+        </div>
+        <button onclick="closeGalleryModal()" class="w-8 h-8 rounded-full bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-500 flex items-center justify-center font-bold text-base shadow-xs transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- Gallery Grid -->
+      <div class="flex-1 p-3 sm:p-4 overflow-y-auto" id="galleryItemsContainer">
+        <!-- Injected via JS -->
+      </div>
+
+      <!-- Footer -->
+      <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 shrink-0">
+        <span id="galleryCountNotice">ผลงานทั้งหมด: 0 ชิ้น</span>
+        <button onclick="clearAllGalleryItems()" class="text-rose-600 hover:text-rose-700 font-bold px-2 py-1 rounded-lg hover:bg-rose-50 transition">
+          <i class="fa-solid fa-trash-can mr-1"></i> ลบผลงานทั้งหมด
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ZERO-ALERT CUSTOM MESSAGE / CONFIRM DIALOG ================= -->
+  <div id="customDialog" class="fixed inset-0 bg-black/45 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-3xl p-5 max-w-xs w-full text-center shadow-2xl border-2 border-amber-200 animate-in zoom-in-95 duration-150">
+      <div class="text-4xl mb-2" id="dialogIcon">🎨</div>
+      <h4 class="text-sm sm:text-base font-bold text-slate-800 mb-1" id="dialogTitle">ข้อความแจ้งเตือน</h4>
+      <p class="text-xs text-slate-500 mb-4" id="dialogMsg">ข้อความรายละเอียด</p>
+      
+      <div class="flex gap-2 justify-center" id="dialogActions">
+        <!-- Buttons injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= APPLICATION SCRIPT ================= -->
+  <script>
+    /* ==========================================================
+       1. GLOBAL STATE & PRESET DATA
+       ========================================================== */
+    const appState = {
+      mode: 'free',              // 'free' | 'trace' | 'step'
+      tool: 'brush',             // 'brush' | 'pencil' | 'rainbow' | 'highlighter' | 'bucket' | 'eraser'
+      brushSize: 10,
+      currentColor: '#ef4444',
+      rainbowHue: 0,
+      isDrawing: false,
+      points: [],
+
+      // Active Preset / Trace
+      activePreset: null,
+      traceImage: null,
+      traceOpacity: 0.40,
+      traceVisible: true,
+
+      // Step-by-Step state
+      currentStepIndex: 0,
+      totalSteps: 1,
+
+      // Undo/Redo Stacks
+      undoStack: [],
+      redoStack: [],
+      maxHistory: 20,
+
+      // Toggles
+      audioEnabled: true,
+      speechEnabled: true,
+      drawerOpen: false
+    };
+
+    // 16 Vibrant Kid-Friendly Color Palette
+    const PALETTE_COLORS = [
+      '#ef4444', // Red
+      '#f97316', // Orange
+      '#f59e0b', // Amber
+      '#eab308', // Yellow
+      '#84cc16', // Lime
+      '#22c55e', // Emerald Green
+      '#10b981', // Teal
+      '#06b6d4', // Cyan
+      '#3b82f6', // Blue
+      '#6366f1', // Indigo
+      '#8b5cf6', // Violet
+      '#a855f7', // Purple
+      '#ec4899', // Pink
+      '#78350f', // Brown
+      '#1e293b', // Dark Slate
+      '#ffffff'  // Clean White
+    ];
+
+    /* ==========================================================
+       2. 35+ BUILT-IN SVG PRESETS CATALOG WITH STEP-BY-STEP DATA
+       ========================================================== */
+    const PRESETS_DATA = [
+      // --- หมวดสัตว์ (ANIMALS) ---
+      {
+        id: 'cat',
+        title: 'แมวเหมียวขี้อ้อน',
+        category: 'animal',
+        keywords: 'แมว เหมียว cat kitten สัตว์เลี้ยง',
+        steps: [
+          `<circle cx="50" cy="55" r="30" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<polygon points="26,35 32,15 45,30" stroke="#334155" stroke-width="3" fill="none"/><polygon points="74,35 68,15 55,30" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="40" cy="50" r="3" fill="#334155"/><circle cx="60" cy="50" r="3" fill="#334155"/><polygon points="50,56 46,62 54,62" fill="#334155"/><path d="M46,65 Q50,70 54,65" stroke="#334155" stroke-width="2.5" fill="none"/>`,
+          `<path d="M22,55 L35,55 M22,60 L35,58 M78,55 L65,55 M78,60 L65,58" stroke="#334155" stroke-width="2" stroke-linecap="round"/>`
+        ]
+      },
+      {
+        id: 'dog',
+        title: 'ลูกสุนัขแสนรู้',
+        category: 'animal',
+        keywords: 'สุนัข หมา dog puppy สัตว์เลี้ยง',
+        steps: [
+          `<ellipse cx="50" cy="52" rx="32" ry="28" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<path d="M22,35 C15,45 15,65 25,60 C28,58 26,40 26,36" stroke="#334155" stroke-width="3" fill="none"/><path d="M78,35 C85,45 85,65 75,60 C72,58 74,40 74,36" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="38" cy="48" r="3" fill="#334155"/><circle cx="62" cy="48" r="3" fill="#334155"/><ellipse cx="50" cy="58" rx="6" ry="4" fill="#334155"/>`,
+          `<path d="M50,62 L50,67 Q44,71 50,75 Q56,71 50,67" stroke="#334155" stroke-width="2.5" fill="none"/>`
+        ]
+      },
+      {
+        id: 'panda',
+        title: 'หมีแพนด้ากินไผ่',
+        category: 'animal',
+        keywords: 'หมี แพนด้า panda bear สัตว์',
+        steps: [
+          `<circle cx="50" cy="50" r="32" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="25" cy="28" r="10" fill="#334155"/><circle cx="75" cy="28" r="10" fill="#334155"/>`,
+          `<ellipse cx="38" cy="48" rx="6" ry="9" fill="#334155" transform="rotate(-15 38 48)"/><ellipse cx="62" cy="48" rx="6" ry="9" fill="#334155" transform="rotate(15 62 48)"/><circle cx="38" cy="48" r="2" fill="#fff"/><circle cx="62" cy="48" r="2" fill="#fff"/>`,
+          `<ellipse cx="50" cy="62" rx="5" ry="3.5" fill="#334155"/><path d="M46,67 Q50,71 54,67" stroke="#334155" stroke-width="2" fill="none"/>`
+        ]
+      },
+      {
+        id: 'rabbit',
+        title: 'กระต่ายน้อยหูยาว',
+        category: 'animal',
+        keywords: 'กระต่าย rabbit bunny',
+        steps: [
+          `<circle cx="50" cy="60" r="26" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<ellipse cx="40" cy="25" rx="7" ry="20" stroke="#334155" stroke-width="3" fill="none"/><ellipse cx="60" cy="25" rx="7" ry="20" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="42" cy="56" r="3" fill="#334155"/><circle cx="58" cy="56" r="3" fill="#334155"/><polygon points="50,63 46,67 54,67" fill="#f43f5e"/>`,
+          `<path d="M46,70 Q50,74 54,70" stroke="#334155" stroke-width="2" fill="none"/><line x1="26" y1="62" x2="38" y2="64" stroke="#334155" stroke-width="1.5"/><line x1="74" y1="62" x2="62" y2="64" stroke="#334155" stroke-width="1.5"/>`
+        ]
+      },
+      {
+        id: 'elephant',
+        title: 'ช้างน้อยอารมณ์ดี',
+        category: 'animal',
+        keywords: 'ช้าง elephant สัตว์ป่า',
+        steps: [
+          `<circle cx="52" cy="48" r="26" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<path d="M30,32 C12,38 12,65 32,65" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<path d="M68,48 Q84,52 80,68 Q75,76 68,70 Q72,60 62,56" stroke="#334155" stroke-width="3" fill="none"/><circle cx="48" cy="42" r="3" fill="#334155"/>`,
+          `<path d="M38,74 L38,88 M56,74 L56,88" stroke="#334155" stroke-width="3" stroke-linecap="round"/>`
+        ]
+      },
+      {
+        id: 'giraffe',
+        title: 'ยีราฟคอยาว',
+        category: 'animal',
+        keywords: 'ยีราฟ giraffe คอยาว สัตว์',
+        steps: [
+          `<circle cx="50" cy="30" r="16" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<path d="M42,42 L38,85 L58,85 L56,42" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<line x1="44" y1="16" x2="42" y2="8" stroke="#334155" stroke-width="3"/><circle cx="42" cy="7" r="3" fill="#f59e0b"/><line x1="56" y1="16" x2="58" y2="8" stroke="#334155" stroke-width="3"/><circle cx="58" cy="7" r="3" fill="#f59e0b"/>`,
+          `<circle cx="46" cy="28" r="2.5" fill="#334155"/><circle cx="54" cy="28" r="2.5" fill="#334155"/><circle cx="48" cy="55" r="4" fill="#d97706"/><circle cx="46" cy="72" r="5" fill="#d97706"/>`
+        ]
+      },
+      {
+        id: 'fish',
+        title: 'ปลาการ์ตูนนีโม',
+        category: 'animal',
+        keywords: 'ปลา นีโม fish nemo ทะเล',
+        steps: [
+          `<ellipse cx="48" cy="50" rx="30" ry="22" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<polygon points="76,50 92,35 88,50 92,65" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<path d="M42,28 Q48,15 56,29" stroke="#334155" stroke-width="3" fill="none"/><path d="M42,72 Q48,85 56,71" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="30" cy="46" r="3" fill="#334155"/><path d="M45,30 Q40,50 45,70" stroke="#334155" stroke-width="2.5" stroke-dasharray="2 2" fill="none"/>`
+        ]
+      },
+      {
+        id: 'lion',
+        title: 'สิงโตเจ้าป่า',
+        category: 'animal',
+        keywords: 'สิงโต เจ้าป่า lion สัตว์',
+        steps: [
+          `<circle cx="50" cy="50" r="36" stroke="#f59e0b" stroke-width="3" stroke-dasharray="5 3" fill="none"/>`,
+          `<circle cx="50" cy="50" r="22" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="42" cy="46" r="3" fill="#334155"/><circle cx="58" cy="46" r="3" fill="#334155"/><polygon points="50,52 45,58 55,58" fill="#334155"/>`,
+          `<path d="M50,58 L50,64 M44,63 Q50,68 56,63" stroke="#334155" stroke-width="2" fill="none"/>`
+        ]
+      },
+      {
+        id: 'penguin',
+        title: 'เพนกวินขั้วโลก',
+        category: 'animal',
+        keywords: 'เพนกวิน penguin นก ขั้วโลก',
+        steps: [
+          `<ellipse cx="50" cy="52" rx="26" ry="34" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<ellipse cx="50" cy="55" rx="16" ry="24" stroke="#334155" stroke-width="2" fill="none"/>`,
+          `<circle cx="42" cy="38" r="2.5" fill="#334155"/><circle cx="58" cy="38" r="2.5" fill="#334155"/><polygon points="50,44 44,50 56,50" fill="#f59e0b"/>`,
+          `<path d="M24,52 Q15,62 25,68" stroke="#334155" stroke-width="3" fill="none"/><path d="M76,52 Q85,62 75,68" stroke="#334155" stroke-width="3" fill="none"/>`
+        ]
+      },
+      {
+        id: 'frog',
+        title: 'กบเคโระกระโดด',
+        category: 'animal',
+        keywords: 'กบ frog เคโระ สัตว์น้ำ',
+        steps: [
+          `<ellipse cx="50" cy="56" rx="34" ry="24" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="34" cy="36" r="10" stroke="#334155" stroke-width="3" fill="none"/><circle cx="66" cy="36" r="10" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="34" cy="36" r="4" fill="#334155"/><circle cx="66" cy="36" r="4" fill="#334155"/><circle cx="35" cy="35" r="1.5" fill="#fff"/><circle cx="67" cy="35" r="1.5" fill="#fff"/>`,
+          `<path d="M36,60 Q50,72 64,60" stroke="#334155" stroke-width="3" stroke-linecap="round" fill="none"/><circle cx="28" cy="58" r="3" fill="#f43f5e" opacity="0.6"/><circle cx="72" cy="58" r="3" fill="#f43f5e" opacity="0.6"/>`
+        ]
+      },
+      {
+        id: 'turtle',
+        title: 'เต่าต้วมเตี้ยม',
+        category: 'animal',
+        keywords: 'เต่า turtle คลาน ช้า',
+        steps: [
+          `<path d="M25,58 Q50,22 75,58 Z" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="80" cy="55" r="8" stroke="#334155" stroke-width="3" fill="none"/><circle cx="82" cy="53" r="2" fill="#334155"/>`,
+          `<ellipse cx="32" cy="62" rx="6" ry="4" stroke="#334155" stroke-width="3" fill="none"/><ellipse cx="68" cy="62" rx="6" ry="4" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<path d="M40,58 L45,45 L55,45 L60,58 M45,45 L50,34 L55,45" stroke="#334155" stroke-width="2" fill="none"/>`
+        ]
+      },
+      {
+        id: 'owl',
+        title: 'นกฮูกตาโต',
+        category: 'animal',
+        keywords: 'นกฮูก owl ตาโต นก',
+        steps: [
+          `<ellipse cx="50" cy="54" rx="28" ry="32" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="38" cy="44" r="11" stroke="#334155" stroke-width="3" fill="none"/><circle cx="62" cy="44" r="11" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="38" cy="44" r="5" fill="#334155"/><circle cx="62" cy="44" r="5" fill="#334155"/><polygon points="50,48 45,56 55,56" fill="#f59e0b"/>`,
+          `<polygon points="26,26 34,24 30,34" fill="#334155"/><polygon points="74,26 66,24 70,34" fill="#334155"/>`
+        ]
+      },
+
+      // --- หมวดยานพาหนะ (VEHICLES) ---
+      {
+        id: 'car',
+        title: 'รถยนต์สปอร์ตซิ่ง',
+        category: 'vehicle',
+        keywords: 'รถ รถยนต์ car vehicle ยานยนต์',
+        steps: [
+          `<path d="M15,62 L22,46 L40,40 L65,40 L80,52 L88,62 Z" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="32" cy="65" r="9" stroke="#334155" stroke-width="3" fill="none"/><circle cx="72" cy="65" r="9" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="32" cy="65" r="3" fill="#334155"/><circle cx="72" cy="65" r="3" fill="#334155"/>`,
+          `<rect x="42" y="44" width="18" height="12" rx="2" stroke="#334155" stroke-width="2.5" fill="none"/>`
+        ]
+      },
+      {
+        id: 'rocket',
+        title: 'จรวดสำรวจอวกาศ',
+        category: 'vehicle',
+        keywords: 'จรวด rocket space อวกาศ',
+        steps: [
+          `<path d="M50,15 C60,30 65,55 62,75 L38,75 C35,55 40,30 50,15 Z" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="50" cy="42" r="7" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<polygon points="38,60 22,78 38,74" stroke="#334155" stroke-width="3" fill="none"/><polygon points="62,60 78,78 62,74" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<path d="M44,78 Q50,92 56,78" stroke="#ef4444" stroke-width="3" fill="none"/>`
+        ]
+      },
+      {
+        id: 'airplane',
+        title: 'เครื่องบินท่องนภา',
+        category: 'vehicle',
+        keywords: 'เครื่องบิน airplane plane บิน',
+        steps: [
+          `<ellipse cx="50" cy="50" rx="38" ry="10" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<polygon points="45,50 30,22 42,22 62,50" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<polygon points="45,50 30,78 42,78 62,50" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<polygon points="16,50 8,34 16,34 24,50" stroke="#334155" stroke-width="2.5" fill="none"/><circle cx="76" cy="50" r="2.5" fill="#334155"/>`
+        ]
+      },
+      {
+        id: 'boat',
+        title: 'เรือใบแล่นลม',
+        category: 'vehicle',
+        keywords: 'เรือ เรือใบ boat ship ทะเล',
+        steps: [
+          `<polygon points="18,65 82,65 72,82 28,82" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<line x1="48" y1="20" x2="48" y2="65" stroke="#334155" stroke-width="3"/>`,
+          `<polygon points="50,24 76,58 50,58" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<polygon points="46,32 24,58 46,58" stroke="#334155" stroke-width="3" fill="none"/><path d="M10,88 Q30,82 50,88 Q70,94 90,88" stroke="#3b82f6" stroke-width="2.5" fill="none"/>`
+        ]
+      },
+      {
+        id: 'train',
+        title: 'รถไฟปู้นๆ',
+        category: 'vehicle',
+        keywords: 'รถไฟ train รถจักร ปู้นๆ',
+        steps: [
+          `<rect x="25" y="40" width="50" height="35" rx="3" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<rect x="25" y="25" width="22" height="15" rx="2" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="36" cy="78" r="7" stroke="#334155" stroke-width="3" fill="none"/><circle cx="64" cy="78" r="7" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<rect x="54" y="28" width="14" height="12" stroke="#334155" stroke-width="2.5" fill="none"/><circle cx="50" cy="18" r="3" fill="#cbd5e1"/>`
+        ]
+      },
+      {
+        id: 'ufo',
+        title: 'จานบินเอเลี่ยน UFO',
+        category: 'vehicle',
+        keywords: 'ยูเอฟโอ ufo จานบิน มนุษย์ต่างดาว alien',
+        steps: [
+          `<ellipse cx="50" cy="55" rx="42" ry="14" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<path d="M30,52 Q50,25 70,52" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="50" cy="40" r="5" fill="#22c55e"/>`,
+          `<circle cx="28" cy="55" r="2.5" fill="#f59e0b"/><circle cx="50" cy="58" r="2.5" fill="#f59e0b"/><circle cx="72" cy="55" r="2.5" fill="#f59e0b"/>`
+        ]
+      },
+
+      // --- หมวดธรรมชาติและพืช (NATURE & PLANTS) ---
+      {
+        id: 'sunflower',
+        title: 'ดอกทานตะวันบาน',
+        category: 'nature',
+        keywords: 'ทานตะวัน sunflower ดอกไม้ ธรรมชาติ',
+        steps: [
+          `<circle cx="50" cy="45" r="14" stroke="#78350f" stroke-width="3" fill="#fef3c7"/>`,
+          `<ellipse cx="50" cy="20" rx="6" ry="10" stroke="#f59e0b" stroke-width="2.5" fill="none"/><ellipse cx="50" cy="70" rx="6" ry="10" stroke="#f59e0b" stroke-width="2.5" fill="none"/>`,
+          `<ellipse cx="25" cy="45" rx="10" ry="6" stroke="#f59e0b" stroke-width="2.5" fill="none"/><ellipse cx="75" cy="45" rx="10" ry="6" stroke="#f59e0b" stroke-width="2.5" fill="none"/>`,
+          `<path d="M50,75 L50,95 M50,85 Q65,80 60,75" stroke="#16a34a" stroke-width="3" fill="none"/>`
+        ]
+      },
+      {
+        id: 'tree',
+        title: 'ต้นไม้ร่มรื่น',
+        category: 'nature',
+        keywords: 'ต้นไม้ tree ป่า ธรรมชาติ',
+        steps: [
+          `<rect x="44" y="55" width="12" height="35" rx="2" stroke="#78350f" stroke-width="3" fill="none"/>`,
+          `<circle cx="50" cy="40" r="24" stroke="#16a34a" stroke-width="3" fill="none"/>`,
+          `<circle cx="34" cy="45" r="16" stroke="#16a34a" stroke-width="2.5" fill="none"/><circle cx="66" cy="45" r="16" stroke="#16a34a" stroke-width="2.5" fill="none"/>`,
+          `<circle cx="45" cy="35" r="2.5" fill="#ef4444"/><circle cx="58" cy="42" r="2.5" fill="#ef4444"/><circle cx="38" cy="48" r="2.5" fill="#ef4444"/>`
+        ]
+      },
+      {
+        id: 'volcano',
+        title: 'ภูเขาไฟลาวา',
+        category: 'nature',
+        keywords: 'ภูเขาไฟ volcano ลาวา mountain',
+        steps: [
+          `<polygon points="20,82 42,40 58,40 80,82" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<ellipse cx="50" cy="40" rx="8" ry="3" stroke="#334155" stroke-width="2.5" fill="none"/>`,
+          `<path d="M50,38 Q45,20 40,12 M50,38 Q55,20 62,14" stroke="#ef4444" stroke-width="3" fill="none"/>`,
+          `<path d="M44,42 Q46,55 42,62 M54,42 Q52,55 56,64" stroke="#f97316" stroke-width="2.5" fill="none"/>`
+        ]
+      },
+      {
+        id: 'sun',
+        title: 'พระอาทิตย์ยิ้มแฉ่ง',
+        category: 'nature',
+        keywords: 'พระอาทิตย์ ตะวัน sun sunny ท้องฟ้า',
+        steps: [
+          `<circle cx="50" cy="50" r="22" stroke="#f59e0b" stroke-width="3" fill="none"/>`,
+          `<line x1="50" y1="12" x2="50" y2="20" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/><line x1="50" y1="80" x2="50" y2="88" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="50" x2="20" y2="50" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/><line x1="80" y1="50" x2="88" y2="50" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>`,
+          `<line x1="24" y1="24" x2="30" y2="30" stroke="#f59e0b" stroke-width="3"/><line x1="70" y1="70" x2="76" y2="76" stroke="#f59e0b" stroke-width="3"/><line x1="76" y1="24" x2="70" y2="30" stroke="#f59e0b" stroke-width="3"/><line x1="24" y1="76" x2="30" y2="70" stroke="#f59e0b" stroke-width="3"/>`,
+          `<circle cx="42" cy="46" r="2.5" fill="#334155"/><circle cx="58" cy="46" r="2.5" fill="#334155"/><path d="M42,56 Q50,64 58,56" stroke="#334155" stroke-width="2.5" stroke-linecap="round" fill="none"/>`
+        ]
+      },
+      {
+        id: 'rainbow',
+        title: 'รุ้งกินน้ำ 7 สี',
+        category: 'nature',
+        keywords: 'รุ้ง rainbow ท้องฟ้า สายรุ้ง',
+        steps: [
+          `<path d="M20,75 A30,30 0 0,1 80,75" stroke="#ef4444" stroke-width="4" fill="none"/>`,
+          `<path d="M26,75 A24,24 0 0,1 74,75" stroke="#f59e0b" stroke-width="4" fill="none"/>`,
+          `<path d="M32,75 A18,18 0 0,1 68,75" stroke="#22c55e" stroke-width="4" fill="none"/><path d="M38,75 A12,12 0 0,1 62,75" stroke="#3b82f6" stroke-width="4" fill="none"/>`,
+          `<circle cx="20" cy="74" r="7" fill="#cbd5e1"/><circle cx="80" cy="74" r="7" fill="#cbd5e1"/>`
+        ]
+      },
+      {
+        id: 'mushroom',
+        title: 'เห็ดการ์ตูนมาริโอ้',
+        category: 'nature',
+        keywords: 'เห็ด mushroom พืช',
+        steps: [
+          `<path d="M20,54 Q50,15 80,54 Z" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<rect x="38" y="54" width="24" height="28" rx="4" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="36" cy="40" r="4.5" fill="#fff" stroke="#334155" stroke-width="1.5"/><circle cx="64" cy="40" r="4.5" fill="#fff" stroke="#334155" stroke-width="1.5"/><circle cx="50" cy="28" r="4.5" fill="#fff" stroke="#334155" stroke-width="1.5"/>`,
+          `<circle cx="44" cy="64" r="2" fill="#334155"/><circle cx="56" cy="64" r="2" fill="#334155"/>`
+        ]
+      },
+      {
+        id: 'house',
+        title: 'บ้านแสนสุขใจ',
+        category: 'nature',
+        keywords: 'บ้าน house home สิ่งก่อสร้าง',
+        steps: [
+          `<rect x="25" y="48" width="50" height="38" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<polygon points="50,22 18,48 82,48" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<rect x="42" y="62" width="16" height="24" stroke="#334155" stroke-width="2.5" fill="none"/><circle cx="54" cy="74" r="1.5" fill="#334155"/>`,
+          `<rect x="62" y="26" width="6" height="14" stroke="#334155" stroke-width="2" fill="none"/><rect x="28" y="54" width="10" height="10" stroke="#334155" stroke-width="2" fill="none"/>`
+        ]
+      },
+
+      // --- หมวดอาหารและขนม (FOOD & DESSERTS) ---
+      {
+        id: 'icecream',
+        title: 'ไอศกรีมโคนหวานฉ่ำ',
+        category: 'food',
+        keywords: 'ไอศกรีม icecream ไอติม โคน หวาน ขนม',
+        steps: [
+          `<polygon points="32,45 68,45 50,88" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="50" cy="35" r="20" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<path d="M38,55 L62,55 M42,66 L58,66 M46,77 L54,77" stroke="#d97706" stroke-width="1.5"/>`,
+          `<circle cx="50" cy="18" r="4" fill="#f43f5e"/>`
+        ]
+      },
+      {
+        id: 'cupcake',
+        title: 'คัพเค้กสายรุ้ง',
+        category: 'food',
+        keywords: 'คัพเค้ก cupcake เค้ก ขนม เบเกอรี่',
+        steps: [
+          `<polygon points="30,55 70,55 64,85 36,85" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<path d="M26,55 Q50,25 74,55 Z" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="50" cy="28" r="5" fill="#ef4444"/>`,
+          `<line x1="42" y1="58" x2="40" y2="82" stroke="#334155" stroke-width="1.5"/><line x1="50" y1="58" x2="50" y2="82" stroke="#334155" stroke-width="1.5"/><line x1="58" y1="58" x2="60" y2="82" stroke="#334155" stroke-width="1.5"/>`
+        ]
+      },
+      {
+        id: 'watermelon',
+        title: 'แตงโมชิ้นโตหวานฉ่ำ',
+        category: 'food',
+        keywords: 'แตงโม watermelon ผลไม้ fruit',
+        steps: [
+          `<path d="M15,40 Q50,90 85,40 Z" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<path d="M20,44 Q50,84 80,44" stroke="#16a34a" stroke-width="3" fill="none"/>`,
+          `<circle cx="40" cy="52" r="2" fill="#334155"/><circle cx="50" cy="58" r="2" fill="#334155"/><circle cx="60" cy="52" r="2" fill="#334155"/>`,
+          `<circle cx="50" cy="68" r="2" fill="#334155"/><circle cx="42" cy="62" r="2" fill="#334155"/><circle cx="58" cy="62" r="2" fill="#334155"/>`
+        ]
+      },
+      {
+        id: 'donut',
+        title: 'โดนัทช็อกโกแลต',
+        category: 'food',
+        keywords: 'โดนัท donut ขนม เบเกอรี่',
+        steps: [
+          `<circle cx="50" cy="50" r="34" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="50" cy="50" r="14" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<path d="M22,50 Q28,40 38,44 Q48,38 58,45 Q68,40 76,52" stroke="#ec4899" stroke-width="2.5" fill="none"/>`,
+          `<rect x="32" y="32" width="4" height="2" fill="#f59e0b"/><rect x="62" y="34" width="4" height="2" fill="#3b82f6"/><rect x="52" y="24" width="4" height="2" fill="#22c55e"/>`
+        ]
+      },
+      {
+        id: 'apple',
+        title: 'แอปเปิ้ลสีแดงสด',
+        category: 'food',
+        keywords: 'แอปเปิ้ล apple ผลไม้ fruit',
+        steps: [
+          `<path d="M50,35 C38,18 15,28 18,55 C20,78 42,88 50,88 C58,88 80,78 82,55 C85,28 62,18 50,35 Z" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<path d="M50,35 Q52,18 60,14" stroke="#78350f" stroke-width="3" stroke-linecap="round" fill="none"/>`,
+          `<ellipse cx="64" cy="22" rx="8" ry="4" stroke="#16a34a" stroke-width="2" fill="none" transform="rotate(-20 64 22)"/>`,
+          `<circle cx="36" cy="46" r="2" fill="#fff" opacity="0.6"/>`
+        ]
+      },
+      {
+        id: 'pizza',
+        title: 'พิซซ่าชีสเยิ้ม',
+        category: 'food',
+        keywords: 'พิซซ่า pizza อาหาร cheese',
+        steps: [
+          `<polygon points="50,18 18,78 82,78" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<path d="M18,78 Q50,86 82,78" stroke="#d97706" stroke-width="4" fill="none"/>`,
+          `<circle cx="45" cy="50" r="4" fill="#ef4444"/><circle cx="56" cy="62" r="4" fill="#ef4444"/><circle cx="40" cy="68" r="4" fill="#ef4444"/>`,
+          `<circle cx="52" cy="38" r="2.5" fill="#f59e0b"/><circle cx="60" cy="48" r="2" fill="#22c55e"/>`
+        ]
+      },
+      {
+        id: 'burger',
+        title: 'เบอร์เกอร์คำโต',
+        category: 'food',
+        keywords: 'เบอร์เกอร์ hamburger burger ขนมปัง อาหาร',
+        steps: [
+          `<path d="M22,48 Q50,20 78,48 Z" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<rect x="20" y="70" width="60" height="14" rx="6" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<rect x="22" y="52" width="56" height="8" rx="2" fill="#78350f"/>`,
+          `<polygon points="26,62 34,66 42,60 50,66 58,60 66,66 74,62" fill="#eab308"/>`
+        ]
+      },
+
+      // --- หมวดการ์ตูน/จินตนาการ (CARTOON & FANTASY) ---
+      {
+        id: 'star',
+        title: 'ดวงดาววิเศษเปล่งประกาย',
+        category: 'fantasy',
+        keywords: 'ดาว star วิเศษ ท้องฟ้า',
+        steps: [
+          `<polygon points="50,15 61,38 85,38 66,54 73,78 50,64 27,78 34,54 15,38 39,38" stroke="#f59e0b" stroke-width="3" fill="none"/>`,
+          `<circle cx="44" cy="46" r="2.5" fill="#334155"/><circle cx="56" cy="46" r="2.5" fill="#334155"/>`,
+          `<path d="M45,54 Q50,58 55,54" stroke="#334155" stroke-width="2" fill="none"/>`,
+          `<line x1="88" y1="20" x2="94" y2="20" stroke="#f59e0b" stroke-width="2"/><line x1="91" y1="17" x2="91" y2="23" stroke="#f59e0b" stroke-width="2"/>`
+        ]
+      },
+      {
+        id: 'robot',
+        title: 'หุ่นยนต์เพื่อนรัก',
+        category: 'fantasy',
+        keywords: 'หุ่นยนต์ robot bot ไซบอร์ก',
+        steps: [
+          `<rect x="30" y="24" width="40" height="30" rx="4" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<rect x="25" y="60" width="50" height="28" rx="4" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<line x1="50" y1="14" x2="50" y2="24" stroke="#334155" stroke-width="3"/><circle cx="50" cy="12" r="3" fill="#f59e0b"/>`,
+          `<circle cx="42" cy="38" r="4" fill="#334155"/><circle cx="58" cy="38" r="4" fill="#334155"/><line x1="38" y1="46" x2="62" y2="46" stroke="#334155" stroke-width="2"/>`
+        ]
+      },
+      {
+        id: 'unicorn',
+        title: 'ยูนิคอร์นสายรุ้ง',
+        category: 'fantasy',
+        keywords: 'ยูนิคอร์น unicorn ม้า ม้าวิเศษ fantasy',
+        steps: [
+          `<path d="M30,78 L35,55 L42,42 Q40,30 48,22 L58,35 Q65,40 70,38 L72,50 Q58,62 48,78 Z" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<polygon points="48,22 64,6 54,22" stroke="#f59e0b" stroke-width="2.5" fill="#fef08a"/>`,
+          `<circle cx="56" cy="36" r="2.5" fill="#334155"/>`,
+          `<path d="M38,48 Q30,48 26,58 M36,58 Q28,60 25,72" stroke="#ec4899" stroke-width="2.5" fill="none"/>`
+        ]
+      },
+      {
+        id: 'crown',
+        title: 'มงกุฎราชาและราชินี',
+        category: 'fantasy',
+        keywords: 'มงกุฎ crown king queen เจ้าหญิง พระราชา',
+        steps: [
+          `<polygon points="20,68 80,68 85,38 65,52 50,28 35,52 15,38" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<circle cx="15" cy="36" r="3" fill="#f59e0b"/><circle cx="50" cy="26" r="3" fill="#f59e0b"/><circle cx="85" cy="36" r="3" fill="#f59e0b"/>`,
+          `<ellipse cx="50" cy="60" rx="4" ry="4" fill="#ec4899"/>`,
+          `<line x1="22" y1="64" x2="78" y2="64" stroke="#f59e0b" stroke-width="2"/>`
+        ]
+      },
+      {
+        id: 'castle',
+        title: 'ปราสาทเทพนิยาย',
+        category: 'fantasy',
+        keywords: 'ปราสาท castle หอคอย เมือง เจ้าหญิง',
+        steps: [
+          `<rect x="25" y="45" width="50" height="40" stroke="#334155" stroke-width="3" fill="none"/>`,
+          `<rect x="20" y="38" width="14" height="47" stroke="#334155" stroke-width="3" fill="none"/><polygon points="20,38 27,20 34,38" stroke="#334155" stroke-width="2.5" fill="none"/>`,
+          `<rect x="66" y="38" width="14" height="47" stroke="#334155" stroke-width="3" fill="none"/><polygon points="66,38 73,20 80,38" stroke="#334155" stroke-width="2.5" fill="none"/>`,
+          `<path d="M44,85 L44,68 Q50,62 56,68 L56,85 Z" stroke="#334155" stroke-width="2.5" fill="none"/>`
+        ]
+      }
+    ];
+
+    /* ==========================================================
+       3. SYNTHESIZED SOUND & THAI VOICE (Web Audio & Speech)
+       ========================================================== */
+    let audioCtx = null;
+    function initAudioEngine() {
+      if (!audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioClass) audioCtx = new AudioClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.1, gainVal = 0.1) {
+      if (!appState.audioEnabled) return;
+      try {
+        initAudioEngine();
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch(e) {}
+    }
+
+    // Sound FX Library
+    function sfxPop() {
+      if (!appState.audioEnabled) return;
+      try {
+        initAudioEngine();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(840, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch(e) {}
+    }
+
+    function sfxClick() { playTone(650, 'sine', 0.04, 0.07); }
+    function sfxSwoosh() { playTone(240, 'triangle', 0.15, 0.08); }
+    function sfxUndo() { playTone(300, 'sine', 0.12, 0.09); }
+    function sfxSuccess() {
+      if (!appState.audioEnabled) return;
+      [523.25, 659.25, 783.99].forEach((f, i) => {
+        setTimeout(() => playTone(f, 'sine', 0.18, 0.1), i * 80);
+      });
+    }
+    function sfxFanfare() {
+      if (!appState.audioEnabled) return;
+      [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+        setTimeout(() => playTone(f, 'triangle', 0.3, 0.14), i * 110);
+      });
+    }
+
+    function toggleAudio() {
+      appState.audioEnabled = !appState.audioEnabled;
+      document.getElementById('audioIcon').className = appState.audioEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+      document.getElementById('audioBtn').classList.toggle('opacity-50', !appState.audioEnabled);
+      if (appState.audioEnabled) sfxPop();
+    }
+
+    // Web Speech API: Thai Friendly Teacher Voice
+    let thaiVoice = null;
+    function initSpeechEngine() {
+      if (!('speechSynthesis' in window)) return;
+      const getVoices = () => {
+        const voices = window.speechSynthesis.getVoices();
+        thaiVoice = voices.find(v => v.lang === 'th-TH' || v.lang.startsWith('th')) || null;
+      };
+      getVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = getVoices;
+      }
+    }
+
+    function speakThai(text) {
+      if (!appState.speechEnabled || !('speechSynthesis' in window) || !text) return;
+      try {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'th-TH';
+        if (thaiVoice) utter.voice = thaiVoice;
+        utter.rate = 1.0;
+        utter.pitch = 1.15;
+        window.speechSynthesis.speak(utter);
+      } catch(e) {}
+    }
+
+    function toggleSpeech() {
+      appState.speechEnabled = !appState.speechEnabled;
+      document.getElementById('speechIcon').className = appState.speechEnabled ? 'fa-solid fa-comment-dots' : 'fa-solid fa-comment-slash';
+      document.getElementById('speechBtn').classList.toggle('opacity-50', !appState.speechEnabled);
+      if (appState.speechEnabled) speakThai('เปิดเสียงคุณครู AI แล้วค่ะ');
+      else if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+
+    /* ==========================================================
+       4. CANVAS INITIALIZATION & SMOOTH DRAWING ENGINE
+       ========================================================== */
+    const container = document.getElementById('canvasContainer');
+    const drawCanvas = document.getElementById('drawCanvas');
+    const traceCanvas = document.getElementById('traceCanvas');
+    const dCtx = drawCanvas.getContext('2d', { willReadFrequently: true });
+    const tCtx = traceCanvas.getContext('2d');
+
+    let cw = 0, ch = 0;
+
+    function resizeCanvas() {
+      const rect = container.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      cw = rect.width;
+      ch = rect.height;
+
+      // Preserve drawing on resize
+      let snapshot = null;
+      if (drawCanvas.width > 0 && drawCanvas.height > 0) {
+        try { snapshot = dCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height); } catch(e){}
+      }
+
+      [drawCanvas, traceCanvas].forEach(cv => {
+        cv.width = cw * dpr;
+        cv.height = ch * dpr;
+        cv.style.width = cw + 'px';
+        cv.style.height = ch + 'px';
+      });
+
+      dCtx.resetTransform();
+      dCtx.scale(dpr, dpr);
+      tCtx.resetTransform();
+      tCtx.scale(dpr, dpr);
+
+      if (snapshot) {
+        try {
+          const off = document.createElement('canvas');
+          off.width = snapshot.width;
+          off.height = snapshot.height;
+          off.getContext('2d').putImageData(snapshot, 0, 0);
+          dCtx.drawImage(off, 0, 0, cw, ch);
+        } catch(e){}
+      }
+
+      renderGuideLayer();
+    }
+
+    function getPointerPos(e) {
+      const rect = drawCanvas.getBoundingClientRect();
+      let cx = e.clientX, cy = e.clientY;
+      if (e.touches && e.touches.length > 0) {
+        cx = e.touches[0].clientX;
+        cy = e.touches[0].clientY;
+      }
+      return { x: cx - rect.left, y: cy - rect.top };
+    }
+
+    /* Undo & Redo History Management */
+    function recordState() {
+      try {
+        if (appState.undoStack.length >= appState.maxHistory) appState.undoStack.shift();
+        appState.undoStack.push(dCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height));
+        appState.redoStack = [];
+        updateHistoryButtons();
+      } catch(e) {}
+    }
+
+    function updateHistoryButtons() {
+      document.getElementById('undoBtn').disabled = appState.undoStack.length === 0;
+      document.getElementById('redoBtn').disabled = appState.redoStack.length === 0;
+    }
+
+    function undo() {
+      if (appState.undoStack.length > 0) {
+        sfxUndo();
+        appState.redoStack.push(dCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height));
+        const prev = appState.undoStack.pop();
+        dCtx.putImageData(prev, 0, 0);
+        updateHistoryButtons();
+      }
+    }
+
+    function redo() {
+      if (appState.redoStack.length > 0) {
+        sfxUndo();
+        appState.undoStack.push(dCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height));
+        const next = appState.redoStack.pop();
+        dCtx.putImageData(next, 0, 0);
+        updateHistoryButtons();
+      }
+    }
+
+    /* ---- Drawing Pointer Events & Flood Fill ---- */
+    function handlePointerDown(e) {
+      initAudioEngine();
+      e.preventDefault();
+      const pt = getPointerPos(e);
+
+      if (appState.tool === 'bucket') {
+        recordState();
+        floodFill(Math.round(pt.x), Math.round(pt.y), appState.currentColor);
+        sfxPop();
+        return;
+      }
+
+      appState.isDrawing = true;
+      appState.points = [pt];
+      recordState();
+      drawSingleDab(pt);
+    }
+
+    function handlePointerMove(e) {
+      if (!appState.isDrawing) return;
+      e.preventDefault();
+      const pt = getPointerPos(e);
+      appState.points.push(pt);
+
+      if (appState.points.length >= 3) {
+        const p0 = appState.points[appState.points.length - 3];
+        const p1 = appState.points[appState.points.length - 2];
+        const p2 = appState.points[appState.points.length - 1];
+        const mid1 = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 };
+        const mid2 = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+        drawSmoothCurve(mid1, p1, mid2);
+      }
+    }
+
+    function handlePointerUp(e) {
+      if (!appState.isDrawing) return;
+      appState.isDrawing = false;
+      appState.points = [];
+    }
+
+    function drawSingleDab(p) {
+      dCtx.save();
+      dCtx.lineCap = 'round';
+      dCtx.lineJoin = 'round';
+
+      if (appState.tool === 'eraser') {
+        dCtx.globalCompositeOperation = 'destination-out';
+        dCtx.lineWidth = appState.brushSize * 2.2;
+      } else if (appState.tool === 'rainbow') {
+        dCtx.strokeStyle = `hsl(${appState.rainbowHue}, 95%, 55%)`;
+        dCtx.lineWidth = appState.brushSize;
+      } else if (appState.tool === 'highlighter') {
+        dCtx.globalAlpha = 0.35;
+        dCtx.strokeStyle = appState.currentColor;
+        dCtx.lineWidth = appState.brushSize * 2;
+      } else if (appState.tool === 'pencil') {
+        dCtx.globalAlpha = 0.9;
+        dCtx.strokeStyle = appState.currentColor;
+        dCtx.lineWidth = Math.max(2, appState.brushSize * 0.4);
+      } else {
+        dCtx.strokeStyle = appState.currentColor;
+        dCtx.lineWidth = appState.brushSize;
+      }
+
+      dCtx.beginPath();
+      dCtx.moveTo(p.x, p.y);
+      dCtx.lineTo(p.x + 0.1, p.y + 0.1);
+      dCtx.stroke();
+      dCtx.restore();
+    }
+
+    function drawSmoothCurve(pStart, pControl, pEnd) {
+      dCtx.save();
+      dCtx.lineCap = 'round';
+      dCtx.lineJoin = 'round';
+
+      if (appState.tool === 'eraser') {
+        dCtx.globalCompositeOperation = 'destination-out';
+        dCtx.lineWidth = appState.brushSize * 2.2;
+      } else if (appState.tool === 'rainbow') {
+        appState.rainbowHue = (appState.rainbowHue + 4) % 360;
+        dCtx.strokeStyle = `hsl(${appState.rainbowHue}, 95%, 55%)`;
+        dCtx.lineWidth = appState.brushSize;
+      } else if (appState.tool === 'highlighter') {
+        dCtx.globalAlpha = 0.35;
+        dCtx.strokeStyle = appState.currentColor;
+        dCtx.lineWidth = appState.brushSize * 2;
+      } else if (appState.tool === 'pencil') {
+        dCtx.globalAlpha = 0.9;
+        dCtx.strokeStyle = appState.currentColor;
+        dCtx.lineWidth = Math.max(2, appState.brushSize * 0.4);
+      } else {
+        dCtx.strokeStyle = appState.currentColor;
+        dCtx.lineWidth = appState.brushSize;
+      }
+
+      dCtx.beginPath();
+      dCtx.moveTo(pStart.x, pStart.y);
+      dCtx.quadraticCurveTo(pControl.x, pControl.y, pEnd.x, pEnd.y);
+      dCtx.stroke();
+      dCtx.restore();
+    }
+
+    // Attach canvas pointer listeners
+    drawCanvas.addEventListener('mousedown', handlePointerDown);
+    window.addEventListener('mousemove', handlePointerMove);
+    window.addEventListener('mouseup', handlePointerUp);
+
+    drawCanvas.addEventListener('touchstart', handlePointerDown, { passive: false });
+    window.addEventListener('touchmove', handlePointerMove, { passive: false });
+    window.addEventListener('touchend', handlePointerUp);
+
+    /* ---- High-Performance Flood Fill Algorithm ---- */
+    function hexToRgba(hex) {
+      let c = hex.replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      const num = parseInt(c, 16);
+      return [(num >> 16) & 255, (num >> 8) & 255, num & 255, 255];
+    }
+
+    function floodFill(startX, startY, fillHex) {
+      const dpr = window.devicePixelRatio || 1;
+      const px = Math.floor(startX * dpr);
+      const py = Math.floor(startY * dpr);
+      const w = drawCanvas.width;
+      const h = drawCanvas.height;
+
+      if (px < 0 || px >= w || py < 0 || py >= h) return;
+
+      const imgData = dCtx.getImageData(0, 0, w, h);
+      const data = imgData.data;
+
+      const startIndex = (py * w + px) * 4;
+      const startR = data[startIndex];
+      const startG = data[startIndex + 1];
+      const startB = data[startIndex + 2];
+      const startA = data[startIndex + 3];
+
+      const fillColor = hexToRgba(fillHex);
+      if (
+        Math.abs(startR - fillColor[0]) < 10 &&
+        Math.abs(startG - fillColor[1]) < 10 &&
+        Math.abs(startB - fillColor[2]) < 10 &&
+        Math.abs(startA - fillColor[3]) < 10
+      ) return; // Same color
+
+      const matchStartColor = (idx) => {
+        return (
+          Math.abs(data[idx] - startR) <= 32 &&
+          Math.abs(data[idx + 1] - startG) <= 32 &&
+          Math.abs(data[idx + 2] - startB) <= 32 &&
+          Math.abs(data[idx + 3] - startA) <= 32
+        );
+      };
+
+      const colorPixel = (idx) => {
+        data[idx] = fillColor[0];
+        data[idx + 1] = fillColor[1];
+        data[idx + 2] = fillColor[2];
+        data[idx + 3] = fillColor[3];
+      };
+
+      const queue = [px, py];
+      const visited = new Uint8Array(w * h);
+      visited[py * w + px] = 1;
+
+      while (queue.length > 0) {
+        const curY = queue.pop();
+        const curX = queue.pop();
+        const idx = (curY * w + curX) * 4;
+        colorPixel(idx);
+
+        const neighbors = [
+          [curX + 1, curY],
+          [curX - 1, curY],
+          [curX, curY + 1],
+          [curX, curY - 1]
+        ];
+
+        for (let i = 0; i < 4; i++) {
+          const nx = neighbors[i][0];
+          const ny = neighbors[i][1];
+          if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+            const pos = ny * w + nx;
+            if (!visited[pos]) {
+              visited[pos] = 1;
+              if (matchStartColor(pos * 4)) {
+                queue.push(nx, ny);
+              }
+            }
+          }
+        }
+      }
+
+      dCtx.putImageData(imgData, 0, 0);
+    }
+
+    /* ==========================================================
+       5. TOOLS, BRUSH SIZE & COLOR PALETTE
+       ========================================================== */
+    function setTool(toolName) {
+      sfxClick();
+      appState.tool = toolName;
+      ['brush', 'pencil', 'rainbow', 'highlighter', 'bucket', 'eraser'].forEach(t => {
+        const el = document.getElementById(`tool-${t}`);
+        if (t === toolName) el.className = "tool-active w-full py-1.5 px-1 rounded-2xl flex flex-col items-center justify-center border-2 border-transparent transition active:scale-95";
+        else el.className = "w-full py-1.5 px-1 rounded-2xl flex flex-col items-center justify-center text-slate-600 hover:bg-slate-100 border-2 border-transparent transition active:scale-95";
+      });
+
+      const hints = {
+        brush: '🖌️ พู่กันนุ่มนวล พร้อมระบายสี',
+        pencil: '✏️ ดินสอสเก็ตช์เส้นคมชัด',
+        rainbow: '✨ แปรงสีรุ้งวิเศษ เปล่งประกาย',
+        highlighter: '🖍️ ปากกาไฮไลท์โปร่งแสง',
+        bucket: '🪣 ถังเทสี แตะลงในช่องเพื่อเติมสี',
+        eraser: '🧽 ยางลบ แตะแล้วลากเพื่อลบ'
+      };
+      document.getElementById('canvasStatusText').textContent = hints[toolName] || 'พร้อมวาดรูป';
+    }
+
+    function setSize(sz) {
+      sfxClick();
+      appState.brushSize = sz;
+      [4, 10, 20, 36].forEach(s => {
+        const b = document.getElementById(`sz-${s}`);
+        b.className = (s === sz)
+          ? "h-6 rounded-lg bg-amber-200 text-amber-900 flex items-center justify-center text-[10px] font-bold shadow-xs scale-105"
+          : "h-6 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-[10px] font-bold";
+      });
+      // Update preview dot
+      const preview = document.getElementById('sizePreviewDot');
+      preview.style.width = Math.min(22, Math.max(6, sz * 0.7)) + 'px';
+      preview.style.height = Math.min(22, Math.max(6, sz * 0.7)) + 'px';
+    }
+
+    function onCustomColorPicked(hex) {
+      sfxPop();
+      appState.currentColor = hex;
+      document.getElementById('currentColorDot').style.backgroundColor = hex;
+      document.getElementById('sizePreviewDot').style.backgroundColor = hex;
+      if (appState.tool === 'eraser') setTool('brush');
+      renderColorSwatches();
+      speakThai('เลือกสีใหม่แล้วค่ะ');
+    }
+
+    function renderColorSwatches() {
+      const container = document.getElementById('colorPaletteGrid');
+      container.innerHTML = '';
+      PALETTE_COLORS.forEach(c => {
+        const btn = document.createElement('button');
+        const isActive = c.toLowerCase() === appState.currentColor.toLowerCase();
+        btn.className = `w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white shadow-xs transition transform active:scale-90 ${isActive ? 'swatch-active' : 'hover:scale-105'}`;
+        btn.style.backgroundColor = c;
+        btn.onclick = () => {
+          sfxClick();
+          appState.currentColor = c;
+          document.getElementById('nativeColorInput').value = c;
+          document.getElementById('currentColorDot').style.backgroundColor = c;
+          document.getElementById('sizePreviewDot').style.backgroundColor = c;
+          if (appState.tool === 'eraser') setTool('brush');
+          renderColorSwatches();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    /* ==========================================================
+       6. 3 LEARNING MODES LOGIC (FREE, TRACE, STEP-BY-STEP)
+       ========================================================== */
+    function switchMode(newMode) {
+      sfxPop();
+      appState.mode = newMode;
+      ['free', 'trace', 'step'].forEach(m => {
+        const btn = document.getElementById(`modeBtn-${m}`);
+        if (m === newMode) {
+          btn.className = "mode-tab-active flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition active:scale-95";
+        } else {
+          btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:text-indigo-600 transition active:scale-95";
+        }
+      });
+
+      const traceBar = document.getElementById('traceFloatingBar');
+      const stepBar = document.getElementById('stepFloatingBar');
+
+      if (newMode === 'free') {
+        traceBar.classList.add('hidden');
+        stepBar.classList.add('hidden');
+        tCtx.clearRect(0, 0, cw, ch);
+        speakThai('เข้าสู่โหมดวาดภาพอิสระ วาดได้ตามจินตนาการเลยค่ะ');
+      } else if (newMode === 'trace') {
+        stepBar.classList.add('hidden');
+        if (appState.activePreset || appState.traceImage) {
+          traceBar.classList.remove('hidden');
+          renderGuideLayer();
+        } else {
+          openLibraryDrawer();
+        }
+        speakThai('โหมดวาดตามแบบ เลือกแบบร่างที่ชอบเพื่อเริ่มทาบเส้นได้เลยค่ะ');
+      } else if (newMode === 'step') {
+        traceBar.classList.add('hidden');
+        if (!appState.activePreset) {
+          // Select default first preset if none active
+          selectPreset(PRESETS_DATA[0]);
+        }
+        stepBar.classList.remove('hidden');
+        appState.currentStepIndex = 0;
+        renderStepGuide();
+        speakThai('โหมดวาดตามสเต็ป ทำตามทีละขั้นตอน เริ่มที่ขั้นที่ 1 นะคะ');
+      }
+    }
+
+    /* ---- Preset Selection & Guide Rendering ---- */
+    function selectPreset(preset) {
+      sfxPop();
+      appState.activePreset = preset;
+      appState.currentStepIndex = 0;
+      appState.totalSteps = preset.steps.length;
+
+      // Create Full SVG image for overlay
+      const fullSvgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-full h-full">${preset.steps.join('')}</svg>`;
+      const blob = new Blob([fullSvgString], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        appState.traceImage = img;
+        document.getElementById('traceTitleBadge').textContent = preset.title;
+        
+        if (appState.mode === 'step') {
+          renderStepGuide();
+          document.getElementById('stepFloatingBar').classList.remove('hidden');
+        } else {
+          switchMode('trace');
+          document.getElementById('traceFloatingBar').classList.remove('hidden');
+          renderGuideLayer();
+        }
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+
+      if (window.innerWidth < 768) closeLibraryDrawer();
+      speakThai(`เลือกภาพ ${preset.title} เรียบร้อยแล้วค่ะ`);
+    }
+
+    function renderGuideLayer() {
+      tCtx.clearRect(0, 0, cw, ch);
+      if (!appState.traceImage || !appState.traceVisible) return;
+      if (appState.mode === 'step') return; // Handled by step renderer
+
+      const iw = appState.traceImage.width || 100;
+      const ih = appState.traceImage.height || 100;
+      const scale = Math.min((cw * 0.8) / iw, (ch * 0.8) / ih);
+      const dw = iw * scale;
+      const dh = ih * scale;
+      const dx = (cw - dw) / 2;
+      const dy = (ch - dh) / 2;
+
+      traceCanvas.style.opacity = appState.traceOpacity;
+      tCtx.drawImage(appState.traceImage, dx, dy, dw, dh);
+    }
+
+    function setTraceOpacity(val) {
+      appState.traceOpacity = val / 100;
+      traceCanvas.style.opacity = appState.traceOpacity;
+      document.getElementById('traceOpacityNum').textContent = `${val}%`;
+    }
+
+    function toggleTraceVisible() {
+      sfxClick();
+      appState.traceVisible = !appState.traceVisible;
+      const btn = document.getElementById('traceVisBtn');
+      if (appState.traceVisible) {
+        btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> ซ่อน';
+        renderGuideLayer();
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-eye"></i> แสดง';
+        tCtx.clearRect(0, 0, cw, ch);
+      }
+    }
+
+    function clearTraceGuide() {
+      sfxClick();
+      appState.traceImage = null;
+      appState.activePreset = null;
+      tCtx.clearRect(0, 0, cw, ch);
+      document.getElementById('traceFloatingBar').classList.add('hidden');
+      document.getElementById('stepFloatingBar').classList.add('hidden');
+      switchMode('free');
+      speakThai('ปิดภาพแบบร่างแล้วค่ะ');
+    }
+
+    /* ---- Step-by-Step Controller Engine ---- */
+    function renderStepGuide() {
+      if (!appState.activePreset || appState.mode !== 'step') return;
+      tCtx.clearRect(0, 0, cw, ch);
+
+      const p = appState.activePreset;
+      const cur = appState.currentStepIndex;
+      const total = p.steps.length;
+
+      document.getElementById('currentStepNumber').textContent = cur + 1;
+      document.getElementById('stepInstructionTitle').textContent = `ขั้นตอนที่ ${cur + 1} จาก ${total}`;
+      
+      const stepDescs = [
+        'วาดเส้นร่างโครงหลัก',
+        'เพิ่มส่วนประกอบสำคัญ',
+        'เติมรายละเอียดและดวงตา',
+        'ลงเส้นสมบูรณ์พร้อมลงสี'
+      ];
+      document.getElementById('stepInstructionDesc').textContent = stepDescs[cur] || 'วาดตามเส้นประ';
+      document.getElementById('stepPrevBtn').disabled = cur === 0;
+
+      // Construct SVG with earlier steps in gray and current step in vibrant dashed stroke
+      let accumulatedSvg = '';
+      for (let i = 0; i < cur; i++) {
+        accumulatedSvg += `<g opacity="0.45">${p.steps[i]}</g>`;
+      }
+      // Newest step highlighted
+      accumulatedSvg += `<g class="animate-step-guide" stroke="#4f46e5" stroke-dasharray="6 3" stroke-width="3.5">${p.steps[cur]}</g>`;
+
+      const svgDoc = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-full h-full">${accumulatedSvg}</svg>`;
+      const blob = new Blob([svgDoc], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        const iw = 100, ih = 100;
+        const scale = Math.min((cw * 0.78) / iw, (ch * 0.78) / ih);
+        const dw = iw * scale;
+        const dh = ih * scale;
+        const dx = (cw - dw) / 2;
+        const dy = (ch - dh) / 2;
+
+        traceCanvas.style.opacity = 0.85;
+        tCtx.clearRect(0, 0, cw, ch);
+        tCtx.drawImage(img, dx, dy, dw, dh);
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    }
+
+    function nextDrawingStep() {
+      if (!appState.activePreset) return;
+      if (appState.currentStepIndex < appState.activePreset.steps.length - 1) {
+        sfxSuccess();
+        appState.currentStepIndex++;
+        renderStepGuide();
+        speakThai(`เยี่ยมมากค่ะ ไปต่อขั้นตอนที่ ${appState.currentStepIndex + 1} กันเลย`);
+      } else {
+        finishStepDrawing();
+      }
+    }
+
+    function prevDrawingStep() {
+      if (!appState.activePreset) return;
+      if (appState.currentStepIndex > 0) {
+        sfxClick();
+        appState.currentStepIndex--;
+        renderStepGuide();
+      }
+    }
+
+    function finishStepDrawing() {
+      sfxFanfare();
+      triggerConfettiBurst();
+      speakThai('เก่งมากเลยค่ะ! วาดครบทุกขั้นตอนแล้ว ลงมือแต่งเติมสีสันตามใจชอบได้เลยนะจ๊ะ');
+      showCustomAlert('🎉 ยอดเยี่ยมมาก!', 'น้องๆ วาดภาพตามสเต็ปสำเร็จแล้ว อย่าลืมระบายสีและกดปุ่มบันทึกผลงานนะจ๊ะ!');
+    }
+
+    /* ==========================================================
+       7. 35+ PRESET DRAWER UI & CATEGORY FILTERING
+       ========================================================== */
+    function toggleLibraryDrawer() {
+      sfxClick();
+      const drawer = document.getElementById('libraryDrawer');
+      appState.drawerOpen = !appState.drawerOpen;
+      if (appState.drawerOpen) {
+        drawer.classList.remove('hidden');
+        drawer.style.marginRight = '0';
+      } else {
+        drawer.classList.add('hidden');
+      }
+    }
+
+    function openLibraryDrawer() {
+      appState.drawerOpen = true;
+      document.getElementById('libraryDrawer').classList.remove('hidden');
+    }
+
+    function closeLibraryDrawer() {
+      appState.drawerOpen = false;
+      document.getElementById('libraryDrawer').classList.add('hidden');
+    }
+
+    function filterPresets(catName) {
+      sfxClick();
+      ['all', 'animal', 'vehicle', 'nature', 'food', 'fantasy'].forEach(c => {
+        const b = document.getElementById(`catBtn-${c}`);
+        if (c === catName) {
+          b.className = "px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-bold whitespace-nowrap transition";
+        } else {
+          b.className = "px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold whitespace-nowrap hover:bg-slate-100 transition";
+        }
+      });
+
+      const q = document.getElementById('catalogSearchInput').value.trim().toLowerCase();
+      let list = (catName === 'all') ? PRESETS_DATA : PRESETS_DATA.filter(p => p.category === catName);
+      if (q) list = list.filter(p => p.title.toLowerCase().includes(q) || p.keywords.toLowerCase().includes(q));
+      renderPresetsGrid(list);
+    }
+
+    function onCatalogSearch(query) {
+      const q = query.trim().toLowerCase();
+      let list = PRESETS_DATA;
+      if (q) {
+        list = list.filter(p => p.title.toLowerCase().includes(q) || p.keywords.toLowerCase().includes(q));
+      }
+      renderPresetsGrid(list);
+    }
+
+    function renderPresetsGrid(list) {
+      const grid = document.getElementById('presetsGrid');
+      grid.innerHTML = '';
+
+      if (list.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-10 text-center text-slate-400">
+            <i class="fa-solid fa-face-sad-tear text-3xl mb-1"></i>
+            <p class="text-xs">ไม่พบลายเส้นที่ค้นหา</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "bg-white border-2 border-slate-200 hover:border-amber-400 rounded-2xl p-2 flex flex-col items-center justify-between cursor-pointer group shadow-2xs hover:shadow-md transition active:scale-95";
+        card.onclick = () => selectPreset(item);
+
+        const svgPreview = `<svg viewBox="0 0 100 100" class="w-full h-full">${item.steps.join('')}</svg>`;
+        card.innerHTML = `
+          <div class="w-full aspect-square bg-amber-50/60 rounded-xl p-1.5 flex items-center justify-center overflow-hidden mb-1 group-hover:scale-105 transition">
+            ${svgPreview}
+          </div>
+          <div class="text-center w-full">
+            <h5 class="text-[11px] font-bold text-slate-800 truncate">${item.title}</h5>
+            <span class="text-[9px] text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded-md font-semibold">${item.steps.length} สเต็ป</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    /* ==========================================================
+       8. ONLINE DRAFT SEARCH & IMPORT (Wikimedia Commons API)
+       ========================================================== */
+    function openOnlineSearchModal() {
+      sfxClick();
+      document.getElementById('onlineSearchModal').classList.remove('hidden');
+      if (document.getElementById('onlineResultsGrid').children.length === 0) {
+        searchWikimediaCommons('cartoon animal coloring lineart');
+      }
+    }
+
+    function closeOnlineSearchModal() {
+      sfxClick();
+      document.getElementById('onlineSearchModal').classList.add('hidden');
+    }
+
+    function quickSearchTopic(term) {
+      document.getElementById('apiSearchQuery').value = term;
+      searchWikimediaCommons(term);
+    }
+
+    async function searchWikimediaCommons(customQuery) {
+      sfxClick();
+      const q = customQuery || document.getElementById('apiSearchQuery').value.trim() || 'cartoon lineart';
+      const grid = document.getElementById('onlineResultsGrid');
+      const spinner = document.getElementById('searchSpinner');
+
+      grid.innerHTML = '';
+      spinner.classList.remove('hidden');
+      document.getElementById('onlineResultsHeader').textContent = `ผลการค้นหา "${q}"`;
+
+      try {
+        const endpoint = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(q + ' filetype:bitmap OR filetype:drawing')}&gsrlimit=16&prop=imageinfo&iiprop=url|thumburl&iiurlwidth=320&format=json&origin=*`;
+        const res = await fetch(endpoint);
+        const data = await res.json();
+        spinner.classList.add('hidden');
+
+        if (data.query && data.query.pages) {
+          const pages = Object.values(data.query.pages);
+          pages.forEach(p => {
+            if (p.imageinfo && p.imageinfo[0]) {
+              const info = p.imageinfo[0];
+              const thumb = info.thumburl || info.url;
+              const title = p.title.replace('File:', '').replace(/\.[^/.]+$/, '');
+
+              const card = document.createElement('div');
+              card.className = "bg-white border-2 border-slate-200 hover:border-sky-400 rounded-2xl p-2 flex flex-col items-center justify-between cursor-pointer group shadow-2xs hover:shadow-md transition active:scale-95";
+              card.onclick = () => loadExternalImageAsGuide(thumb, title);
+              card.innerHTML = `
+                <div class="w-full aspect-square bg-slate-50 rounded-xl p-1 flex items-center justify-center overflow-hidden mb-1">
+                  <img src="${thumb}" alt="draft" class="w-full h-full object-contain group-hover:scale-105 transition" loading="lazy">
+                </div>
+                <h5 class="text-[10px] font-bold text-slate-700 truncate w-full text-center">${title}</h5>
+              `;
+              grid.appendChild(card);
+            }
+          });
+        } else {
+          showEmptyOnlineMessage();
+        }
+      } catch (err) {
+        spinner.classList.add('hidden');
+        showEmptyOnlineMessage();
+      }
+    }
+
+    function showEmptyOnlineMessage() {
+      const grid = document.getElementById('onlineResultsGrid');
+      grid.innerHTML = `
+        <div class="col-span-full py-12 text-center text-slate-400">
+          <i class="fa-solid fa-cloud-sun-rain text-3xl mb-2"></i>
+          <p class="text-xs">ไม่พบรูปภาพ หรือไม่สามารถเชื่อมต่อเครือข่ายได้</p>
+          <p class="text-[10px] text-slate-400 mt-1">ลองใช้คำค้นภาษาอังกฤษ เช่น cat, car, robot หรือวาง URL รูปภาพด้านบนได้เลยจ้า</p>
+        </div>
+      `;
+    }
+
+    function loadExternalImageAsGuide(url, title = 'แบบร่างออนไลน์') {
+      sfxPop();
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        appState.traceImage = img;
+        appState.activePreset = null;
+        document.getElementById('traceTitleBadge').textContent = title;
+        closeOnlineSearchModal();
+        switchMode('trace');
+        document.getElementById('traceFloatingBar').classList.remove('hidden');
+        renderGuideLayer();
+        speakThai('โหลดภาพแบบร่างออนไลน์เรียบร้อยแล้วค่ะ');
+      };
+      img.onerror = () => {
+        showCustomAlert('⚠️ ไม่สามารถโหลดภาพนี้ได้', 'รูปภาพอาจมีระบบป้องกัน กรุณาลองเลือกลิงก์อื่นดูนะจ๊ะ');
+      };
+      img.src = url;
+    }
+
+    function loadFromDirectUrl() {
+      const url = document.getElementById('directUrlInput').value.trim();
+      if (!url) return;
+      loadExternalImageAsGuide(url, 'ภาพจาก URL');
+    }
+
+    function loadFromLocalDevice(input) {
+      if (input.files && input.files[0]) {
+        sfxClick();
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          loadExternalImageAsGuide(e.target.result, input.files[0].name);
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    /* ==========================================================
+       9. ACTIONS: SAVE PNG, GALLERY & LOCALSTORAGE
+       ========================================================== */
+    const STORAGE_KEY = 'KIDS_ART_STUDIO_V3_GALLERY';
+
+    function getSavedGallery() {
+      try {
+        const d = localStorage.getItem(STORAGE_KEY);
+        return d ? JSON.parse(d) : [];
+      } catch(e) { return []; }
+    }
+
+    function saveArtwork() {
+      sfxFanfare();
+      triggerConfettiBurst();
+
+      try {
+        const exp = document.createElement('canvas');
+        exp.width = cw;
+        exp.height = ch;
+        const ectx = exp.getContext('2d');
+
+        // Clean white background
+        ectx.fillStyle = '#ffffff';
+        ectx.fillRect(0, 0, cw, ch);
+
+        // Optional watermark of guide (faint)
+        if (appState.traceImage && appState.traceVisible && appState.mode !== 'free') {
+          ectx.globalAlpha = 0.2;
+          ectx.drawImage(traceCanvas, 0, 0, cw, ch);
+          ectx.globalAlpha = 1.0;
+        }
+
+        // Main Drawing
+        ectx.drawImage(drawCanvas, 0, 0, cw, ch);
+
+        const dataUrl = exp.toDataURL('image/png');
+        const items = getSavedGallery();
+        items.unshift({
+          id: Date.now(),
+          title: appState.activePreset ? `วาดภาพ: ${appState.activePreset.title}` : 'ผลงานจิตรกรน้อยสร้างสรรค์',
+          date: new Date().toLocaleDateString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+          image: dataUrl
+        });
+
+        if (items.length > 25) items.pop();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+
+        speakThai('ผลงานสวยงามมากเลยค่ะ บันทึกลงในหอศิลป์เรียบร้อยแล้ว');
+
+        // Auto Download file
+        const link = document.createElement('a');
+        link.download = `KidsArt_${Date.now()}.png`;
+        link.href = dataUrl;
+        link.click();
+
+        openGalleryModal();
+      } catch(e) {
+        console.error(e);
+      }
+    }
+
+    function openGalleryModal() {
+      sfxClick();
+      const items = getSavedGallery();
+      const container = document.getElementById('galleryItemsContainer');
+      document.getElementById('galleryCountNotice').textContent = `ผลงานทั้งหมด: ${items.length} ชิ้น`;
+      container.innerHTML = '';
+
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div class="h-64 flex flex-col items-center justify-center text-slate-400">
+            <i class="fa-solid fa-paintbrush text-4xl mb-2 text-slate-300"></i>
+            <h4 class="text-sm font-bold">ยังไม่มีผลงานที่บันทึก</h4>
+            <p class="text-xs text-slate-400">วาดภาพแล้วกดปุ่ม "บันทึก" เพื่อเก็บผลงานได้เลยนะจ๊ะ</p>
+          </div>
+        `;
+      } else {
+        container.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3";
+        items.forEach(art => {
+          const card = document.createElement('div');
+          card.className = "bg-slate-50 border border-slate-200 rounded-2xl p-2.5 flex flex-col justify-between shadow-xs hover:shadow-md transition";
+          card.innerHTML = `
+            <div class="relative bg-white rounded-xl overflow-hidden aspect-video border border-slate-100 mb-2">
+              <img src="${art.image}" alt="artwork" class="w-full h-full object-contain">
+            </div>
+            <div>
+              <h5 class="text-xs font-bold text-slate-800 truncate">${art.title}</h5>
+              <p class="text-[10px] text-slate-400">${art.date}</p>
+            </div>
+            <div class="flex gap-1.5 mt-2 pt-2 border-t border-slate-200">
+              <button onclick="restoreArtToCanvas('${art.image}')" class="flex-1 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg text-xs font-bold transition">
+                ✏️ วาดต่อ
+              </button>
+              <a href="${art.image}" download="MyArt_${art.id}.png" onclick="sfxClick()" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold transition">
+                📥 ดาวน์โหลด
+              </a>
+              <button onclick="deleteGalleryItem(${art.id})" class="px-2 py-1 text-rose-500 hover:bg-rose-50 rounded-lg text-xs font-bold transition">
+                🗑️
+              </button>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      }
+
+      document.getElementById('galleryModal').classList.remove('hidden');
+    }
+
+    function closeGalleryModal() {
+      sfxClick();
+      document.getElementById('galleryModal').classList.add('hidden');
+    }
+
+    function restoreArtToCanvas(dataUrl) {
+      sfxPop();
+      const img = new Image();
+      img.onload = () => {
+        recordState();
+        dCtx.clearRect(0, 0, cw, ch);
+        dCtx.drawImage(img, 0, 0, cw, ch);
+        closeGalleryModal();
+        speakThai('โหลดผลงานกลับมาวาดต่อเรียบร้อยค่ะ');
+      };
+      img.src = dataUrl;
+    }
+
+    function deleteGalleryItem(id) {
+      sfxClick();
+      let items = getSavedGallery().filter(a => a.id !== id);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      openGalleryModal();
+    }
+
+    function clearAllGalleryItems() {
+      showCustomConfirm('ลบผลงานทั้งหมด?', 'ต้องการลบผลงานในหอศิลป์ทั้งหมดใช่ไหมจ๊ะ? ข้อมูลจะไม่สามารถกู้คืนได้นะ', (yes) => {
+        if (yes) {
+          localStorage.removeItem(STORAGE_KEY);
+          openGalleryModal();
+          speakThai('ลบผลงานทั้งหมดแล้วค่ะ');
+        }
+      });
+    }
+
+    function promptClearCanvas() {
+      showCustomConfirm('ล้างหน้ากระดาษ?', 'ต้องการลบภาพวาดบนกระดานทั้งหมดใช่ไหมจ๊ะ?', (yes) => {
+        if (yes) {
+          recordState();
+          dCtx.clearRect(0, 0, cw, ch);
+          sfxSwoosh();
+          speakThai('ล้างหน้ากระดาษเรียบร้อยค่ะ');
+        }
+      });
+    }
+
+    /* ---- Zero-Alert Custom Modals ---- */
+    let dialogCallback = null;
+
+    function showCustomAlert(title, message) {
+      sfxClick();
+      document.getElementById('dialogIcon').textContent = '💡';
+      document.getElementById('dialogTitle').textContent = title;
+      document.getElementById('dialogMsg').textContent = message;
+      document.getElementById('dialogActions').innerHTML = `
+        <button onclick="closeCustomDialog()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs transition active:scale-95">
+          เข้าใจแล้ว
+        </button>
+      `;
+      document.getElementById('customDialog').classList.remove('hidden');
+    }
+
+    function showCustomConfirm(title, message, callback) {
+      sfxClick();
+      dialogCallback = callback;
+      document.getElementById('dialogIcon').textContent = '❓';
+      document.getElementById('dialogTitle').textContent = title;
+      document.getElementById('dialogMsg').textContent = message;
+      document.getElementById('dialogActions').innerHTML = `
+        <button onclick="resolveCustomDialog(false)" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">
+          ยกเลิก
+        </button>
+        <button onclick="resolveCustomDialog(true)" class="flex-1 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold shadow-xs transition">
+          ตกลง
+        </button>
+      `;
+      document.getElementById('customDialog').classList.remove('hidden');
+    }
+
+    function resolveCustomDialog(choice) {
+      sfxClick();
+      document.getElementById('customDialog').classList.add('hidden');
+      if (dialogCallback) {
+        dialogCallback(choice);
+        dialogCallback = null;
+      }
+    }
+
+    function closeCustomDialog() {
+      sfxClick();
+      document.getElementById('customDialog').classList.add('hidden');
+    }
+
+    /* ---- Confetti Cannon Animation ---- */
+    const confCanvas = document.getElementById('confettiCanvas');
+    const confCtx = confCanvas.getContext('2d');
+    let confettiParticles = [];
+    let confettiAnimation = null;
+
+    function triggerConfettiBurst() {
+      confCanvas.width = window.innerWidth;
+      confCanvas.height = window.innerHeight;
+      confettiParticles = [];
+      const colors = ['#f43f5e', '#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#fbbf24'];
+
+      for (let i = 0; i < 90; i++) {
+        confettiParticles.push({
+          x: window.innerWidth / 2,
+          y: window.innerHeight * 0.45,
+          vx: (Math.random() - 0.5) * 18,
+          vy: (Math.random() - 0.75) * 20,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rot: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 12,
+          opacity: 1
+        });
+      }
+      if (confettiAnimation) cancelAnimationFrame(confettiAnimation);
+      updateConfetti();
+    }
+
+    function updateConfetti() {
+      confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+      let alive = false;
+      confettiParticles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.38; // Gravity
+        p.rot += p.vRot;
+        p.opacity -= 0.009;
+        if (p.opacity > 0) {
+          alive = true;
+          confCtx.save();
+          confCtx.translate(p.x, p.y);
+          confCtx.rotate(p.rot * Math.PI / 180);
+          confCtx.fillStyle = p.color;
+          confCtx.globalAlpha = Math.max(0, p.opacity);
+          confCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          confCtx.restore();
+        }
+      });
+      if (alive) confettiAnimation = requestAnimationFrame(updateConfetti);
+      else confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+    }
+
+    /* ---- Fullscreen Toggle ---- */
+    function toggleFullscreen() {
+      sfxClick();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    /* ==========================================================
+       10. BOOTSTRAP APPLICATION
+       ========================================================== */
+    window.addEventListener('load', () => {
+      renderColorSwatches();
+      initSpeechEngine();
+      resizeCanvas();
+      renderPresetsGrid(PRESETS_DATA);
+      updateHistoryButtons();
+
+      window.addEventListener('resize', resizeCanvas);
+
+      // Welcome voice upon first user interaction
+      const onUserFirstTouch = () => {
+        initAudioEngine();
+        speakThai('ยินดีต้อนรับสู่ คิดส์ อาร์ต สตูดิโอ ห้องเรียนศิลปะดิจิทัล มาเริ่มวาดภาพแสนสนุกกันเถอะค่ะ');
+        window.removeEventListener('click', onUserFirstTouch);
+        window.removeEventListener('touchstart', onUserFirstTouch);
+      };
+      window.addEventListener('click', onUserFirstTouch, { once: true });
+      window.addEventListener('touchstart', onUserFirstTouch, { once: true });
+    });
+  </script>
+</body>
+</html>
