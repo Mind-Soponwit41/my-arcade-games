@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แบบจำลองฝนกรด และการฟื้นฟูด้วยปฏิกิริยาสะเทิน (Neutralization)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background-color: #f8fafc;
+    }
+    input[type=range] {
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+    .rain-drop {
+      animation: fall linear infinite;
+    }
+    @keyframes fall {
+      0% { transform: translateY(-20px); opacity: 0; }
+      20% { opacity: 0.7; }
+      90% { opacity: 0.7; }
+      100% { transform: translateY(260px); opacity: 0; }
+    }
+    @keyframes floatFish {
+      0%, 100% { transform: translateX(0px) translateY(0px); }
+      50% { transform: translateX(12px) translateY(-3px); }
+    }
+    .fish-swim {
+      animation: floatFish 3.5s ease-in-out infinite;
+    }
+    @keyframes smokeRise {
+      0% { transform: translateY(0) scale(0.8); opacity: 0.8; }
+      100% { transform: translateY(-35px) scale(1.6); opacity: 0; }
+    }
+    .smoke {
+      animation: smokeRise 2.5s ease-out infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-3 md:p-5 text-slate-800">
+
+  <div class="w-full max-w-5xl bg-white rounded-2xl shadow-lg border border-slate-200 p-4 md:p-6 space-y-4">
+    
+    <!-- Header -->
+    <div class="text-center">
+      <h1 class="text-xl md:text-2xl font-bold text-slate-800 flex items-center justify-center gap-2">
+        <span>🌧️</span> แบบจำลองฝนกรด และการฟื้นฟูด้วยปฏิกิริยาสะเทิน (Neutralization)
+      </h1>
+    </div>
+
+    <!-- Pollution Sliders -->
+    <div class="bg-slate-100/80 border border-slate-200 rounded-xl p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <div class="flex justify-between items-center mb-1.5">
+          <label for="so2Slider" class="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+            <span>🏭</span> ก๊าซซัลเฟอร์ไดออกไซด์ (SO₂ จากโรงงาน): <span id="so2Val" class="text-blue-600 font-bold">0</span> ppb
+          </label>
+        </div>
+        <input id="so2Slider" type="range" min="0" max="200" value="0" class="w-full h-2 bg-slate-300 rounded-lg">
+      </div>
+
+      <div>
+        <div class="flex justify-between items-center mb-1.5">
+          <label for="noxSlider" class="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+            <span>🚗</span> ก๊าซไนโตรเจนออกไซด์ (NOₓ จากรถยนต์): <span id="noxVal" class="text-blue-600 font-bold">0</span> ppb
+          </label>
+        </div>
+        <input id="noxSlider" type="range" min="0" max="200" value="0" class="w-full h-2 bg-slate-300 rounded-lg">
+      </div>
+    </div>
+
+    <!-- Neutralization Control -->
+    <div class="bg-emerald-50/70 border border-emerald-400 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="w-full md:w-2/3">
+        <div class="flex justify-between items-center mb-1.5">
+          <label for="limeSlider" class="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
+            <span>🧪</span> ปริมาณปูนขาว Ca(OH)₂ ที่เติมลงดินและแหล่งน้ำ (การสะเทินกรด): <span id="limeVal" class="text-emerald-700 font-bold">0</span> กก./ไร่
+          </label>
+        </div>
+        <input id="limeSlider" type="range" min="0" max="500" value="0" class="w-full h-2 bg-emerald-200 rounded-lg">
+      </div>
+
+      <button id="autoNeutralizeBtn" class="w-full md:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-sm font-semibold rounded-lg shadow transition flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer">
+        <span>✨</span> คำนวณปูนขาวเพื่อสะเทินกรดพอดี
+      </button>
+    </div>
+
+    <!-- Visual Simulation Stage -->
+    <div class="relative w-full h-72 md:h-80 rounded-xl overflow-hidden border border-slate-200 shadow-inner">
+      
+      <!-- Floating pH Status Badges -->
+      <div class="absolute top-3 left-3 z-10 flex flex-wrap gap-2.5">
+        <div class="bg-white/95 backdrop-blur-sm px-3.5 py-2 rounded-xl shadow border border-slate-100 min-w-[140px]">
+          <div class="text-xs text-slate-500 font-medium flex items-center gap-1">☁️ ค่า pH น้ำฝน (บนฟ้า)</div>
+          <div id="rainPhDisplay" class="text-2xl font-bold text-emerald-600 leading-tight">5.60</div>
+          <div id="rainStatusText" class="text-xs font-medium text-slate-600">ฝนธรรมชาติ</div>
+        </div>
+
+        <div class="bg-white/95 backdrop-blur-sm px-3.5 py-2 rounded-xl shadow border border-slate-100 min-w-[165px]">
+          <div class="text-xs text-slate-500 font-medium flex items-center gap-1">🌱🐟 ค่า pH ดินและแหล่งน้ำ</div>
+          <div id="soilPhDisplay" class="text-2xl font-bold text-emerald-600 leading-tight">5.60</div>
+          <div id="soilStatusText" class="text-xs font-medium text-slate-600">ระบบนิเวศปลอดภัย</div>
+        </div>
+      </div>
+
+      <!-- Chemical Equation Pill -->
+      <div id="equationBadge" class="hidden md:block absolute top-3 right-3 z-10 bg-slate-900/75 text-white text-xs px-3 py-1.5 rounded-lg backdrop-blur-sm">
+        CO₂ + H₂O ⇌ H₂CO₃ (ฝนกรดอ่อนตามธรรมชาติ)
+      </div>
+
+      <!-- Interactive SVG Scene -->
+      <svg id="sceneSvg" viewBox="0 0 900 300" preserveAspectRatio="none" class="w-full h-full">
+        <defs>
+          <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop id="skyStop1" offset="0%" stop-color="#87ceeb" />
+            <stop id="skyStop2" offset="100%" stop-color="#d4f1f9" />
+          </linearGradient>
+        </defs>
+
+        <!-- Sky -->
+        <rect width="900" height="300" fill="url(#skyGrad)" />
+
+        <!-- Clouds -->
+        <g id="clouds" fill="#ffffff" opacity="0.85">
+          <circle cx="480" cy="55" r="28" />
+          <circle cx="515" cy="50" r="34" />
+          <circle cx="550" cy="58" r="25" />
+          <rect x="480" y="55" width="70" height="28" rx="14" />
+
+          <circle cx="710" cy="65" r="24" />
+          <circle cx="740" cy="60" r="30" />
+          <circle cx="770" cy="68" r="22" />
+          <rect x="710" y="65" width="60" height="24" rx="12" />
+        </g>
+
+        <!-- Rain Layer -->
+        <g id="rainLayer"></g>
+
+        <!-- Factory Smoke -->
+        <g id="factorySmoke" opacity="0">
+          <circle class="smoke" cx="62" cy="125" r="10" fill="#475569" />
+          <circle class="smoke" style="animation-delay: 0.8s" cx="85" cy="125" r="12" fill="#334155" />
+        </g>
+
+        <!-- Car Exhaust -->
+        <g id="carSmoke" opacity="0">
+          <circle class="smoke" cx="145" cy="212" r="6" fill="#64748b" />
+        </g>
+
+        <!-- Ground & Water -->
+        <path d="M 0 220 Q 300 205 560 225 L 560 300 L 0 300 Z" fill="#4ade80" id="groundHill" />
+        <rect x="555" y="225" width="345" height="75" fill="#0284c7" id="waterBody" />
+        <path d="M 0 225 Q 280 212 560 225 L 560 300 L 0 300 Z" fill="#22c55e" id="groundFront" />
+
+        <!-- Factory -->
+        <g transform="translate(45, 130)">
+          <rect x="10" y="0" width="12" height="50" fill="#94a3b8" />
+          <rect x="10" y="6" width="12" height="5" fill="#ef4444" />
+          <rect x="33" y="0" width="12" height="50" fill="#94a3b8" />
+          <rect x="33" y="6" width="12" height="5" fill="#ef4444" />
+          <rect x="0" y="45" width="68" height="50" fill="#334155" rx="2" />
+          <rect x="10" y="60" width="10" height="12" fill="#fbbf24" />
+          <rect x="29" y="60" width="10" height="12" fill="#fbbf24" />
+          <rect x="48" y="60" width="10" height="12" fill="#fbbf24" />
+        </g>
+
+        <!-- Car -->
+        <g transform="translate(150, 198)">
+          <path d="M 8 10 L 16 0 L 38 0 L 46 10 Z" fill="#dc2626" />
+          <rect x="0" y="10" width="54" height="13" rx="4" fill="#ef4444" />
+          <circle cx="13" cy="24" r="6" fill="#1e293b" />
+          <circle cx="41" cy="24" r="6" fill="#1e293b" />
+        </g>
+
+        <!-- Trees -->
+        <g id="tree1" transform="translate(260, 125)">
+          <rect x="18" y="45" width="10" height="52" fill="#78350f" />
+          <circle cx="23" cy="32" r="28" class="tree-leaf" fill="#16a34a" />
+          <circle cx="8" cy="44" r="18" class="tree-leaf" fill="#15803d" />
+          <circle cx="38" cy="44" r="18" class="tree-leaf" fill="#15803d" />
+        </g>
+
+        <g id="tree2" transform="translate(345, 140)">
+          <rect x="14" y="38" width="8" height="44" fill="#78350f" />
+          <circle cx="18" cy="26" r="22" class="tree-leaf" fill="#22c55e" />
+          <circle cx="6" cy="36" r="14" class="tree-leaf" fill="#16a34a" />
+          <circle cx="30" cy="36" r="14" class="tree-leaf" fill="#16a34a" />
+        </g>
+
+        <!-- Marble Statue (CaCO3) -->
+        <g transform="translate(450, 138)">
+          <!-- Base -->
+          <rect x="0" y="66" width="64" height="18" fill="#94a3b8" rx="2" />
+          <rect x="8" y="58" width="48" height="8" fill="#cbd5e1" />
+          <!-- Statue Body (Erodes with rain pH) -->
+          <g id="statueBody" style="transform-origin: 32px 58px; transition: all 0.3s ease;">
+            <path d="M 18 58 L 21 26 L 43 26 L 46 58 Z" fill="#e2e8f0" />
+            <circle cx="32" cy="14" r="12" fill="#f1f5f9" />
+          </g>
+        </g>
+
+        <!-- Fish in Water -->
+        <g id="fish1" class="fish-swim" transform="translate(650, 255)">
+          <g id="fish1Flip" style="transform-origin: 15px 8px; transition: transform 0.5s;">
+            <ellipse cx="16" cy="8" rx="12" ry="6" fill="#f97316" />
+            <polygon points="4,8 -4,2 -4,14" fill="#ea580c" />
+            <circle cx="22" cy="6" r="1.5" fill="#0f172a" />
+          </g>
+        </g>
+
+        <g id="fish2" class="fish-swim" style="animation-delay: 1.2s" transform="translate(770, 270)">
+          <g id="fish2Flip" style="transform-origin: 15px 8px; transition: transform 0.5s;">
+            <ellipse cx="16" cy="8" rx="11" ry="5.5" fill="#ef4444" />
+            <polygon points="5,8 -3,3 -3,13" fill="#dc2626" />
+            <circle cx="21" cy="6" r="1.5" fill="#0f172a" />
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Bottom 3 Analysis Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Card 1: Forest & Soil -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-slate-800 flex items-center gap-1.5 mb-1.5">
+            <span>🌲</span> ป่าไม้และดิน (ขึ้นกับ pH ดิน)
+          </h3>
+          <p id="soilDesc" class="text-xs text-slate-600 leading-relaxed mb-3">
+            ใบไม้เขียวสด ดินมีแร่ธาตุแคลเซียมและแมกนีเซียมสมบูรณ์
+          </p>
+        </div>
+        <div>
+          <span id="soilBadge" class="inline-block text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-200 text-slate-700">
+            ดินปกติ (ไร้พิษ Al³⁺)
+          </span>
+        </div>
+      </div>
+
+      <!-- Card 2: Marble Statue -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-slate-800 flex items-center gap-1.5 mb-1.5">
+            <span>🗿</span> รูปปั้นหินอ่อน (ขึ้นกับ pH น้ำฝนโดยตรง)
+          </h3>
+          <p id="statueDesc" class="text-xs text-slate-600 leading-relaxed mb-3">
+            พื้นผิวเรียบสมบูรณ์ ไม่มีการกัดกร่อนจากกรดแก่
+          </p>
+        </div>
+        <div>
+          <span id="statueBadge" class="inline-block text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-200 text-slate-700">
+            CaCO₃ (คงตัว)
+          </span>
+        </div>
+      </div>
+
+      <!-- Card 3: Water & Neutralization -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-slate-800 flex items-center gap-1.5 mb-1.5">
+            <span>🐟</span> แหล่งน้ำและปฏิกิริยาสะเทิน
+          </h3>
+          <p id="waterDesc" class="text-xs text-slate-600 leading-relaxed mb-3">
+            น้ำใสสะอาด ค่า pH เหมาะสมต่อการดำรงชีวิตของปลา
+          </p>
+        </div>
+        <div>
+          <span id="waterBadge" class="inline-block text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-200 text-slate-700">
+            pH > 5.2 (ปลอดภัย)
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Generate Raindrops
+    const rainLayer = document.getElementById('rainLayer');
+    for (let i = 0; i < 55; i++) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      const x = Math.random() * 900;
+      const y = Math.random() * 200;
+      line.setAttribute('x1', x);
+      line.setAttribute('y1', y);
+      line.setAttribute('x2', x - 4);
+      line.setAttribute('y2', y + 14);
+      line.setAttribute('stroke', '#ffffff');
+      line.setAttribute('stroke-width', '1.5');
+      line.setAttribute('stroke-linecap', 'round');
+      line.classList.add('rain-drop');
+      line.style.animationDuration = (0.7 + Math.random() * 0.5) + 's';
+      line.style.animationDelay = (Math.random() * 1.5) + 's';
+      rainLayer.appendChild(line);
+    }
+
+    const so2Slider = document.getElementById('so2Slider');
+    const noxSlider = document.getElementById('noxSlider');
+    const limeSlider = document.getElementById('limeSlider');
+    const autoBtn = document.getElementById('autoNeutralizeBtn');
+
+    function updateSimulation() {
+      const so2 = parseFloat(so2Slider.value);
+      const nox = parseFloat(noxSlider.value);
+      const lime = parseFloat(limeSlider.value);
+
+      document.getElementById('so2Val').textContent = so2;
+      document.getElementById('noxVal').textContent = nox;
+      document.getElementById('limeVal').textContent = lime;
+
+      // Calculate Rain pH (5.60 down to ~3.20)
+      const acidLoad = (so2 * 0.007) + (nox * 0.005);
+      const rainPh = Math.max(3.20, 5.60 - acidLoad);
+
+      // Calculate Soil/Water pH with Ca(OH)2 neutralization
+      // 1 unit of acidLoad needs roughly 125 kg/rai of Ca(OH)2 to reach ~6.50
+      const limeEffect = lime * 0.008;
+      const soilPh = Math.min(9.80, rainPh + limeEffect);
+
+      // Update pH numbers
+      const rainPhEl = document.getElementById('rainPhDisplay');
+      const soilPhEl = document.getElementById('soilPhDisplay');
+      rainPhEl.textContent = rainPh.toFixed(2);
+      soilPhEl.textContent = soilPh.toFixed(2);
+
+      // Rain status & color
+      if (rainPh >= 5.2) {
+        rainPhEl.className = 'text-2xl font-bold text-emerald-600 leading-tight';
+        document.getElementById('rainStatusText').textContent = 'ฝนธรรมชาติ';
+      } else if (rainPh >= 4.3) {
+        rainPhEl.className = 'text-2xl font-bold text-amber-500 leading-tight';
+        document.getElementById('rainStatusText').textContent = 'ฝนกรดปานกลาง';
+      } else {
+        rainPhEl.className = 'text-2xl font-bold text-red-600 leading-tight';
+        document.getElementById('rainStatusText').textContent = 'ฝนกรดรุนแรง!';
+      }
+
+      // Soil/Water status & color
+      if (soilPh < 5.2) {
+        soilPhEl.className = 'text-2xl font-bold text-red-600 leading-tight';
+        document.getElementById('soilStatusText').textContent = 'วิกฤตกรดจัด (สิ่งมีชีวิตตาย)';
+      } else if (soilPh <= 8.4) {
+        soilPhEl.className = 'text-2xl font-bold text-emerald-600 leading-tight';
+        document.getElementById('soilStatusText').textContent = 'ระบบนิเวศปลอดภัย';
+      } else {
+        soilPhEl.className = 'text-2xl font-bold text-purple-600 leading-tight';
+        document.getElementById('soilStatusText').textContent = 'ด่างจัดเกินไป (Over-liming)';
+      }
+
+      // Equation Badge
+      const eqBadge = document.getElementById('equationBadge');
+      if (lime > 0 && acidLoad > 0) {
+        eqBadge.textContent = 'H₂SO₄ / HNO₃ + Ca(OH)₂ → เกลือ + H₂O (สะเทินกรด)';
+      } else if (so2 > 0 || nox > 0) {
+        eqBadge.textContent = 'SO₂ + NOₓ + H₂O → H₂SO₄ + HNO₃ (เกิดฝนกรด)';
+      } else if (lime > 50) {
+        eqBadge.textContent = 'Ca(OH)₂ → Ca²⁺ + 2OH⁻ (เพิ่มความเป็นเบสในดิน/น้ำ)';
+      } else {
+        eqBadge.textContent = 'CO₂ + H₂O ⇌ H₂CO₃ (ฝนกรดอ่อนตามธรรมชาติ)';
+      }
+
+      // Visual Updates: Smoke & Sky
+      document.getElementById('factorySmoke').setAttribute('opacity', so2 > 0 ? Math.min(1, 0.3 + so2 / 150) : 0);
+      document.getElementById('carSmoke').setAttribute('opacity', nox > 0 ? Math.min(1, 0.3 + nox / 150) : 0);
+
+      const pollutionRatio = Math.min(1, (so2 + nox) / 350);
+      document.getElementById('skyStop1').setAttribute('stop-color', pollutionRatio > 0.4 ? '#94a3b8' : '#87ceeb');
+      document.getElementById('skyStop2').setAttribute('stop-color', pollutionRatio > 0.4 ? '#cbd5e1' : '#d4f1f9');
+
+      // Visual Updates: Marble Statue (depends strictly on rainPh)
+      const statueBody = document.getElementById('statueBody');
+      const statueScale = Math.max(0.65, 1 - ((5.60 - rainPh) * 0.14));
+      statueBody.style.transform = `scaleY(${statueScale}) scaleX(${Math.max(0.8, statueScale)})`;
+      
+      if (rainPh >= 5.2) {
+        document.getElementById('statueDesc').textContent = 'พื้นผิวเรียบสมบูรณ์ ไม่มีการกัดกร่อนจากกรดแก่';
+        document.getElementById('statueBadge').textContent = 'CaCO₃ (คงตัว)';
+        document.getElementById('statueBadge').className = 'inline-block text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-200 text-slate-700';
+      } else {
+        document.getElementById('statueDesc').textContent = 'กรดซัลฟิวริกและกรดไนตริกทำปฏิกิริยากับหินปูน ทำให้รูปปั้นสึกกร่อน (เติมปูนขาวลงดินช่วยไม่ได้)';
+        document.getElementById('statueBadge').textContent = 'CaCO₃ + 2H⁺ → Ca²⁺ + CO₂ + H₂O';
+        document.getElementById('statueBadge').className = 'inline-block text-xs font-semibold px-2.5 py-1 rounded-md bg-red-100 text-red-700';
+      }
+
+      // Visual Updates: Trees & Soil
+      const leaves = document.querySelectorAll('.tree-leaf');
+      if (soilPh < 5.2) {
+        leaves.forEach(l => l.setAttribute('fill', '#ca8a04'));
+        document.getElementById('soilDesc').textContent = 'ดินเป็นกรดจัด ชะล้างธาตุอาหารและละลายไอออนอะลูมิเนียมที่เป็นพิษต่อรากพืช ใบไม้เหลืองร่วง';
+        document.getElementById('soilBadge').textContent = 'ดินเป็นกรด (เกิดพิษ Al³⁺)';
+        document.getElementById('soilBadge').className = 'inline-block text-xs font-semibold px-2.5 py-1 rounded-md bg-red-100 text-red-700';
+      } else if (soilPh > 8.4) {
+        leaves.forEach(l => l.setAttribute('fill', '#84cc16'));
+        document.getElementById('soilDesc').textContent = 'ดินเป็นด่างมากเกินไป พืชดูดซึมธาตุเหล็กและฟอสฟอรัสได้ยากขึ้น';
+        document.getElementById('soilBadge').textContent = 'ดินเป็นด่าง (เติมปูนขาวเกิน)';
+        document.getElementById('soilBadge').className = 'inline-block text-xs font-semibold px-2.5 py-1 rounded-md bg-purple-100 text-purple-700';
+      } else {
+        leaves.forEach(l => l.setAttribute('fill', '#16a34a'));
+        document.getElementById('soilDesc').textContent = 'ใบไม้เขียวสด ดินมีแร่ธาตุแคลเซียมและแมกนีเซียมสมบูรณ์';
+        document.getElementById('soilBadge').textContent = 'ดินปกติ (ไร้พิษ Al³⁺)';
+        document.getElementById('soilBadge').className = 'inline-block text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-700';
+      }
+
+      // Visual Updates: Water & Fish
+      const fish1Flip = document.getElementById('fish1Flip');
+      const fish2Flip = document.getElementById('fish2Flip');
+      const waterBody = document.getElementById('waterBody');
+
+      if (soilPh < 5.2) {
+        waterBody.setAttribute('fill', '#65a30d');
+        fish1Flip.style.transform = 'scaleY(-1)';
+        fish2Flip.style.transform = 'scaleY(-1)';
+        document.getElementById('waterDesc').textContent = 'น้ำเป็นกรดสูง เหงือกปลาถูกทำลายและขาดออกซิเจน สัตว์น้ำตาย';
+        document.getElementById('waterBadge').textContent = 'pH < 5.2 (อันตรายถึงตาย)';
+        document.getElementById('waterBadge').className = 'inline-block text-xs font-semibold px-2.5 py-1 rounded-md bg-red-100 text-red-700';
+      } else if (soilPh > 8.4) {
+        waterBody.setAttribute('fill', '#0d9488');
+        fish1Flip.style.transform = 'scaleY(-1)';
+        fish2Flip.style.transform = 'scaleY(-1)';
+        document.getElementById('waterDesc').textContent = 'เติมปูนขาวมากเกินไปจนน้ำเป็นด่างจัด เป็นอันตรายต่อสัตว์น้ำเช่นกัน';
+        document.getElementById('waterBadge').textContent = 'pH > 8.4 (ด่างจัดเป็นพิษ)';
+        document.getElementById('waterBadge').className = 'inline-block text-xs font-semibold px-2.5 py-1 rounded-md bg-purple-100 text-purple-700';
+      } else {
+        waterBody.setAttribute('fill', '#0284c7');
+        fish1Flip.style.transform = 'scaleY(1)';
+        fish2Flip.style.transform = 'scaleY(1)';
+        document.getElementById('waterDesc').textContent = 'น้ำใสสะอาด ค่า pH เหมาะสมต่อการดำรงชีวิตของปลา';
+        document.getElementById('waterBadge').textContent = 'pH 5.2 - 8.4 (ปลอดภัย)';
+        document.getElementById('waterBadge').className = 'inline-block text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-700';
+      }
+    }
+
+    // Auto-calculate exact lime needed to reach pH ~6.50
+    autoBtn.addEventListener('click', () => {
+      const so2 = parseFloat(so2Slider.value);
+      const nox = parseFloat(noxSlider.value);
+      const acidLoad = (so2 * 0.007) + (nox * 0.005);
+      const rainPh = Math.max(3.20, 5.60 - acidLoad);
+      
+      const targetPh = 6.50;
+      const neededLime = Math.max(0, Math.min(500, Math.round((targetPh - rainPh) / 0.008)));
+      limeSlider.value = neededLime;
+      updateSimulation();
+    });
+
+    so2Slider.addEventListener('input', updateSimulation);
+    noxSlider.addEventListener('input', updateSimulation);
+    limeSlider.addEventListener('input', updateSimulation);
+
+    // Initial render
+    updateSimulation();
+  </script>
+</body>
+</html>
